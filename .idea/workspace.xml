@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="313c613f-3e83-40cf-8085-ba638ac63d23" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/public/assets/fox.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +65,16 @@
       <updated>1616246416767</updated>
       <workItem from="1616246418866" duration="2714000" />
       <workItem from="1616249145385" duration="5000" />
+      <workItem from="1616249164711" duration="192000" />
     </task>
+    <task id="LOCAL-00001" summary="initial project setup">
+      <created>1616249341206</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1616249341206</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -82,5 +91,9 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="initial project setup" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial project setup" />
   </component>
 </project>
