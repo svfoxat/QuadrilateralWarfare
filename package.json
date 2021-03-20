@@ -1,0 +1,25 @@
+{
+  "name": "quadrilateral-warfare",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "webpack"
+  },
+  "author": "Nico Nößler <nico@streamstack.tv>, Christoph Kirchberger <>",
+  "license": "PRIVATE",
+  "devDependencies": {
+    "@types/gsap": "^1.20.0",
+    "@types/pixi.js": "^4.8.3",
+    "copy-webpack-plugin": "^4.6.0",
+    "ts-loader": "^5.3.0",
+    "typescript": "^3.1.6",
+    "webpack": "^4.26.0",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-glsl-loader": "^1.0.1"
+  },
+  "dependencies": {
+    "gsap": "^2.0.2",
+    "pixi.js": "^4.8.2"
+  }
+}
