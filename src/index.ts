@@ -18,7 +18,6 @@ const appContainer = document.getElementById("app_container")
 appContainer.appendChild(app.view);
 
 function loadAssets() {
-
     PIXI.loader
         .add("assets/fox.jpg")
         .load(run);
@@ -39,8 +38,12 @@ function run() {
     sprite.position.set(width / 2, height / 2);
     sprite.scale.set(2);
 
-    TweenMax.to(sprite, 8, { rotation: Math.PI * 2, ease: gsap.Linear.easeNone })
-        .repeat(-1);
+    // Listen for animate update
+    app.ticker.add((delta) => {
+        // delta is 1 if running at 100% performance
+        // creates frame-independent transformation
+        sprite.rotation += 0.010 * delta;
+    });
 
     app.stage.addChild(sprite);
 }
