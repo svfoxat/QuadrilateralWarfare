@@ -18,6 +18,4 @@ export class Transform implements IComponent {
 
     Update(): void {
     }
-
-
 }

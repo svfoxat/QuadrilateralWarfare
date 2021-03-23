@@ -9,6 +9,7 @@ import Transform = PIXI.Transform;
 import {Rigidbody} from "./Rigidbody";
 import {SpriteRenderer} from "./SpriteRenderer";
 import Point = PIXI.Point;
+import {Scene} from "./Scene/Scene";
 
 const width = 1920;
 const height = 1080;
@@ -29,42 +30,46 @@ function loadAssets() {
 }
 
 function run() {
-
     const texture = PIXI.loader.resources["assets/fox.jpg"].texture;
     texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
-    const sprite1 = new PIXI.Sprite(texture);
-    const sprite2 = new PIXI.Sprite(texture);
-
-
-
-    let sceneRoot = new Gameobject(new Transform(), null);
-    let go = new Gameobject(new Transform(), sceneRoot);
+    // Scene 1
+    let scene = new Scene(app);
+    let go = new Gameobject(new Transform());
     let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
-    spriteRenderer.sprite = sprite1;
+    spriteRenderer.sprite.texture = texture;
+    spriteRenderer.sprite.interactive = true;
+    spriteRenderer.sprite.buttonMode = true;
+    scene.Add(go);
 
-    let go2 = new Gameobject(new Transform(), sceneRoot);
+    // Scene 2
+    let scene2 = new Scene(app);
+    let go2 = new Gameobject(new Transform());
     let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
-    spriteRenderer2.sprite = sprite2;
+    spriteRenderer2.sprite.texture = texture;
+    spriteRenderer2.sprite.interactive = true;
+    spriteRenderer2.sprite.buttonMode = true;
     go2.transform.position = new Point(1000, 500);
+    scene2.Add(go2);
 
+    // Set Scene 1 active at first
+    scene.SetActive(scene1Fnc);
 
-    // sprite.pivot.set(sprite.width / 2, sprite.height / 2);
-    // sprite.position.set(width / 2, height / 2);
-    // sprite.scale.set(2);
-    // Listen for animate update
-    app.ticker.add((delta) => {
-        // delta is 1 if running at 100% performance
-        // creates frame-independent transformation
+    // Click handlers of sprites
+    spriteRenderer.sprite.on("click", () => {
+        scene2.SetActive(console.log)
+    })
+
+    spriteRenderer2.sprite.on("click", () => {
+        scene.SetActive(scene1Fnc);
+    })
+    function scene1Fnc(delta: number) {
         go.transform.rotation += 0.01 * delta;
         go.transform.position.x += 0.5 * delta;
         go.transform.position.y += 0.5 * delta;
-        sceneRoot.transform.position.x += delta;
-        sceneRoot.Update();
-    });
-
-    app.stage.addChild(sprite1);
-    app.stage.addChild(sprite2);
+        scene.sceneRoot.transform.position.x += delta;
+        scene.sceneRoot.Update();
+    }
 }
 
 loadAssets();
