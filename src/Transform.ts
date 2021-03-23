@@ -1,5 +1,6 @@
 import {IComponent} from "./IComponent";
 import {Vector3} from "./Vector3";
+import {Gameobject} from "./Gameobject";
 
 export class Transform implements IComponent {
     public position: Vector3;
@@ -7,6 +8,7 @@ export class Transform implements IComponent {
     public scale: Vector3;
 
     name: string = "Transform";
+    gameObject: Gameobject;
 
     OnEnable(): void {
     }
@@ -16,4 +18,6 @@ export class Transform implements IComponent {
 
     Update(): void {
     }
+
+
 }

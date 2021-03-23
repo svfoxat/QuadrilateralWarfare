@@ -2,13 +2,29 @@ import {Transform, Point} from "pixi.js";
 import {IComponent} from "./IComponent";
 
 export class Gameobject  {
-    public transform: Transform
+    public transform: Transform;
+    public absoluteTransform: Transform = new Transform();
+    public parent: Gameobject;
+    public children: Array<Gameobject> = [];
     public components: Array<IComponent> = [];
 
-    private _enabled: boolean = false;
+    private _enabled: boolean = true;
 
-    constructor(transform: Transform) {
+    constructor(transform: Transform, parent: Gameobject) {
         this.transform = transform;
+        this.parent = parent;
+        parent?.children.push(this);
+    }
+
+    public Update()
+    {
+        this.UpdateTransform();
+        this.UpdateAllComponents();
+
+        for(let go of this.children)
+        {
+            go.Update();
+        }
     }
 
     public UpdateAllComponents() {
@@ -25,5 +41,29 @@ export class Gameobject  {
         for (let component of this.components) {
             component.OnEnable();
         }
+    }
+
+    public AddComponent<T extends IComponent>(type: (new() => T)) : IComponent
+    {
+        let component = new type();
+        component.gameObject = this;
+        this.components.push(component);
+        return component;
+    }
+
+    private UpdateTransform() {
+        if (!this.parent)
+        {
+            this.absoluteTransform = this.transform;
+            return;
+        }
+
+        this.absoluteTransform.position =
+            new Point(this.transform.position.x + this.parent.absoluteTransform.position.x,
+                      this.transform.position.y + this.parent.absoluteTransform.position.y);
+        this.absoluteTransform.scale =
+            new Point(this.transform.scale.x * this.parent.absoluteTransform.scale.x,
+                      this.transform.scale.y * this.parent.absoluteTransform.scale.y);
+        this.absoluteTransform.rotation = this.transform.rotation + this.parent.absoluteTransform.rotation;
     }
 }
