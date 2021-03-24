@@ -1,23 +1,22 @@
-import {IComponent} from "./IComponent";
+import {Component} from "./Component";
 import {Gameobject} from "./Gameobject";
-import Filter = PIXI.Filter;
 
 
-export class SpriteRenderer implements IComponent
+export class SpriteRenderer extends Component
 {
     gameObject: Gameobject;
     name: string;
     sprite: PIXI.Sprite;
 
-    OnEnable(): void {
+    OnEnable = (): void => {
 
     };
 
-    Start(): void {
+    Start = (): void => {
 
     };
 
-    Update(): void {
+    Update = (): void => {
         if (!this.sprite) return;
 
         // pivot, (position, rotation, scale) from transform

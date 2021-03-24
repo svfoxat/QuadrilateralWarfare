@@ -1,13 +1,13 @@
 import * as PIXI from "pixi.js";
 import * as gsap from "gsap";
-
-const { TweenMax } = gsap;
-
-import { SampleFilter } from "./Filters/Sample/SampleFilter";
 import {Gameobject} from "./Gameobject";
-import Transform = PIXI.Transform;
-import {Rigidbody} from "./Rigidbody";
+import {ForceMode, Rigidbody} from "./Rigidbody";
 import {SpriteRenderer} from "./SpriteRenderer";
+import {Vector3} from "./Vector3";
+
+const {TweenMax} = gsap;
+
+import Transform = PIXI.Transform;
 import Point = PIXI.Point;
 
 const width = 1920;
@@ -47,7 +47,13 @@ function run() {
     let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
     spriteRenderer2.sprite = sprite2;
     go2.transform.position = new Point(1000, 500);
-
+    let rb = go2.AddComponent(Rigidbody) as Rigidbody;
+    rb.useGravity = false;
+    rb.mass = 10;
+    rb.AddForce(new Vector3(10, 0, 0), ForceMode.VelocityChange);
+    rb.AddForce(new Vector3(0, -1, 0), ForceMode.Force);
+    rb.AddForce(new Vector3(-1, 0, 0), ForceMode.Acceleration);
+    rb.AddForce(new Vector3(0, 100, 0), ForceMode.Impulse);
 
     // sprite.pivot.set(sprite.width / 2, sprite.height / 2);
     // sprite.position.set(width / 2, height / 2);
@@ -57,14 +63,17 @@ function run() {
         // delta is 1 if running at 100% performance
         // creates frame-independent transformation
         go.transform.rotation += 0.01 * delta;
-        go.transform.position.x += 0.5 * delta;
-        go.transform.position.y += 0.5 * delta;
-        sceneRoot.transform.position.x += delta;
+        // go.transform.position.x += 0.5 * delta;
+        // go.transform.position.y += 0.5 * delta;
+        // sceneRoot.transform.position.x += delta;
         sceneRoot.Update();
+
     });
 
     app.stage.addChild(sprite1);
     app.stage.addChild(sprite2);
+
+
 }
 
 loadAssets();

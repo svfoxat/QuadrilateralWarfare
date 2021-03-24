@@ -1,12 +1,12 @@
-import {Transform, Point} from "pixi.js";
-import {IComponent} from "./IComponent";
+import {Point, Transform} from "pixi.js";
+import {Component} from "./Component";
 
 export class Gameobject  {
     public transform: Transform;
     public absoluteTransform: Transform = new Transform();
     public parent: Gameobject;
     public children: Array<Gameobject> = [];
-    public components: Array<IComponent> = [];
+    public components: Array<Component> = [];
 
     private _enabled: boolean = true;
 
@@ -43,7 +43,7 @@ export class Gameobject  {
         }
     }
 
-    public AddComponent<T extends IComponent>(type: (new() => T)) : IComponent
+    public AddComponent<T extends Component>(type: (new() => T)): Component
     {
         let component = new type();
         component.gameObject = this;

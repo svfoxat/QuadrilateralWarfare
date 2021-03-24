@@ -1,10 +1,11 @@
 import {Gameobject} from "./Gameobject";
 
-export interface IComponent {
+export class Component {
     name: string;
     gameObject: Gameobject;
 
     OnEnable: () => void;
     Start: () => void;
     Update: () => void;
+    FixedUpdate: () => void;
 }
