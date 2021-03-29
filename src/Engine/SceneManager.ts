@@ -2,7 +2,7 @@ import Application from "./Application";
 import {Scene} from "./Scene";
 import {Transform} from "pixi.js";
 import {Gameobject} from "./Gameobject";
-import {SpriteRenderer} from "./SpriteRenderer";
+import {SpriteRenderer} from "./Components/SpriteRenderer";
 import * as PIXI from "pixi.js";
 
 export class SceneManager {
@@ -41,10 +41,9 @@ export class SceneManager {
                         const sr = go.AddComponent(SpriteRenderer) as SpriteRenderer;
                         sr.gameObject = go;
                         sr.sprite.texture = PIXI.loader.resources[c.texture].texture;
-                        console.log(sr.sprite.texture)
                 }
 
-                let scripts = this.app.userScripts.filter((s) => s.name === c.name);
+                const scripts = this.app.userScripts.filter((s) => s.name === c.name);
                 if (scripts.length === 1) {
                     go.AddComponent(scripts[0].type);
                 }

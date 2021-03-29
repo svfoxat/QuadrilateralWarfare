@@ -1,5 +1,5 @@
 import {Transform, Point} from "pixi.js";
-import {IComponent} from "./IComponent";
+import {IComponent} from "./Components/IComponent";
 import {Scene} from "./Scene";
 
 export class Gameobject  {

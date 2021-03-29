@@ -1,4 +1,4 @@
-import {Gameobject} from "./Gameobject";
+import {Gameobject} from "../Gameobject";
 
 export interface IComponent {
     name: string;

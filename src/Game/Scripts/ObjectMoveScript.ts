@@ -1,4 +1,4 @@
-import {IComponent} from "../../Engine/IComponent";
+import {IComponent} from "../../Engine/Components/IComponent";
 import {Gameobject} from "../../Engine/Gameobject";
 
 export default class ObjectMoveScript implements IComponent {

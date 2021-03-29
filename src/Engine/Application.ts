@@ -31,6 +31,8 @@ export default class Application {
 
     private start() {
         this.pixi.ticker.add((deltaTime => {
+            document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
+
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }))
     }

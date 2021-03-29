@@ -1,5 +1,5 @@
 import {IComponent} from "./IComponent";
-import {Gameobject} from "./Gameobject";
+import {Gameobject} from "../Gameobject";
 
 export class SpriteRenderer implements IComponent
 {

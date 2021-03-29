@@ -1,7 +1,7 @@
 import {IComponent} from "./IComponent";
-import {Gameobject} from "./Gameobject";
-import {Vector3} from "./Vector3";
-import {Time} from "./Time";
+import {Gameobject} from "../Gameobject";
+import {Vector3} from "../Vector3";
+import {Time} from "../Time";
 
 export class Rigidbody implements IComponent
 {
