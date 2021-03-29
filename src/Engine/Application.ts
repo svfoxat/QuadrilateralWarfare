@@ -25,6 +25,8 @@ export default class Application {
     private init() {
         SceneManager.initialize(this);
         ResourceManager.initialize(this);
+
+        document.title = this.name;
     }
 
     private start() {
