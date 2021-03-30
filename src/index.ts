@@ -44,6 +44,7 @@ function run() {
     let rb = go.AddComponent(Rigidbody) as Rigidbody;
     boxCollider.size.x = sprite1.width;
     boxCollider.size.y = sprite1.height;
+    boxCollider.attachedRigidbody = rb;
     spriteRenderer.sprite = sprite1;
 
     let go2 = new Gameobject(new Transform(), sceneRoot);
@@ -51,17 +52,25 @@ function run() {
     let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
     rb.useGravity = false;
 
+
     boxCollider2.size.x = sprite2.width;
     boxCollider2.size.y = sprite2.height;
     spriteRenderer2.sprite = sprite2;
 
     go2.transform.position = new Point(1000, 500);
     let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
+    boxCollider2.attachedRigidbody = rb2;
     rb2.useGravity = false;
-    rb2.mass = 2;
+    rb2.mass = .5;
     rb.AddForce(new Vector3(5, 5, 0), ForceMode.VelocityChange);
     rb2.AddForce(new Vector3(-5, 0, 0), ForceMode.VelocityChange);
-    // rb.AddTorque(-0.01, ForceMode.Acceleration);
+
+    //go2.transform.rotation = Math.PI / 180 * 30;
+    //go.transform.rotation = Math.PI / 180 * -90;
+    rb.AddTorque(-.05, ForceMode.VelocityChange);
+    rb2.AddTorque(-.05, ForceMode.VelocityChange);
+
+
 
     // sprite.pivot.set(sprite.width / 2, sprite.height / 2);
     // sprite.position.set(width / 2, height / 2);
@@ -74,6 +83,7 @@ function run() {
         // go.transform.position.x += 0.5 * delta;
         // go.transform.position.y += 0.5 * delta;
         // sceneRoot.transform.position.x += delta;
+        //Time.t = delta / 5;
         let collision = Collider.IsColliding(boxCollider, boxCollider2);
         if (collision != null) {
             let inverseCollision = collision.Inverse();
@@ -81,7 +91,6 @@ function run() {
             rb2.AddForce(new Vector3(inverseCollision.x, inverseCollision.y, 0), ForceMode.Impulse);
         }
         sceneRoot.Update();
-
     });
 
     app.stage.addChild(sprite1);

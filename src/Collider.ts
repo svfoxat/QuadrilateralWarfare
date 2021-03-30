@@ -122,28 +122,31 @@ export class BoxCollider extends Collider {
         let normals = new Array<Vector2>();
         // get 3 vertices
         let vertex1 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.transform.rotation));
+            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
         let vertex2 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.transform.rotation));
+            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
         let vertex3 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.transform.rotation));
+            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
 
         // take 2 edges from these vertices
         let edge1 = Vector2.Sub(vertex2, vertex1);
-        let edge2 = Vector2.Sub(vertex3, vertex1);
+        let edge2 = Vector2.Sub(vertex1, vertex3);
+
 
         // flip coordinates and negate one to get normal
-        normals.push(new Vector2(edge1.y, edge1.x).Normalized());
-        normals.push(new Vector2(edge2.y, edge2.x).Normalized());
+        normals.push(edge1.LeftNormal().Normalized());
+        normals.push(edge2.LeftNormal().Normalized());
+        // normals.push(edge1.LeftNormal().Normalized().Inverse());
+        // normals.push(edge2.LeftNormal().Normalized().Inverse());
         return normals;
     }
 
     GetProjection(axis: Vector2): Vector2 {
         let vertices = new Array<Vector2>();
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.transform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.transform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.transform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.transform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.transform.rotation)));
+        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
         let min = 100000.0, max = -100000.0;
         for (let v of vertices) {
             let p = Vector2.Dot(axis, v);

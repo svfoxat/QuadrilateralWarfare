@@ -32,7 +32,7 @@ export class Vector2 {
 
     public Rotate(rad: number): Vector2 {
         return new Vector2(this.x * Math.cos(rad) - this.y * Math.sin(rad),
-            this.x * Math.sin(rad) + this.y + Math.cos(rad));
+            this.x * Math.sin(rad) + this.y * Math.cos(rad));
     }
 
     // -----------------------------------------------------------------------------------------------------------------
