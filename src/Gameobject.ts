@@ -43,6 +43,16 @@ export class Gameobject  {
         }
     }
 
+    public GetComponent<T extends Component>(type: (new() => T)): Component {
+        for (let component of this.components) {
+            let ret = component as T;
+            if (ret != null) {
+                return ret;
+            }
+        }
+        return null;
+    }
+
     public AddComponent<T extends Component>(type: (new() => T)): Component
     {
         let component = new type();

@@ -9,6 +9,19 @@ export class Vector3 {
         this.z = z;
     }
 
+    public Mag(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    }
+
+    public Normalized(): Vector3 {
+        let mag = this.Mag();
+        return new Vector3(this.x / mag, this.y / mag, this.z / mag);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // STATIC BELOW
+    // -----------------------------------------------------------------------------------------------------------------
+
     public static Zero(): Vector3 {
         return new Vector3(0, 0, 0);
     }

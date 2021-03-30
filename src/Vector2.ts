@@ -13,6 +13,32 @@ export class Vector2 {
         return new Point(this.x, this.y);
     }
 
+    public Mag(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    public Normalized(): Vector2 {
+        let mag = this.Mag();
+        return new Vector2(this.x / mag, this.y / mag);
+    }
+
+    public Inverse(): Vector2 {
+        return new Vector2(-this.x, -this.y);
+    }
+
+    public LeftNormal(): Vector2 {
+        return new Vector2(-this.y, this.x);
+    }
+
+    public Rotate(rad: number): Vector2 {
+        return new Vector2(this.x * Math.cos(rad) - this.y * Math.sin(rad),
+            this.x * Math.sin(rad) + this.y + Math.cos(rad));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // STATIC BELOW
+    // -----------------------------------------------------------------------------------------------------------------
+
     public static FromPoint(point: Point): Vector2 {
         return new Vector2(point.x, point.y)
     }

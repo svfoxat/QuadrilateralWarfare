@@ -4,6 +4,7 @@ import {Gameobject} from "./Gameobject";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import {SpriteRenderer} from "./SpriteRenderer";
 import {Vector3} from "./Vector3";
+import {BoxCollider, Collider} from "./Collider";
 
 const {TweenMax} = gsap;
 
@@ -36,24 +37,31 @@ function run() {
     const sprite1 = new PIXI.Sprite(texture);
     const sprite2 = new PIXI.Sprite(texture);
 
-
-
     let sceneRoot = new Gameobject(new Transform(), null);
     let go = new Gameobject(new Transform(), sceneRoot);
     let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
+    let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
+    let rb = go.AddComponent(Rigidbody) as Rigidbody;
+    boxCollider.size.x = sprite1.width;
+    boxCollider.size.y = sprite1.height;
     spriteRenderer.sprite = sprite1;
 
     let go2 = new Gameobject(new Transform(), sceneRoot);
     let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
-    spriteRenderer2.sprite = sprite2;
-    go2.transform.position = new Point(1000, 500);
-    let rb = go2.AddComponent(Rigidbody) as Rigidbody;
+    let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
     rb.useGravity = false;
-    rb.mass = 10;
-    rb.AddForce(new Vector3(10, 0, 0), ForceMode.VelocityChange);
-    rb.AddForce(new Vector3(0, -1, 0), ForceMode.Force);
-    rb.AddForce(new Vector3(-1, 0, 0), ForceMode.Acceleration);
-    rb.AddForce(new Vector3(0, 100, 0), ForceMode.Impulse);
+
+    boxCollider2.size.x = sprite2.width;
+    boxCollider2.size.y = sprite2.height;
+    spriteRenderer2.sprite = sprite2;
+
+    go2.transform.position = new Point(1000, 500);
+    let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
+    rb2.useGravity = false;
+    rb2.mass = 2;
+    rb.AddForce(new Vector3(5, 5, 0), ForceMode.VelocityChange);
+    rb2.AddForce(new Vector3(-5, 0, 0), ForceMode.VelocityChange);
+    // rb.AddTorque(-0.01, ForceMode.Acceleration);
 
     // sprite.pivot.set(sprite.width / 2, sprite.height / 2);
     // sprite.position.set(width / 2, height / 2);
@@ -62,10 +70,16 @@ function run() {
     app.ticker.add((delta) => {
         // delta is 1 if running at 100% performance
         // creates frame-independent transformation
-        go.transform.rotation += 0.01 * delta;
+        // go.transform.rotation += 0.01 * delta;
         // go.transform.position.x += 0.5 * delta;
         // go.transform.position.y += 0.5 * delta;
         // sceneRoot.transform.position.x += delta;
+        let collision = Collider.IsColliding(boxCollider, boxCollider2);
+        if (collision != null) {
+            let inverseCollision = collision.Inverse();
+            rb.AddForce(new Vector3(collision.x, collision.y, 0), ForceMode.Impulse);
+            rb2.AddForce(new Vector3(inverseCollision.x, inverseCollision.y, 0), ForceMode.Impulse);
+        }
         sceneRoot.Update();
 
     });

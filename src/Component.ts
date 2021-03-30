@@ -8,4 +8,8 @@ export class Component {
     Start: () => void;
     Update: () => void;
     FixedUpdate: () => void;
+
+    OnTriggerEnter: () => void;
+    OnTriggerExit: () => void;
+    OnTriggerStay: () => void;
 }
