@@ -1,4 +1,4 @@
-import {Gameobject} from "./Gameobject";
+import {Gameobject} from "../Gameobject";
 
 export class Component {
     name: string;

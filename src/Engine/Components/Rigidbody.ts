@@ -1,8 +1,8 @@
 import {Component} from "./Component";
-import {Gameobject} from "./Gameobject";
-import {Vector3} from "./Vector3";
-import {Time} from "./Time";
-import {Vector2} from "./Vector2";
+import {Gameobject} from "../Gameobject";
+import {Vector3} from "../Vector3";
+import {Time} from "../Time";
+import {Vector2} from "../Vector2";
 
 export enum ForceMode {
     Force,

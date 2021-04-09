@@ -1,6 +1,6 @@
 import {Component} from "./Component";
-import {Vector3} from "./Vector3";
-import {Gameobject} from "./Gameobject";
+import {Vector3} from "../Vector3";
+import {Gameobject} from "../Gameobject";
 
 export class Transform extends Component {
     public position: Vector3;

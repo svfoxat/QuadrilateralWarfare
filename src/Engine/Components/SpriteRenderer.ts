@@ -1,12 +1,12 @@
 import {Component} from "./Component";
-import {Gameobject} from "./Gameobject";
+import {Gameobject} from "../Gameobject";
 
 
 export class SpriteRenderer extends Component
 {
     gameObject: Gameobject;
     name: string;
-    sprite: PIXI.Sprite;
+    sprite: PIXI.Sprite = new PIXI.Sprite();
 
     OnEnable = (): void => {
 
@@ -26,6 +26,6 @@ export class SpriteRenderer extends Component
         this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
         this.sprite.rotation = transform.rotation;
 
-
+        this.gameObject.scene.container.addChild(this.sprite);
     };
 }

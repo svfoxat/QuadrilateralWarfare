@@ -1,5 +1,5 @@
 import {Component} from "./Component";
-import {Vector2} from "./Vector2";
+import {Vector2} from "../Vector2";
 import {Rigidbody} from "./Rigidbody";
 
 export abstract class Collider extends Component {
