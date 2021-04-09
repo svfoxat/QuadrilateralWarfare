@@ -2,7 +2,7 @@ import {Gameobject} from "./Gameobject";
 import {Transform} from "pixi.js";
 
 export class Scene {
-    name: string = "Scene"
+    name: string = "Scene";
     container: PIXI.Container;
     gameObjects: Array<Gameobject> = [];
     sceneRoot: Gameobject;

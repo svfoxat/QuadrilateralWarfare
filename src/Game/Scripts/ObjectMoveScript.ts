@@ -1,20 +1,20 @@
-import {IComponent} from "../../Engine/Components/IComponent";
+import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 
-export default class ObjectMoveScript implements IComponent {
+export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
-    name: string = "ObjectMoveScript"
+    name: string = "ObjectMoveScript";
 
     private _counter = 0;
 
-    OnEnable(): void {
-    }
+    OnEnable = (): void => {
+    };
 
-    Start(): void {
-    }
+    Start = (): void => {
+    };
 
-    Update(): void {
+    Update = (): void => {
         this.gameObject.transform.rotation += 0.01;
         this.gameObject.transform.position.x += 1;
-    }
+    };
 }

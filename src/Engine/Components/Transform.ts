@@ -1,8 +1,8 @@
-import {IComponent} from "./IComponent";
+import {Component} from "./Component";
 import {Vector3} from "../Vector3";
 import {Gameobject} from "../Gameobject";
 
-export class Transform implements IComponent {
+export class Transform extends Component {
     public position: Vector3;
     public rotation: Vector3;
     public scale: Vector3;
@@ -10,12 +10,14 @@ export class Transform implements IComponent {
     name: string = "Transform";
     gameObject: Gameobject;
 
-    OnEnable(): void {
-    }
+    OnEnable = (): void => {
+    };
 
-    Start(): void {
-    }
+    Start = (): void => {
+    };
 
-    Update(): void {
-    }
+    Update = (): void => {
+    };
+
+
 }

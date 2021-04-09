@@ -1,5 +1,5 @@
-import {Transform, Point} from "pixi.js";
-import {IComponent} from "./Components/IComponent";
+import {Point, Transform} from "pixi.js";
+import {Component} from "./Components/Component";
 import {Scene} from "./Scene";
 
 export class Gameobject  {
@@ -7,7 +7,7 @@ export class Gameobject  {
     public absoluteTransform: Transform = new Transform();
     public parent: Gameobject;
     public children: Array<Gameobject> = [];
-    public components: Array<IComponent> = [];
+    public components: Array<Component> = [];
     public scene: Scene;
 
     private _enabled: boolean = true;
@@ -45,7 +45,17 @@ export class Gameobject  {
         }
     }
 
-    public AddComponent<T extends IComponent>(type: (new() => T)) : IComponent
+    public GetComponent<T extends Component>(type: (new() => T)): Component {
+        for (let component of this.components) {
+            let ret = component as T;
+            if (ret != null) {
+                return ret;
+            }
+        }
+        return null;
+    }
+
+    public AddComponent<T extends Component>(type: (new() => T)): Component
     {
         let component = new type();
         component.gameObject = this;
