@@ -2,7 +2,7 @@
   "name": "quadrilateral-warfare",
   "version": "0.0.1",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server -d --inline --progress",
     "build": "webpack"
   },
   "author": "Nico Nößler <nico@streamstack.tv>, Christoph Kirchberger <>",

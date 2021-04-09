@@ -1,13 +1,14 @@
 import {IComponent} from "./IComponent";
-import {Gameobject} from "./Gameobject";
-import Filter = PIXI.Filter;
-
+import {Gameobject} from "../Gameobject";
 
 export class SpriteRenderer implements IComponent
 {
     gameObject: Gameobject;
     name: string;
-    sprite: PIXI.Sprite;
+    sprite: PIXI.Sprite = new PIXI.Sprite();
+
+    constructor() {
+    }
 
     OnEnable(): void {
 
@@ -27,6 +28,6 @@ export class SpriteRenderer implements IComponent
         this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
         this.sprite.rotation = transform.rotation;
 
-
+        this.gameObject.scene.container.addChild(this.sprite);
     };
 }

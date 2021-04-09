@@ -1,5 +1,6 @@
 import {Transform, Point} from "pixi.js";
-import {IComponent} from "./IComponent";
+import {IComponent} from "./Components/IComponent";
+import {Scene} from "./Scene";
 
 export class Gameobject  {
     public transform: Transform;
@@ -7,10 +8,11 @@ export class Gameobject  {
     public parent: Gameobject;
     public children: Array<Gameobject> = [];
     public components: Array<IComponent> = [];
+    public scene: Scene;
 
     private _enabled: boolean = true;
 
-    constructor(transform: Transform, parent: Gameobject) {
+    constructor(transform: Transform, parent: Gameobject = null) {
         this.transform = transform;
         this.parent = parent;
         parent?.children.push(this);
