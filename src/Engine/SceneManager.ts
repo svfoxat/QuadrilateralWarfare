@@ -21,6 +21,7 @@ export class SceneManager {
     public activeScene: Scene;
     private constructor(app: Application) {
         this.app = app;
+
     }
 
     public LoadScene(s: any) {

@@ -24,7 +24,7 @@ class Main {
 
         const scene1: string = require("./Scenes/scene1.json");
         const scene2: string = require("./Scenes/scene2.json");
-        SceneManager.getInstance().LoadScene(scene2);
+        SceneManager.getInstance().LoadScene(scene1);
     }
 }
 

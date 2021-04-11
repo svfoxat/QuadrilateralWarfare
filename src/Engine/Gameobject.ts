@@ -10,12 +10,16 @@ export class Gameobject  {
     public components: Array<Component> = [];
     public scene: Scene;
 
-    private _enabled: boolean = true;
+    private _enabled: boolean = false;
 
     constructor(transform: Transform, parent: Gameobject = null) {
         this.transform = transform;
         this.parent = parent;
         parent?.children.push(this);
+
+        this.EnableComponents().then(async () => {
+            await this.StartComponents();
+        });
     }
 
     public Update()
@@ -37,12 +41,25 @@ export class Gameobject  {
         }
     }
 
-    public EnableComponents() {
+    public async StartComponents() {
+        if (!this._enabled) return;
+
+        console.log(`Start ${this.components.length} Component(s)`)
+        for (let component of this.components) {
+            component.Start();
+        }
+        return;
+    }
+
+    public async EnableComponents() {
         if (this._enabled) return;
+        this._enabled = true;
+        console.log(`Enable ${this.components.length} Component(s)`)
 
         for (let component of this.components) {
             component.OnEnable();
         }
+        return;
     }
 
     public GetComponent<T extends Component>(type: (new() => T)): Component {

@@ -1,5 +1,6 @@
 import {SceneManager} from "./SceneManager";
 import {ResourceManager} from "./ResourceManager";
+import {InputManager} from "./InputManager";
 
 export default class Application {
     name: string;
@@ -22,9 +23,11 @@ export default class Application {
         this.start();
     }
 
+
     private init() {
         SceneManager.initialize(this);
         ResourceManager.initialize(this);
+        InputManager.initialize(this.pixi.renderer);
 
         document.title = this.name;
     }
@@ -32,9 +35,11 @@ export default class Application {
     private start() {
         this.pixi.ticker.add((deltaTime => {
             document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
-
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }))
+
+        const intervall = setInterval(() => {}, 100);
+        clearInterval(intervall);
     }
 }
 

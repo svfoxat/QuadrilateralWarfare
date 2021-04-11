@@ -18,6 +18,8 @@ export class SpriteRenderer extends Component
 
     Update = (): void => {
         if (!this.sprite) return;
+        this.sprite.interactive = true;
+        this.sprite["spriteRenderer"] = this;
 
         // pivot, (position, rotation, scale) from transform
         let transform = this.gameObject.absoluteTransform;
