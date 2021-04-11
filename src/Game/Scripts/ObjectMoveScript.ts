@@ -3,7 +3,7 @@ import {Gameobject} from "../../Engine/Gameobject";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
-    name: string = "ObjectMoveScript";
+    _name: string = "ObjectMoveScript";
 
     private _counter = 0;
 

@@ -1,10 +1,12 @@
 import {Component} from "./Component";
 import {Vector2} from "../Vector2";
 import {Rigidbody} from "./Rigidbody";
+import Application from "../Application";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
+    application: Application;
 
     abstract Collision(other: Collider): Vector2;
 
@@ -87,15 +89,23 @@ export abstract class Collider extends Component {
 }
 
 export class BoxCollider extends Collider {
-    FixedUpdate: () => void;
     OnEnable: () => void;
     Start: () => void;
-    name: string = "BoxCollider2D";
+    _name: string = "BoxCollider2D";
 
     size: Vector2 = new Vector2(1, 1);
     offset: Vector2 = new Vector2(0, 0);
+    vertices: Array<Vector2>;
+    verticesPoints: Array<PIXI.Graphics> = new Array<PIXI.Graphics>();
 
-    Update = () => {
+    Update = (): void => {
+        if (this.vertices != null) {
+            this.DrawVertices();
+        }
+    };
+
+    FixedUpdate = () => {
+        this.SetVertices();
         let rb = this.attachedRigidbody;
         if (this.attachedRigidbody != null && !this.isTrigger) {
             this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
@@ -121,34 +131,25 @@ export class BoxCollider extends Collider {
     GetSeperatingAxes(): Array<Vector2> {
         let normals = new Array<Vector2>();
         // get 3 vertices
-        let vertex1 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
-        let vertex2 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
-        let vertex3 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
+        this.SetVertices();
 
         // take 2 edges from these vertices
-        let edge1 = Vector2.Sub(vertex2, vertex1);
-        let edge2 = Vector2.Sub(vertex1, vertex3);
+        let edge1 = Vector2.Sub(this.vertices[1], this.vertices[0]);
+        let edge2 = Vector2.Sub(this.vertices[0], this.vertices[2]);
 
 
         // flip coordinates and negate one to get normal
         normals.push(edge1.LeftNormal().Normalized());
         normals.push(edge2.LeftNormal().Normalized());
-        // normals.push(edge1.LeftNormal().Normalized().Inverse());
-        // normals.push(edge2.LeftNormal().Normalized().Inverse());
+        normals.push(edge1.LeftNormal().Normalized().Inverse());
+        normals.push(edge2.LeftNormal().Normalized().Inverse());
         return normals;
     }
 
     GetProjection(axis: Vector2): Vector2 {
-        let vertices = new Array<Vector2>();
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.SetVertices();
         let min = 100000.0, max = -100000.0;
-        for (let v of vertices) {
+        for (let v of this.vertices) {
             let p = Vector2.Dot(axis, v);
             if (p < min) {
                 min = p;
@@ -159,14 +160,42 @@ export class BoxCollider extends Collider {
         return new Vector2(min, max);
     }
 
+    private SetVertices(): void {
+        this.vertices = new Array<Vector2>();
+        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+    }
+
+    public DrawVertices(): void {
+        if (this.verticesPoints.length != 0) {
+            this.verticesPoints.forEach(point => {
+                point.clear();
+            })
+        }
+
+        this.vertices.forEach(element => {
+            let point = new PIXI.Graphics();
+            point.lineStyle(2, 0xFF0000);
+            point.beginFill(0xFFFF00);
+            point.drawCircle(element.x, element.y, 5);
+            point.endFill();
+            this.application.pixi.stage.addChild(point);
+            this.verticesPoints.push(point);
+        })
+    }
 }
 
 export class CircleCollider extends Collider {
-    name: string = "CircleCollider2D";
+    _name: string = "CircleCollider2D";
     offset: Vector2 = new Vector2(0, 0);
     radius: number = 0.5;
 
-    Update = () => {
+    Update = (): void => {
+    };
+
+    FixedUpdate = () => {
         let rb = this.attachedRigidbody;
         if (this.attachedRigidbody != null && !this.isTrigger) {
             this.attachedRigidbody.inertia = rb.mass * this.radius * this.radius / 2;
@@ -198,7 +227,7 @@ export class CircleCollider extends Collider {
 }
 
 export class MeshCollider extends Collider {
-    name: string = "MeshCollider2D";
+    _name: string = "MeshCollider2D";
 
     Collision(other: Collider): Vector2 {
         return undefined;

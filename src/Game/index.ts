@@ -2,6 +2,14 @@ import * as PIXI from "pixi.js";
 import Application from "../Engine/Application";
 import {SceneManager} from "../Engine/SceneManager";
 import {Scripts} from "./Scripts/Scripts";
+import {Scene} from "../Engine/Scene";
+import {Gameobject} from "../Engine/Gameobject";
+import {SpriteRenderer} from "../Engine/Components/SpriteRenderer";
+import {BoxCollider} from "../Engine/Components/Collider";
+import {Rigidbody} from "../Engine/Components/Rigidbody";
+import {Vector2} from "../Engine/Vector2";
+import Transform = PIXI.Transform;
+import Point = PIXI.Point;
 
 class Main {
     constructor() {
@@ -24,7 +32,38 @@ class Main {
 
         const scene1: string = require("./Scenes/scene1.json");
         const scene2: string = require("./Scenes/scene2.json");
-        SceneManager.getInstance().LoadScene(scene2);
+        // SceneManager.getInstance().LoadScene(scene2);
+
+        let scene = new Scene();
+        scene.sceneRoot = new Gameobject(new Transform(), null);
+
+        let greenBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1000), new Vector2(200, 20), 0x00FF00);
+        let blueBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x0000FF);
+
+        blueBox.transform.rotation = 360 * Math.PI / 360;
+
+        const sprite2 = new PIXI.Sprite(texture);
+        let go2 = new Gameobject(new Transform(), null);
+        let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
+        let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
+        let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
+        rb2.useGravity = true;
+        //rb2.velocity.y = 20;
+        rb2.mass = 1;
+        go2.transform.position = new Point(1000, 500);
+        boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
+        boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
+        boxCollider2.attachedRigidbody = rb2;
+        boxCollider2.application = application;
+        spriteRenderer2.sprite = sprite2;
+
+        scene.Add(go2);
+        application.pixi.stage.addChild(sprite2);
+
+        SceneManager.getInstance().activeScene = scene;
+        application.pixi.renderer.render(scene.container);
+        application.pixi.stage = scene.container;
+
     }
 }
 

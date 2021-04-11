@@ -5,7 +5,7 @@ import {Gameobject} from "../Gameobject";
 export class SpriteRenderer extends Component
 {
     gameObject: Gameobject;
-    name: string;
+    _name: string;
     sprite: PIXI.Sprite = new PIXI.Sprite();
 
     OnEnable = (): void => {
@@ -23,9 +23,13 @@ export class SpriteRenderer extends Component
         let transform = this.gameObject.absoluteTransform;
         this.sprite.position.set(transform.position.x, transform.position.y);
         this.sprite.scale.set(transform.scale.x, transform.scale.y);
-        this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
+        this.sprite.pivot.set((this.sprite.width / transform.scale.x) / 2, (this.sprite.height / transform.scale.y) / 2);
         this.sprite.rotation = transform.rotation;
 
         this.gameObject.scene.container.addChild(this.sprite);
     };
+
+    FixedUpdate = (): void => {
+
+    }
 }

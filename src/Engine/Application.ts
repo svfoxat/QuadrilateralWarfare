@@ -1,5 +1,7 @@
 import {SceneManager} from "./SceneManager";
 import {ResourceManager} from "./ResourceManager";
+import {Time} from "./Time";
+import {BoxCollider, Collider} from "./Components/Collider";
 
 export default class Application {
     name: string;
@@ -15,7 +17,7 @@ export default class Application {
             width, height,
             antialias: true,
         });
-        this.appContainer = document.getElementById("app_container")
+        this.appContainer = document.getElementById("app_container");
         this.appContainer.appendChild(this.pixi.view);
 
         this.init();
@@ -34,7 +36,32 @@ export default class Application {
             document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
 
             SceneManager.getInstance().activeScene.sceneRoot.Update();
-        }))
+        }));
+
+        setInterval(() => {
+            SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
+
+            let colliders = new Array<BoxCollider>();
+            for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
+                let coll = go.GetComponent(BoxCollider) as BoxCollider;
+                if (coll != null) {
+                    colliders.push(coll);
+                }
+            }
+            for (let i = 0; i < colliders.length; i++) {
+                for (let j = 0; j < colliders.length; j++) {
+                    if (i >= j) continue;
+                    let collision = Collider.IsColliding(colliders[i], colliders[j]);
+                    if (collision != null) {
+                        console.log("Collision");
+                        // Handle collision
+                        // Get contact point
+                        // From contact point, calculate and apply forces
+                    }
+                }
+            }
+
+        }, Time.t)
     }
 }
 
