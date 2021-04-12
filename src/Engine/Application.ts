@@ -2,6 +2,7 @@ import {SceneManager} from "./SceneManager";
 import {ResourceManager} from "./ResourceManager";
 import {Time} from "./Time";
 import {BoxCollider, Collider} from "./Components/Collider";
+import {Vector2} from "./Vector2";
 
 export default class Application {
     name: string;
@@ -31,16 +32,27 @@ export default class Application {
         document.title = this.name;
     }
 
+    contactPoint = new PIXI.Graphics();
+
+    private DrawContactPoint(contactPoint: Vector2): void {
+        this.contactPoint.clear();
+        this.contactPoint.lineStyle(2, 0xFF0000);
+        this.contactPoint.beginFill(0xFFFF00);
+        this.contactPoint.drawCircle(contactPoint.x, contactPoint.y, 5);
+        this.contactPoint.endFill();
+        this.pixi.stage.addChild(this.contactPoint);
+
+    }
+
     private start() {
         this.pixi.ticker.add((deltaTime => {
             document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
-
+            Time.delta = deltaTime;
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }));
 
         setInterval(() => {
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
-
             let colliders = new Array<BoxCollider>();
             for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
                 let coll = go.GetComponent(BoxCollider) as BoxCollider;
@@ -50,11 +62,17 @@ export default class Application {
             }
             for (let i = 0; i < colliders.length; i++) {
                 for (let j = 0; j < colliders.length; j++) {
-                    if (i >= j) continue;
+                    if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
                         console.log("Collision");
-                        // Handle collision
+                        // Handle collision (move faster body out of collision)
+                        Collider.HandleCollision(colliders[i], colliders[j], collision);
+                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision);
+                        this.DrawContactPoint(collisionPoint);
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, collisionPoint);
+
+
                         // Get contact point
                         // From contact point, calculate and apply forces
                     }

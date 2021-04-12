@@ -2,6 +2,7 @@ import {Component} from "./Component";
 import {Gameobject} from "../Gameobject";
 import {Vector3} from "../Vector3";
 import {Time} from "../Time";
+import {Vector2} from "../Vector2";
 
 export enum ForceMode {
     Force,
@@ -15,13 +16,13 @@ export class Rigidbody extends Component
     gameObject: Gameobject;
     _name: string = "Rigidbody";
     mass: number = 0;
-    velocity: Vector3 = new Vector3(0,0,0);
+    velocity: Vector2 = new Vector2(0, 0, 0);
     angularVelocity: number = 0;
     inertia: number = 1;
     torque: number = 0;
     useGravity: boolean = true;
-    force: Vector3 = new Vector3(0, 0, 0);
-    acceleration: Vector3 = new Vector3(0, 0, 0);
+    force: Vector2 = new Vector2(0, 0, 0);
+    acceleration: Vector2 = new Vector3(0, 0, 0);
     angularAcceleration = 0;
     isColliding: boolean = false;
 
@@ -31,7 +32,7 @@ export class Rigidbody extends Component
     FixedUpdate = (): void => {
         if (this.mass > 0) {
             if (this.useGravity && this.acceleration.y == 0) this.acceleration.y = .981;
-            this.velocity = Vector3.Add(this.velocity, Vector3.Mult(Vector3.Add(this.acceleration, Vector3.Div(this.force, this.mass)), Time.fixedDeltaTime()));
+            this.velocity = Vector2.Add(this.velocity, Vector2.Mul(Vector2.Add(this.acceleration, Vector2.Div(this.force, this.mass)), Time.fixedDeltaTime()));
 
             this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
 
@@ -39,25 +40,25 @@ export class Rigidbody extends Component
             this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
             this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
         } else {
-            this.velocity = Vector3.Zero();
+            this.velocity = Vector2.Zero();
             this.angularVelocity = 0;
         }
     };
 
-    AddForce(force: Vector3, mode: ForceMode) {
+    AddForce(force: Vector2, mode: ForceMode) {
         if (this.mass > 0) {
             switch (mode) {
                 case ForceMode.Force:
-                    this.force = Vector3.Add(this.force, force);
+                    this.force = Vector2.Add(this.force, force);
                     break;
                 case ForceMode.Impulse:
-                    this.velocity = Vector3.Add(this.velocity, Vector3.Div(force, this.mass));
+                    this.velocity = Vector2.Add(this.velocity, Vector2.Div(force, this.mass));
                     break;
                 case ForceMode.VelocityChange:
-                    this.velocity = Vector3.Add(this.velocity, force);
+                    this.velocity = Vector2.Add(this.velocity, force);
                     break;
                 case ForceMode.Acceleration:
-                    this.acceleration = Vector3.Add(this.acceleration, force);
+                    this.acceleration = Vector2.Add(this.acceleration, force);
                     break;
             }
         }
@@ -82,14 +83,14 @@ export class Rigidbody extends Component
         }
     }
 
-    AddForceAtPosition(force: Vector3, position: Vector3, mode: ForceMode) {
+    AddForceAtPosition(force: Vector2, position: Vector2, mode: ForceMode) {
         if (this.mass > 0) {
             switch (mode) {
                 case ForceMode.Force:
                     break;
                 case ForceMode.Impulse:
-                    this.velocity = Vector3.Add(this.velocity, Vector3.Div(force, this.mass));
-                    this.angularVelocity += Vector3.Cross(force, position).Mag() / this.inertia;
+                    //this.velocity = Vector3.Add(this.velocity, Vector3.Div(Vector3.Cross(force, position), this.mass));
+                    //this.angularVelocity += Vector3.Dot(force, position) / this.inertia;
                     break;
                 case ForceMode.VelocityChange:
                     break;

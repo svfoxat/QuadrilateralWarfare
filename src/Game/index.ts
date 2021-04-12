@@ -37,12 +37,14 @@ class Main {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
 
-        let greenBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1000), new Vector2(200, 20), 0x00FF00);
+        let greenBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
         let blueBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x0000FF);
+        let greenBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0xFF0000);
+        let blueBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0xFF0000);
 
         blueBox.transform.rotation = 360 * Math.PI / 360;
-
-        const sprite2 = new PIXI.Sprite(texture);
+        greenBox.transform.rotation = 0.1;
+        const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         let go2 = new Gameobject(new Transform(), null);
         let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
@@ -50,6 +52,8 @@ class Main {
         rb2.useGravity = true;
         //rb2.velocity.y = 20;
         rb2.mass = 1;
+        sprite2.tint = 0x123456;
+        go2.transform.scale = new Vector2(10, 10).AsPoint();
         go2.transform.position = new Point(1000, 500);
         boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
         boxCollider2.size.y = sprite2.height * go2.transform.scale.y;

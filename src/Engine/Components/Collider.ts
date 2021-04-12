@@ -1,7 +1,8 @@
 import {Component} from "./Component";
 import {Vector2} from "../Vector2";
-import {Rigidbody} from "./Rigidbody";
+import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
+import {Edge, Geometry} from "../Geometry";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -14,7 +15,73 @@ export abstract class Collider extends Component {
 
     abstract GetProjection(axis: Vector2): Vector2;
 
-    public static IsColliding(c1: Collider, c2: Collider) {
+    public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
+        if (c1?.attachedRigidbody == null && c2?.attachedRigidbody == null) return;
+        if (c1.attachedRigidbody == null) {
+            c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
+        } else if (c2.attachedRigidbody == null) {
+            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
+        } else {
+            if (c1.attachedRigidbody.velocity.Mag() > c2.attachedRigidbody.velocity.Mag()) {
+                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
+            } else {
+                c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
+            }
+        }
+    }
+
+    public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2): Vector2 {
+        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+            let edge1 = c1.ComputeBestEdge(mtv);
+            let edge2 = c2.ComputeBestEdge(mtv.Inverse());
+
+            let ref: Edge, inc: Edge, flip;
+            if (Math.abs(Vector2.Dot(edge1.vector(), mtv)) <= Math.abs(Vector2.Dot(edge2.vector(), mtv))) {
+                ref = edge1;
+                inc = edge2;
+            } else {
+                ref = edge2;
+                inc = edge1;
+                flip = true;
+            }
+
+            let refv = ref.vector().Normalized();
+            let o1 = Vector2.Dot(refv, ref.from);
+            let cp = Geometry.clip(inc.from, inc.to, refv, o1);
+            if (cp.length < 2) return Vector2.Zero();
+
+            let o2 = Vector2.Dot(refv, ref.to);
+            cp = Geometry.clip(cp[0], cp[1], refv.Inverse(), -o2);
+            if (cp.length < 2) return Vector2.Zero();
+            let refNorm = ref.vector().LeftNormal();
+            if (flip) refNorm.Inverse();
+            let max = Vector2.Dot(refNorm, ref.maxProj);
+            if (Vector2.Dot(refNorm, cp[0]) - max < 0.0) {
+                //cp = cp.filter(item => item !== cp[0]);
+                delete cp[0];
+            }
+            if (Vector2.Dot(refNorm, cp[1]) - max < 0.0) {
+                //cp = cp.filter(item => item !== cp[1]);
+                delete cp[1];
+            }
+            return cp.filter(e => e != undefined)[0];
+        } else {
+            return Vector2.Zero();
+        }
+    }
+
+    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2) {
+        let impulse1 = c1.attachedRigidbody.velocity.Inverse();
+        let impulse2 = c2.attachedRigidbody.velocity.Inverse();
+        // c1?.attachedRigidbody?.AddForceAtPosition(impulse1, new Vector3(contactPoint.x, contactPoint.y, 0), ForceMode.Impulse);
+        // c2?.attachedRigidbody?.AddForceAtPosition(impulse2, new Vector3(contactPoint.x, contactPoint.y, 0), ForceMode.Impulse);
+        c1?.attachedRigidbody?.AddForce(Vector2.Mul(impulse1, 2), ForceMode.Impulse);
+        c2?.attachedRigidbody?.AddForce(Vector2.Mul(impulse2, 2), ForceMode.Impulse);
+        c1.attachedRigidbody.AddTorque(((Math.random() * 20) - 10) * Math.PI, ForceMode.Impulse);
+        c2.attachedRigidbody.AddTorque(((Math.random() * 20) - 10) * Math.PI, ForceMode.Impulse);
+    }
+
+    public static IsColliding(c1: Collider, c2: Collider): Vector2 {
         return c1.Collision(c2);
     }
 
@@ -100,7 +167,7 @@ export class BoxCollider extends Collider {
 
     Update = (): void => {
         if (this.vertices != null) {
-            this.DrawVertices();
+            //this.DrawVertices();
         }
     };
 
@@ -164,8 +231,28 @@ export class BoxCollider extends Collider {
         this.vertices = new Array<Vector2>();
         this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
         this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
         this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+    }
+
+    public ComputeBestEdge(mtv: Vector2): Edge {
+        let max = -100000;
+        let index = 0;
+        for (let i = 0; i < 4; i++) {
+            let proj = Vector2.Dot(mtv.Normalized(), this.vertices[i]);
+            if (proj > max) {
+                max = proj;
+                index = i;
+            }
+        }
+
+        let l = Vector2.Sub(this.vertices[index], this.vertices[(index + 5) % 4]).Normalized();
+        let r = Vector2.Sub(this.vertices[index], this.vertices[(index + 3) % 4]).Normalized();
+        if (Vector2.Dot(r, mtv.Normalized()) <= Vector2.Dot(l, mtv.Normalized())) {
+            return new Edge(this.vertices[index], this.vertices[(index + 3) % 4], this.vertices[index]);
+        } else {
+            return new Edge(this.vertices[index], this.vertices[index], this.vertices[(index + 5) % 4]);
+        }
     }
 
     public DrawVertices(): void {
