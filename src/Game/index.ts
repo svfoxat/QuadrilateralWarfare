@@ -49,9 +49,10 @@ class Main {
         let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
-        rb2.useGravity = true;
-        //rb2.velocity.y = 20;
-        rb2.mass = 1;
+        rb2.useGravity = false;
+        rb2.velocity.y = 10;
+        rb2.mass = 2;
+        rb2.inertia = 1;
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(10, 10).AsPoint();
         go2.transform.position = new Point(1000, 500);

@@ -64,6 +64,7 @@ export abstract class Collider extends Component {
                 //cp = cp.filter(item => item !== cp[1]);
                 delete cp[1];
             }
+            console.log("NUMBER: " + cp.length);
             return cp.filter(e => e != undefined)[0];
         } else {
             return Vector2.Zero();
@@ -71,14 +72,93 @@ export abstract class Collider extends Component {
     }
 
     public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2) {
-        let impulse1 = c1.attachedRigidbody.velocity.Inverse();
-        let impulse2 = c2.attachedRigidbody.velocity.Inverse();
-        // c1?.attachedRigidbody?.AddForceAtPosition(impulse1, new Vector3(contactPoint.x, contactPoint.y, 0), ForceMode.Impulse);
-        // c2?.attachedRigidbody?.AddForceAtPosition(impulse2, new Vector3(contactPoint.x, contactPoint.y, 0), ForceMode.Impulse);
-        c1?.attachedRigidbody?.AddForce(Vector2.Mul(impulse1, 2), ForceMode.Impulse);
-        c2?.attachedRigidbody?.AddForce(Vector2.Mul(impulse2, 2), ForceMode.Impulse);
-        c1.attachedRigidbody.AddTorque(((Math.random() * 20) - 10) * Math.PI, ForceMode.Impulse);
-        c2.attachedRigidbody.AddTorque(((Math.random() * 20) - 10) * Math.PI, ForceMode.Impulse);
+        let rAP, rBP, wA1, wA2, wB1, wB2, vA1, vA2, vB1, vB2, vAP1, vAP2, vBP1, vBP2, vAB1, vAB2, n, j;
+        rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
+        rBP = Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position));
+        wA1 = c1.attachedRigidbody.angularVelocity;
+        wB1 = c2.attachedRigidbody.angularVelocity;
+        vA1 = c1.attachedRigidbody.velocity;
+        vB1 = c2.attachedRigidbody.velocity;
+
+        vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
+        vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
+        vAB1 = Vector2.Sub(vAP1, vBP1);
+        n = this.CalculateNormal(c1, c2, mtv, contactPoint);
+        console.log("Normal: " + n.ToString());
+        j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
+            rAP, rBP, vAP1, vBP1, n);
+
+        console.log("J= " + j);
+
+        c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
+        c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
+        c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, j)), ForceMode.Impulse);
+        c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, j)), ForceMode.Impulse);
+    }
+
+    private static CalculateImpulse(e: number, mA: number, mB: number, iA: number, iB: number,
+                                    rAP: Vector2, rBP: Vector2, vAP1: Vector2, vBP1: Vector2, n: Vector2): number {
+        if (mA == 0 && iA == 0 && mB == 0 && iB == 0) {
+            return 0;
+        } else if (mA == 0 && iA == 0) {
+            return this.ImpulseSimple(e, mB, iB, rBP, vBP1.Inverse(), n);
+        } else if (mB == 0 && iB == 0) {
+            return this.ImpulseSimple(e, mA, iA, rAP, vAP1, n);
+        } else {
+            let rAPN = Vector2.Cross(rAP, n);
+            let rBPN = Vector2.Cross(rBP, n);
+            return -(1 + e) * Vector2.Dot(Vector2.Sub(vAP1, vBP1), n) / (1 / mA + 1 / mB + rAPN * rAPN / iA + rBPN * rBPN / iB);
+        }
+    }
+
+    private static ImpulseSimple(e: number, m: number, i: number, rAP: Vector2, vAP1: Vector2, n: Vector2): number {
+        let rAPN = Vector2.Cross(rAP, n);
+        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m + rAPN * rAPN / i);
+    }
+
+    private static CalculateNormal(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2): Vector2 {
+        // TODO: NOT SURE IF RIGHT
+
+        // Get the edges which contain the point, take the normal of the edge of the object which only contributes 1 edge
+        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+            let edges1 = new Array<Edge>();
+            for (let i = 0; i < 4; i++) {
+                let edge = new Edge(null, c1.vertices[i], c1.vertices[(i + 1) % 4]);
+                if (Geometry.isPointOnEdge(edge, contactPoint)) {
+                    edges1.push(edge);
+                }
+            }
+            let edges2 = new Array<Edge>();
+            for (let i = 0; i < 4; i++) {
+                let edge = new Edge(null, c2.vertices[i], c2.vertices[(i + 1) % 4]);
+                if (Geometry.isPointOnEdge(edge, contactPoint)) {
+                    edges2.push(edge);
+                }
+            }
+            // TODO: NOT SURE IF RIGHT
+
+            console.log("Edges 1: " + edges1.length);
+            console.log("Edges 2: " + edges2.length);
+            if (edges1.length > edges2.length && edges2.length > 0) {
+                // object 1 has two edges, thus we take the normal of object 2
+                let normal = edges2[0].vector().LeftNormal().Normalized();
+                if (Vector2.Dot(normal, Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position))) > 0) {
+                    return normal;
+                } else {
+                    return normal.Inverse();
+                }
+            } else if (edges2.length > edges1.length && edges1.length > 0) {
+                // object 2 has two edges, thus we take the normal of object 1
+                let normal = edges1[0].vector().LeftNormal().Normalized();
+                if (Vector2.Dot(normal, Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position))) > 0) {
+                    return normal;
+                } else {
+                    return normal.Inverse();
+                }
+            } else {
+                return Vector2.Zero();
+            }
+        }
     }
 
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {

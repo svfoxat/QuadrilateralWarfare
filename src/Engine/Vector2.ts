@@ -35,6 +35,46 @@ export class Vector2 {
             this.x * Math.sin(rad) + this.y * Math.cos(rad));
     }
 
+    public Add(vec2: Vector2): Vector2 {
+        return Vector2.Add(this, vec2);
+    }
+
+    public Sub(vec2: Vector2): Vector2 {
+        return Vector2.Sub(this, vec2);
+    }
+
+    public Mul(num: number): Vector2 {
+        return Vector2.Mul(this, num);
+    }
+
+    public Div(num: number): Vector2 {
+        return Vector2.Div(this, num);
+    }
+
+    public SimpleMult(vec2: Vector2): Vector2 {
+        return Vector2.SimpleMult(this, vec2);
+    }
+
+    public SimpleDiv(vec2: Vector2): Vector2 {
+        return Vector2.SimpleDiv(this, vec2);
+    }
+
+    public Dot(vec2: Vector2): number {
+        return Vector2.Dot(this, vec2);
+    }
+
+    public CrossVec(num: number): Vector2 {
+        return Vector2.CrossVec(this, num);
+    }
+
+    public Cross(vec2: Vector2): number {
+        return Vector2.Cross(this, vec2);
+    }
+
+    public ToString(): string {
+        return "(x:" + this.x + ", y:" + this.y + ")";
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     // STATIC BELOW
     // -----------------------------------------------------------------------------------------------------------------
@@ -80,4 +120,13 @@ export class Vector2 {
     public static Dot(vec1: Vector2, vec2: Vector2): number {
         return vec1.x * vec2.x + vec1.y * vec2.y;
     }
+
+    public static CrossVec(vec1: Vector2, num: number): Vector2 {
+        return new Vector2(-vec1.y * num, vec1.x * num);
+    }
+
+    public static Cross(vec1: Vector2, vec2: Vector2): number {
+        return vec1.x * vec2.y - vec1.y * vec2.x;
+    }
+
 }

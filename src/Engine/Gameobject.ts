@@ -108,6 +108,7 @@ export class Gameobject  {
         let rb = go.AddComponent(Rigidbody) as Rigidbody;
         rb.useGravity = false;
         rb.mass = 0;
+        rb.inertia = 0;
         go.transform.position = pos.AsPoint();
         go.transform.scale = size.AsPoint();
         boxCollider.size.x = sprite.width * go.transform.scale.x;

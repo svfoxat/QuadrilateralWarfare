@@ -1,6 +1,5 @@
 import {Component} from "./Component";
 import {Gameobject} from "../Gameobject";
-import {Vector3} from "../Vector3";
 import {Time} from "../Time";
 import {Vector2} from "../Vector2";
 
@@ -16,13 +15,13 @@ export class Rigidbody extends Component
     gameObject: Gameobject;
     _name: string = "Rigidbody";
     mass: number = 0;
-    velocity: Vector2 = new Vector2(0, 0, 0);
+    velocity: Vector2 = new Vector2(0, 0);
     angularVelocity: number = 0;
-    inertia: number = 1;
+    inertia: number = 0;
     torque: number = 0;
     useGravity: boolean = true;
-    force: Vector2 = new Vector2(0, 0, 0);
-    acceleration: Vector2 = new Vector3(0, 0, 0);
+    force: Vector2 = new Vector2(0, 0);
+    acceleration: Vector2 = new Vector2(0, 0);
     angularAcceleration = 0;
     isColliding: boolean = false;
 
