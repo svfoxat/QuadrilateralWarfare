@@ -15,6 +15,10 @@ export default class ObjectMoveScript extends Component {
         this.inputManager = InputManager.getInstance();
     }
 
+    Enable = () => {
+        console.log("ENABLED")
+    }
+
     OnMouseDown = (): void => {
         if (this.inputManager.Mouse.leftClick) {
             this.drag = true;

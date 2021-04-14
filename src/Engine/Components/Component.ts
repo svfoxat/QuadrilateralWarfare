@@ -3,8 +3,9 @@ import {Gameobject} from "../Gameobject";
 export class Component {
     name: string;
     gameObject: Gameobject;
+    enabled: boolean;
 
-    OnEnable: () => void;
+    Enable: () => void;
     Start: () => void;
     Update: () => void;
     FixedUpdate: () => void;
