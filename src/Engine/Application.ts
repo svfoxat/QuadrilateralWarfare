@@ -23,7 +23,6 @@ export default class Application {
         this.start();
     }
 
-
     private init() {
         SceneManager.initialize(this);
         ResourceManager.initialize(this);
