@@ -49,3 +49,15 @@ export class Edge {
         return Vector2.Sub(this.to, this.from);
     }
 }
+
+export class ClippingPlane {
+    ref: Edge;
+    inc: Edge;
+    flip: boolean;
+
+    constructor(ref: Edge, inc: Edge, flip: boolean) {
+        this.ref = ref;
+        this.inc = inc;
+        this.flip = flip;
+    }
+}

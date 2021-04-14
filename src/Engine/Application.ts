@@ -3,6 +3,8 @@ import {ResourceManager} from "./ResourceManager";
 import {Time} from "./Time";
 import {BoxCollider, Collider} from "./Components/Collider";
 import {Vector2} from "./Vector2";
+import {ClippingPlane} from "./Geometry";
+import {Gizmos} from "./Gizmos";
 
 export default class Application {
     name: string;
@@ -51,6 +53,8 @@ export default class Application {
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }));
 
+        let normalArrow: PIXI.Graphics = null;
+
         setInterval(() => {
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             let colliders = new Array<BoxCollider>();
@@ -65,12 +69,21 @@ export default class Application {
                     if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
-                        console.log("Collision");
+                        Time.t = 0;
                         // Handle collision (move faster body out of collision)
                         Collider.HandleCollision(colliders[i], colliders[j], collision);
-                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision);
-                        this.DrawContactPoint(collisionPoint);
-                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, collisionPoint);
+                        let cp = new ClippingPlane(null, null, null);
+                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
+                        collisionPoint.forEach(e => {
+                            this.DrawContactPoint(e)
+                        });
+                        let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
+                        let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
+                        normalArrow?.clear();
+                        normalArrow = Gizmos.DrawArrow(currCP, Vector2.Add(currCP, Vector2.Mul(normal.Normalized(), 25)), 1, 0x00ff00);
+                        this.pixi.stage.addChild(normalArrow);
+
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized());
 
 
                         // Get contact point

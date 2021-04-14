@@ -2,7 +2,7 @@ import {Component} from "./Component";
 import {Vector2} from "../Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
-import {Edge, Geometry} from "../Geometry";
+import {ClippingPlane, Edge, Geometry} from "../Geometry";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -16,43 +16,57 @@ export abstract class Collider extends Component {
     abstract GetProjection(axis: Vector2): Vector2;
 
     public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
+        let mtvNew;
+        if (mtv.Dot(Vector2.Sub(Vector2.FromPoint(c1.gameObject.transform.position), Vector2.FromPoint(c1.gameObject.transform.position))) < 0.0) {
+            mtvNew = mtv;
+        } else {
+            mtvNew = mtv.Inverse();
+        }
         if (c1?.attachedRigidbody == null && c2?.attachedRigidbody == null) return;
         if (c1.attachedRigidbody == null) {
             c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
         } else if (c2.attachedRigidbody == null) {
-            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
+            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Inverse()).AsPoint();
         } else {
             if (c1.attachedRigidbody.velocity.Mag() > c2.attachedRigidbody.velocity.Mag()) {
-                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
+                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Inverse()).AsPoint();
             } else {
                 c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
             }
         }
     }
 
-    public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2): Vector2 {
+    public static GetClippingPlanes(c1: Collider, c2: Collider, mtv: Vector2): ClippingPlane {
         if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
             let edge1 = c1.ComputeBestEdge(mtv);
             let edge2 = c2.ComputeBestEdge(mtv.Inverse());
 
-            let ref: Edge, inc: Edge, flip;
             if (Math.abs(Vector2.Dot(edge1.vector(), mtv)) <= Math.abs(Vector2.Dot(edge2.vector(), mtv))) {
-                ref = edge1;
-                inc = edge2;
+                return new ClippingPlane(edge1, edge2, false);
             } else {
-                ref = edge2;
-                inc = edge1;
-                flip = true;
+                return new ClippingPlane(edge2, edge1, true);
+            }
+        }
+    }
+
+    public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2, pl: ClippingPlane = null): Array<Vector2> {
+        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+            let plane = this.GetClippingPlanes(c1, c2, mtv);
+            let ref = plane.ref, inc = plane.inc, flip = plane.flip;
+            if (pl != null) {
+                pl.ref = ref;
+                pl.inc = inc;
+                pl.flip = flip;
             }
 
             let refv = ref.vector().Normalized();
             let o1 = Vector2.Dot(refv, ref.from);
             let cp = Geometry.clip(inc.from, inc.to, refv, o1);
-            if (cp.length < 2) return Vector2.Zero();
+            if (cp.length < 2) return null;
 
             let o2 = Vector2.Dot(refv, ref.to);
             cp = Geometry.clip(cp[0], cp[1], refv.Inverse(), -o2);
-            if (cp.length < 2) return Vector2.Zero();
+            if (cp.length < 2) return null;
             let refNorm = ref.vector().LeftNormal();
             if (flip) refNorm.Inverse();
             let max = Vector2.Dot(refNorm, ref.maxProj);
@@ -64,36 +78,37 @@ export abstract class Collider extends Component {
                 //cp = cp.filter(item => item !== cp[1]);
                 delete cp[1];
             }
-            console.log("NUMBER: " + cp.length);
-            return cp.filter(e => e != undefined)[0];
+            console.log("NUMBER: " + cp.filter(e => e != undefined).length);
+            return cp;
         } else {
-            return Vector2.Zero();
+            return null;
         }
     }
 
-    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2) {
-        let rAP, rBP, wA1, wA2, wB1, wB2, vA1, vA2, vB1, vB2, vAP1, vAP2, vBP1, vBP2, vAB1, vAB2, n, j;
-        rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
-        rBP = Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position));
-        wA1 = c1.attachedRigidbody.angularVelocity;
-        wB1 = c2.attachedRigidbody.angularVelocity;
-        vA1 = c1.attachedRigidbody.velocity;
-        vB1 = c2.attachedRigidbody.velocity;
+    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2): void {
+        if (contactPoint != undefined) {
+            let rAP, rBP, wA1, wB1, vA1, vB1, vAP1, vBP1, vAB1, n, j;
+            rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
+            rBP = Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position));
+            wA1 = c1.attachedRigidbody.angularVelocity;
+            wB1 = c2.attachedRigidbody.angularVelocity;
+            vA1 = c1.attachedRigidbody.velocity;
+            vB1 = c2.attachedRigidbody.velocity;
 
-        vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
-        vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
-        vAB1 = Vector2.Sub(vAP1, vBP1);
-        n = this.CalculateNormal(c1, c2, mtv, contactPoint);
-        console.log("Normal: " + n.ToString());
-        j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
-            rAP, rBP, vAP1, vBP1, n);
+            vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
+            vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
+            n = normal;
+            console.log("Normal: " + normal.ToString());
+            j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
+                rAP, rBP, vAP1, vBP1, n);
 
-        console.log("J= " + j);
+            console.log("J= " + j);
 
-        c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
-        c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
-        c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, j)), ForceMode.Impulse);
-        c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, j)), ForceMode.Impulse);
+            c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
+            c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
+            // c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, -j)), ForceMode.Impulse);
+            // c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, -j)), ForceMode.Impulse);
+        }
     }
 
     private static CalculateImpulse(e: number, mA: number, mB: number, iA: number, iB: number,

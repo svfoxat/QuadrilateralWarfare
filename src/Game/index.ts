@@ -8,6 +8,7 @@ import {SpriteRenderer} from "../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../Engine/Components/Collider";
 import {Rigidbody} from "../Engine/Components/Rigidbody";
 import {Vector2} from "../Engine/Vector2";
+import {Time} from "../Engine/Time";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
 
@@ -42,16 +43,21 @@ class Main {
         let greenBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0xFF0000);
         let blueBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0xFF0000);
 
-        blueBox.transform.rotation = 360 * Math.PI / 360;
-        greenBox.transform.rotation = 0.1;
+        blueBox.transform.rotation = 0.15;
+        greenBox.transform.rotation = 0.15 + 180 * Math.PI;
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
+        sprite2.interactive = true;
+        sprite2.on("mousedown", e => {
+            Time.t = 1;
+        });
+
         let go2 = new Gameobject(new Transform(), null);
         let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         rb2.useGravity = false;
         rb2.velocity.y = 10;
-        rb2.mass = 2;
+        rb2.mass = 1;
         rb2.inertia = 1;
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(10, 10).AsPoint();
@@ -68,7 +74,6 @@ class Main {
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);
         application.pixi.stage = scene.container;
-
     }
 }
 
