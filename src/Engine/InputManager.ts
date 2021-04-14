@@ -69,16 +69,20 @@ export class InputManager {
 
     private initListeners() {
         window.addEventListener("keydown", (e: KeyboardEvent) => {
+            e.preventDefault();
             this.Keyboard[e.key.toUpperCase()] = true;
             this.Keyboard[e.key.toLowerCase()] = true;
             this.setModifierKeys(e);
         })
         window.addEventListener("keyup", (e: KeyboardEvent) => {
+            e.preventDefault();
             this.Keyboard[e.key.toUpperCase()] = false;
             this.Keyboard[e.key.toLowerCase()] = false;
             this.setModifierKeys(e);
         })
-        window.addEventListener("mousewheel", (e: WheelEvent) => this.MouseWheel = e);
+        window.addEventListener("mousewheel", (e: WheelEvent) => {
+            this.Mouse.mouseWheel = e
+        });
     }
 
     private setModifierKeys = (e: KeyboardEvent) => {
@@ -91,12 +95,11 @@ export class InputManager {
 interface IMouse {
     leftClick?: boolean;
     rightClick?: boolean;
+    mouseWheel?: WheelEvent;
 }
-
 interface IKeyboard {
     alt?: boolean;
     ctrl?: boolean;
     shift?: boolean;
     [key: string]: boolean
 }
-

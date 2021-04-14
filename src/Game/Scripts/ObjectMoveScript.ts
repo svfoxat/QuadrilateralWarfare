@@ -28,7 +28,7 @@ export default class ObjectMoveScript extends Component {
     Update = (): void => {
         let modifier;
 
-        if (this.inputManager.Keyboard["shift"]) {
+        if (this.inputManager.Keyboard.shift) {
             modifier = 2.0;
         } else {
             modifier = 1.0;
@@ -54,14 +54,17 @@ export default class ObjectMoveScript extends Component {
             this.gameObject.transform.rotation += (this.moveSpeed / 360) * modifier;
         }
 
-        if (this.inputManager.MouseWheel && this.inputManager.MouseWheel.deltaY) {
-            const dir = this.inputManager.MouseWheel.deltaY > 0 ? -1: 1;
+        let { mouseWheel } = this.inputManager.Mouse;
+        if (mouseWheel && mouseWheel.deltaY) {
+            const dir = mouseWheel.deltaY > 0 ? -1: 1;
             let currX, currY;
             currX = this.gameObject.transform.scale.x;
             currY = this.gameObject.transform.scale.y;
 
             this.gameObject.transform.scale.set(currX + dir * 0.01, currY + dir * 0.01);
-            this.inputManager.MouseWheel = null;
+
+            // reset the wheel
+            this.inputManager.Mouse.mouseWheel = null;
         }
 
         if (this.drag) {
