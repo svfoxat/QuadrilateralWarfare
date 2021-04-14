@@ -3,7 +3,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    devtool: "inline-source-map",
+    devtool: "eval-source-map",
     entry: "./src/Game/index.ts",
     output: {
         path: path.resolve(__dirname, "./dist"),
@@ -31,6 +31,7 @@ module.exports = {
     devServer: {
         contentBase: path.resolve(__dirname, "./dist"),
         compress: true,
+        writeToDisk: true,
         port: 9000,
     },
 }

@@ -9,15 +9,4 @@ export class Transform extends Component {
 
     name: string = "Transform";
     gameObject: Gameobject;
-
-    OnEnable = (): void => {
-    };
-
-    Start = (): void => {
-    };
-
-    Update = (): void => {
-    };
-
-
 }
