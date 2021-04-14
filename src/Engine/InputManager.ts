@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 import {Gameobject} from "./Gameobject";
+import {Point} from "pixi.js";
 
 export class InputManager {
     private static instance: InputManager;
@@ -20,8 +21,6 @@ export class InputManager {
 
     public Mouse: IMouse = {};
     public Keyboard: IKeyboard = {};
-    public MouseWheel: WheelEvent;
-    public currPos: {x: number, y: number};
 
     private constructor(renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer) {
         this.renderer = renderer;
@@ -33,7 +32,7 @@ export class InputManager {
 
     private registerEvents() {
         this.interactionManager.on("mousemove", (e) => {
-            this.currPos = e.data.global;
+            this.Mouse.currPos = e.data.global;
         })
         this.interactionManager.on("rightdown", (e) => {
             this.Mouse.rightClick = true;
@@ -95,6 +94,7 @@ export class InputManager {
 interface IMouse {
     leftClick?: boolean;
     rightClick?: boolean;
+    currPos?: Point
     mouseWheel?: WheelEvent;
 }
 interface IKeyboard {

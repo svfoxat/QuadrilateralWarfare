@@ -72,7 +72,7 @@ export default class ObjectMoveScript extends Component {
         }
 
         if (this.drag) {
-            const {x, y } = this.inputManager.currPos;
+            const {x, y } = this.inputManager.Mouse.currPos;
             this.gameObject.transform.position.set(x, y);
         }
     };

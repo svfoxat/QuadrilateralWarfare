@@ -91,8 +91,9 @@ export class Gameobject  {
         if (!this._enabled) return;
 
         for (let component of this.components) {
-            if (component.OnMouseDown)
+            if (component.OnMouseDown) {
                 component.OnMouseDown();
+            }
         }
     }
 
