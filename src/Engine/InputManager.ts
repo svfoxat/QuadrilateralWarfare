@@ -18,8 +18,8 @@ export class InputManager {
 
     private mouseDownedObjects: Array<Gameobject> = [];
 
-    public Mouse: any = {};
-    public Keyboard: any = {};
+    public Mouse: IMouse = {};
+    public Keyboard: IKeyboard = {};
     public MouseWheel: WheelEvent;
     public currPos: {x: number, y: number};
 
@@ -27,49 +27,76 @@ export class InputManager {
         this.renderer = renderer;
         this.interactionManager = this.renderer.plugins.interaction;
 
-        this.registerEventsOnGameobjects();
+        this.registerEvents();
         this.initListeners();
     }
 
-    private registerEventsOnGameobjects() {
+    private registerEvents() {
         this.interactionManager.on("mousemove", (e) => {
             this.currPos = e.data.global;
         })
-
+        this.interactionManager.on("rightdown", (e) => {
+            this.Mouse.rightClick = true;
+            this.mouseDown(e);
+        });
+        this.interactionManager.on("rightup", (e) => {
+            this.Mouse.rightClick = false;
+            this.mouseUp(e);
+        });
         this.interactionManager.on("mousedown", (e) => {
-            this.Mouse.clicked = true;
-            if(e.target) {
-                const gameobject = e.target.spriteRenderer.gameObject;
-                gameobject.OnMouseDown();
-                this.mouseDownedObjects.push(gameobject);
-            }
-        })
-
+            this.Mouse.leftClick = true;
+            this.mouseDown(e);
+        });
         this.interactionManager.on("mouseup", (e) => {
-            this.Mouse.clicked = false;
-            while (this.mouseDownedObjects.length > 0) {
-                this.mouseDownedObjects.shift().OnMouseUp();
-            }
-        })
+            this.Mouse.leftClick = false;
+            this.mouseUp(e);
+        });
+    }
+
+    private mouseDown = (e) => {
+        if(e.target) {
+            const gameobject: Gameobject = e.target.spriteRenderer.gameObject;
+            gameobject.OnMouseDown();
+            this.mouseDownedObjects.push(gameobject);
+        }
+    }
+
+    private mouseUp = (e) => {
+        while (this.mouseDownedObjects.length > 0) {
+            this.mouseDownedObjects.shift().OnMouseUp();
+        }
     }
 
     private initListeners() {
         window.addEventListener("keydown", (e: KeyboardEvent) => {
             this.Keyboard[e.key.toUpperCase()] = true;
             this.Keyboard[e.key.toLowerCase()] = true;
-            setModifierKeys(e);
+            this.setModifierKeys(e);
         })
         window.addEventListener("keyup", (e: KeyboardEvent) => {
             this.Keyboard[e.key.toUpperCase()] = false;
             this.Keyboard[e.key.toLowerCase()] = false;
-            setModifierKeys(e);
+            this.setModifierKeys(e);
         })
         window.addEventListener("mousewheel", (e: WheelEvent) => this.MouseWheel = e);
+    }
 
-        const setModifierKeys = (e: KeyboardEvent) => {
-            this.Keyboard["alt"] = e.altKey;
-            this.Keyboard["ctrl"] = e.ctrlKey;
-            this.Keyboard["shift"] = e.shiftKey;
-        }
+    private setModifierKeys = (e: KeyboardEvent) => {
+        this.Keyboard.alt = e.altKey;
+        this.Keyboard.ctrl = e.ctrlKey;
+        this.Keyboard.shift = e.shiftKey;
     }
 }
+
+interface IMouse {
+    leftClick?: boolean;
+    rightClick?: boolean;
+}
+
+interface IKeyboard {
+    alt?: boolean;
+    ctrl?: boolean;
+    shift?: boolean;
+    [key: string]: boolean
+}
+

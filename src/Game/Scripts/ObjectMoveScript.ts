@@ -16,7 +16,9 @@ export default class ObjectMoveScript extends Component {
     }
 
     OnMouseDown = (): void => {
-        this.drag = true;
+        if (this.inputManager.Mouse.leftClick) {
+            this.drag = true;
+        }
     }
 
     OnMouseUp = (): void => {
@@ -32,23 +34,23 @@ export default class ObjectMoveScript extends Component {
             modifier = 1.0;
         }
 
-        if (this.inputManager.Keyboard["a"]) {
+        if (this.inputManager.Keyboard.A) {
             this.gameObject.transform.position.x -= this.moveSpeed * modifier;
         }
-        if (this.inputManager.Keyboard["d"]) {
+        if (this.inputManager.Keyboard.D) {
             this.gameObject.transform.position.x += this.moveSpeed * modifier;
         }
-        if (this.inputManager.Keyboard["w"]) {
+        if (this.inputManager.Keyboard.W) {
             this.gameObject.transform.position.y -= this.moveSpeed * modifier;
         }
-        if (this.inputManager.Keyboard["s"]) {
+        if (this.inputManager.Keyboard.S) {
             this.gameObject.transform.position.y += this.moveSpeed * modifier;
         }
 
-        if (this.inputManager.Keyboard["q"]) {
+        if (this.inputManager.Keyboard.Q) {
             this.gameObject.transform.rotation -= (this.moveSpeed / 360) * modifier;
         }
-        if (this.inputManager.Keyboard["e"]) {
+        if (this.inputManager.Keyboard.E) {
             this.gameObject.transform.rotation += (this.moveSpeed / 360) * modifier;
         }
 

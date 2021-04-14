@@ -16,6 +16,9 @@ export default class Application {
             width, height,
             antialias: true,
         });
+        this.pixi.renderer.view.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
         this.appContainer = document.getElementById("app_container")
         this.appContainer.appendChild(this.pixi.view);
 
@@ -36,9 +39,6 @@ export default class Application {
             document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }))
-
-        const intervall = setInterval(() => {}, 100);
-        clearInterval(intervall);
     }
 }
 

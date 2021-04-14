@@ -15,6 +15,4 @@ export class Component {
 
     OnMouseDown: () => void;
     OnMouseUp: () => void;
-    OnHoverEnter: () => void;
-    OnHoverExit: () => void;
 }
