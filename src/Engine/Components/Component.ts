@@ -12,4 +12,9 @@ export class Component {
     OnTriggerEnter: () => void;
     OnTriggerExit: () => void;
     OnTriggerStay: () => void;
+
+    OnMouseDown: () => void;
+    OnMouseUp: () => void;
+    OnHoverEnter: () => void;
+    OnHoverExit: () => void;
 }

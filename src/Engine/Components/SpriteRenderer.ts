@@ -8,13 +8,8 @@ export class SpriteRenderer extends Component
     name: string;
     sprite: PIXI.Sprite = new PIXI.Sprite();
 
-    OnEnable = (): void => {
-
-    };
-
-    Start = (): void => {
-
-    };
+    OnEnable = (): void => {};
+    Start = (): void => {};
 
     Update = (): void => {
         if (!this.sprite) return;

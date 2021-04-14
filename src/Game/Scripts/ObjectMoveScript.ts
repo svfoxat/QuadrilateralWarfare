@@ -2,37 +2,69 @@ import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
-import {Sprite, Transform} from "pixi.js";
-import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
     name: string = "ObjectMoveScript";
 
     private inputManager: InputManager;
-
-    OnEnable = (): void => {
-        console.log("OnEnable")
-    };
+    private moveSpeed = 1.0;
+    private drag: boolean = false;
 
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
-        this.inputManager.Mouse.on("mousedown", this.onClick);
     }
 
-    onClick = (e: InteractionEvent) => {
-        const g = new Gameobject(new Transform(), this.gameObject.scene.sceneRoot);
-        g.transform.position.x = this.inputManager.currPos.x;
-        g.transform.position.y = this.inputManager.currPos.y;
-        const sr = g.AddComponent(SpriteRenderer) as SpriteRenderer;
-        sr.gameObject = g;
-        sr.sprite.texture = PIXI.loader.resources["assets/fox.jpg"].texture;
-        this.gameObject.scene.Add(g);
+    OnMouseDown = (): void => {
+        this.drag = true;
+    }
+
+    OnMouseUp = (): void => {
+       this.drag = false;
     }
 
     Update = (): void => {
-        const {x, y} = this.inputManager.currPos || {x: 0, y: 0}
-        this.gameObject.transform.position.x = x;
-        this.gameObject.transform.position.y = y;
+        let modifier;
+
+        if (this.inputManager.Keyboard["shift"]) {
+            modifier = 2.0;
+        } else {
+            modifier = 1.0;
+        }
+
+        if (this.inputManager.Keyboard["a"]) {
+            this.gameObject.transform.position.x -= this.moveSpeed * modifier;
+        }
+        if (this.inputManager.Keyboard["d"]) {
+            this.gameObject.transform.position.x += this.moveSpeed * modifier;
+        }
+        if (this.inputManager.Keyboard["w"]) {
+            this.gameObject.transform.position.y -= this.moveSpeed * modifier;
+        }
+        if (this.inputManager.Keyboard["s"]) {
+            this.gameObject.transform.position.y += this.moveSpeed * modifier;
+        }
+
+        if (this.inputManager.Keyboard["q"]) {
+            this.gameObject.transform.rotation -= (this.moveSpeed / 360) * modifier;
+        }
+        if (this.inputManager.Keyboard["e"]) {
+            this.gameObject.transform.rotation += (this.moveSpeed / 360) * modifier;
+        }
+
+        if (this.inputManager.MouseWheel && this.inputManager.MouseWheel.deltaY) {
+            const dir = this.inputManager.MouseWheel.deltaY > 0 ? -1: 1;
+            let currX, currY;
+            currX = this.gameObject.transform.scale.x;
+            currY = this.gameObject.transform.scale.y;
+
+            this.gameObject.transform.scale.set(currX + dir * 0.01, currY + dir * 0.01);
+            this.inputManager.MouseWheel = null;
+        }
+
+        if (this.drag) {
+            const {x, y } = this.inputManager.currPos;
+            this.gameObject.transform.position.set(x, y);
+        }
     };
 }

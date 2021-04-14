@@ -44,7 +44,6 @@ export class Gameobject  {
     public async StartComponents() {
         if (!this._enabled) return;
 
-        console.log(`Start ${this.components.length} Component(s)`)
         for (let component of this.components) {
             component.Start();
         }
@@ -54,7 +53,6 @@ export class Gameobject  {
     public async EnableComponents() {
         if (this._enabled) return;
         this._enabled = true;
-        console.log(`Enable ${this.components.length} Component(s)`)
 
         for (let component of this.components) {
             component.OnEnable();
@@ -78,6 +76,25 @@ export class Gameobject  {
         component.gameObject = this;
         this.components.push(component);
         return component;
+    }
+
+    public OnMouseDown() {
+        if (!this._enabled) return;
+
+        for (let component of this.components) {
+            if (component.OnMouseDown)
+            component.OnMouseDown();
+        }
+    }
+
+    public OnMouseUp() {
+        if (!this._enabled) return;
+
+        for (let component of this.components) {
+            if (component.OnMouseUp) {
+                component.OnMouseUp();
+            }
+        }
     }
 
     private UpdateTransform() {
