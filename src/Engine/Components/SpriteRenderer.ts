@@ -8,16 +8,10 @@ export class SpriteRenderer extends Component
     _name: string;
     sprite: PIXI.Sprite = new PIXI.Sprite();
 
-    OnEnable = (): void => {
-
-    };
-
-    Start = (): void => {
-
-    };
-
     Update = (): void => {
         if (!this.sprite) return;
+        this.sprite.interactive = true;
+        this.sprite["spriteRenderer"] = this;
 
         // pivot, (position, rotation, scale) from transform
         let transform = this.gameObject.absoluteTransform;

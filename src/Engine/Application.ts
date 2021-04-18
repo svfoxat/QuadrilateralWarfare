@@ -5,6 +5,7 @@ import {BoxCollider, Collider} from "./Components/Collider";
 import {Vector2} from "./Vector2";
 import {ClippingPlane} from "./Geometry";
 import {Gizmos} from "./Gizmos";
+import {InputManager} from "./InputManager";
 
 export default class Application {
     name: string;
@@ -20,6 +21,9 @@ export default class Application {
             width, height,
             antialias: true,
         });
+        this.pixi.renderer.view.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
         this.appContainer = document.getElementById("app_container");
         this.appContainer.appendChild(this.pixi.view);
 
@@ -30,6 +34,7 @@ export default class Application {
     private init() {
         SceneManager.initialize(this);
         ResourceManager.initialize(this);
+        InputManager.initialize(this.pixi.renderer);
 
         document.title = this.name;
     }

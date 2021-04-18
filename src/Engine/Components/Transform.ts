@@ -7,19 +7,6 @@ export class Transform extends Component {
     public rotation: Vector3;
     public scale: Vector3;
 
-    _name: string = "Transform";
+    name: string = "Transform";
     gameObject: Gameobject;
-
-    OnEnable = (): void => {
-    };
-
-    Start = (): void => {
-    };
-
-    Update = (): void => {
-    };
-
-    FixedUpdate = (): void => {
-    };
-
 }

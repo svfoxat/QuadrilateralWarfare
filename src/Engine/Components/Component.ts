@@ -3,8 +3,9 @@ import {Gameobject} from "../Gameobject";
 export class Component {
     _name: string;
     gameObject: Gameobject;
+    enabled: boolean;
 
-    OnEnable: () => void;
+    Enable: () => void;
     Start: () => void;
     Update: () => void;
     FixedUpdate: () => void;
@@ -12,4 +13,7 @@ export class Component {
     OnTriggerEnter: () => void;
     OnTriggerExit: () => void;
     OnTriggerStay: () => void;
+
+    OnMouseDown: () => void;
+    OnMouseUp: () => void;
 }
