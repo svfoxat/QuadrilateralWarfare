@@ -13,29 +13,29 @@ export default class ObjectMoveScript extends Component {
 
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
-    }
+    };
 
     Enable = () => {
         console.log("ENABLED")
-    }
+    };
 
     OnMouseDown = (): void => {
         if (this.inputManager.Mouse.leftClick) {
             this.drag = true;
         }
-    }
+    };
 
     OnMouseUp = (): void => {
        this.drag = false;
-    }
+    };
 
     Update = (): void => {
         let modifier;
 
         if (this.inputManager.Keyboard.shift) {
-            modifier = 2.0;
+            modifier = 4.0;
         } else {
-            modifier = 1.0;
+            modifier = 2.0;
         }
 
         if (this.inputManager.Keyboard.A) {

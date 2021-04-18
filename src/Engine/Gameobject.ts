@@ -5,7 +5,7 @@ import {Scene} from "./Scene";
 import Application from "./Application";
 import {Vector2} from "./Vector2";
 import {SpriteRenderer} from "./Components/SpriteRenderer";
-import {BoxCollider} from "./Components/Collider";
+import {BoxCollider} from "./Components/BoxCollider";
 import {Rigidbody} from "./Components/Rigidbody";
 import Texture = PIXI.Texture;
 
@@ -50,7 +50,9 @@ export class Gameobject  {
         if (!this._enabled) return;
 
         for (let component of this.components) {
-            component.FixedUpdate();
+            if (component.FixedUpdate) {
+                component.FixedUpdate();
+            }
         }
     }
 

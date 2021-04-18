@@ -5,12 +5,13 @@ import {Scripts} from "./Scripts/Scripts";
 import {Scene} from "../Engine/Scene";
 import {Gameobject} from "../Engine/Gameobject";
 import {SpriteRenderer} from "../Engine/Components/SpriteRenderer";
-import {BoxCollider} from "../Engine/Components/Collider";
+import {BoxCollider} from "../Engine/Components/BoxCollider";
 import {Rigidbody} from "../Engine/Components/Rigidbody";
 import {Vector2} from "../Engine/Vector2";
 import {Time} from "../Engine/Time";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
+import ObjectMoveScript from "./Scripts/ObjectMoveScript";
 
 class Main {
     constructor() {
@@ -45,6 +46,8 @@ class Main {
 
         blueBox.transform.rotation = 0.15;
         greenBox.transform.rotation = 0.15 + 180 * Math.PI;
+
+        //let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 800), new Vector2(10, 10), 0xFF0000);
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         sprite2.interactive = true;
         sprite2.on("mousedown", e => {
@@ -55,6 +58,7 @@ class Main {
         let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
+        let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.useGravity = false;
         rb2.velocity.y = 10;
         rb2.mass = 1;

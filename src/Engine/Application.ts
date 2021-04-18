@@ -1,11 +1,12 @@
 import {SceneManager} from "./SceneManager";
 import {ResourceManager} from "./ResourceManager";
 import {Time} from "./Time";
-import {BoxCollider, Collider} from "./Components/Collider";
+import {Collider} from "./Components/Collider";
 import {Vector2} from "./Vector2";
 import {ClippingPlane} from "./Geometry";
 import {Gizmos} from "./Gizmos";
 import {InputManager} from "./InputManager";
+import {BoxCollider} from "./Components/BoxCollider";
 
 export default class Application {
     name: string;
@@ -74,12 +75,14 @@ export default class Application {
                     if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
-                        Time.t = 0;
                         // Handle collision (move faster body out of collision)
                         Collider.HandleCollision(colliders[i], colliders[j], collision);
                         let cp = new ClippingPlane(null, null, null);
+                        if (!(collision.Dot(Vector2.Sub(Vector2.FromPoint(colliders[i].gameObject.transform.position), Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
+                            collision = collision.Inverse();
+                        }
                         let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
-                        collisionPoint.forEach(e => {
+                        collisionPoint?.forEach(e => {
                             this.DrawContactPoint(e)
                         });
                         let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
@@ -89,10 +92,6 @@ export default class Application {
                         this.pixi.stage.addChild(normalArrow);
 
                         Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized());
-
-
-                        // Get contact point
-                        // From contact point, calculate and apply forces
                     }
                 }
             }

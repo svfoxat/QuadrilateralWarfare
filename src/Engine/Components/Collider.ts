@@ -3,6 +3,7 @@ import {Vector2} from "../Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
 import {ClippingPlane, Edge, Geometry} from "../Geometry";
+import {BoxCollider} from "./BoxCollider";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -16,20 +17,14 @@ export abstract class Collider extends Component {
     abstract GetProjection(axis: Vector2): Vector2;
 
     public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
-        let mtvNew;
-        if (mtv.Dot(Vector2.Sub(Vector2.FromPoint(c1.gameObject.transform.position), Vector2.FromPoint(c1.gameObject.transform.position))) < 0.0) {
-            mtvNew = mtv;
-        } else {
-            mtvNew = mtv.Inverse();
-        }
-        if (c1?.attachedRigidbody == null && c2?.attachedRigidbody == null) return;
-        if (c1.attachedRigidbody == null) {
+        if ((c1?.attachedRigidbody == null || c1.attachedRigidbody.mass == 0) && (c2?.attachedRigidbody == null || c2.attachedRigidbody.mass == 0)) return;
+        if (c1?.attachedRigidbody == null || c1.attachedRigidbody.mass == 0) {
             c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
-        } else if (c2.attachedRigidbody == null) {
-            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Inverse()).AsPoint();
+        } else if (c2?.attachedRigidbody == null || c2.attachedRigidbody.mass == 0) {
+            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
         } else {
             if (c1.attachedRigidbody.velocity.Mag() > c2.attachedRigidbody.velocity.Mag()) {
-                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Inverse()).AsPoint();
+                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
             } else {
                 c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
             }
@@ -131,51 +126,6 @@ export abstract class Collider extends Component {
         return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m + rAPN * rAPN / i);
     }
 
-    private static CalculateNormal(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2): Vector2 {
-        // TODO: NOT SURE IF RIGHT
-
-        // Get the edges which contain the point, take the normal of the edge of the object which only contributes 1 edge
-        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
-            let edges1 = new Array<Edge>();
-            for (let i = 0; i < 4; i++) {
-                let edge = new Edge(null, c1.vertices[i], c1.vertices[(i + 1) % 4]);
-                if (Geometry.isPointOnEdge(edge, contactPoint)) {
-                    edges1.push(edge);
-                }
-            }
-            let edges2 = new Array<Edge>();
-            for (let i = 0; i < 4; i++) {
-                let edge = new Edge(null, c2.vertices[i], c2.vertices[(i + 1) % 4]);
-                if (Geometry.isPointOnEdge(edge, contactPoint)) {
-                    edges2.push(edge);
-                }
-            }
-            // TODO: NOT SURE IF RIGHT
-
-            console.log("Edges 1: " + edges1.length);
-            console.log("Edges 2: " + edges2.length);
-            if (edges1.length > edges2.length && edges2.length > 0) {
-                // object 1 has two edges, thus we take the normal of object 2
-                let normal = edges2[0].vector().LeftNormal().Normalized();
-                if (Vector2.Dot(normal, Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position))) > 0) {
-                    return normal;
-                } else {
-                    return normal.Inverse();
-                }
-            } else if (edges2.length > edges1.length && edges1.length > 0) {
-                // object 2 has two edges, thus we take the normal of object 1
-                let normal = edges1[0].vector().LeftNormal().Normalized();
-                if (Vector2.Dot(normal, Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position))) > 0) {
-                    return normal;
-                } else {
-                    return normal.Inverse();
-                }
-            } else {
-                return Vector2.Zero();
-            }
-        }
-    }
-
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {
         return c1.Collision(c2);
     }
@@ -215,6 +165,7 @@ export abstract class Collider extends Component {
             // // do the projections overlap?
             if (!this.Overlap(p1, p2)) {
                 // // if no: then we can guarantee that the shapes do not overlap
+                console.log("AXIS2 FAIL: " + axis.ToString());
                 return null;
             } else {
                 // // if yes: // get the overlap, check if it is the minimal overlap
@@ -247,125 +198,6 @@ export abstract class Collider extends Component {
         } else if (p2.x < p1.x && p2.y > p1.x) {
             return p2.y - p1.x;
         }
-    }
-}
-
-export class BoxCollider extends Collider {
-    OnEnable: () => void;
-    Start: () => void;
-    _name: string = "BoxCollider2D";
-
-    size: Vector2 = new Vector2(1, 1);
-    offset: Vector2 = new Vector2(0, 0);
-    vertices: Array<Vector2>;
-    verticesPoints: Array<PIXI.Graphics> = new Array<PIXI.Graphics>();
-
-    Update = (): void => {
-        if (this.vertices != null) {
-            //this.DrawVertices();
-        }
-    };
-
-    FixedUpdate = () => {
-        this.SetVertices();
-        let rb = this.attachedRigidbody;
-        if (this.attachedRigidbody != null && !this.isTrigger) {
-            this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
-        }
-
-    };
-
-    Collision(other: Collider): Vector2 {
-        let box = other as BoxCollider;
-        if (box != null) {
-            return Collider.BoxBox(this, box);
-        }
-
-        let circle = other as CircleCollider;
-        if (circle != null) {
-            return Collider.BoxCircle(this, circle);
-        }
-
-        // TODO: Box/Triangle, Box/Mesh Collision
-        return undefined;
-    }
-
-    GetSeperatingAxes(): Array<Vector2> {
-        let normals = new Array<Vector2>();
-        // get 3 vertices
-        this.SetVertices();
-
-        // take 2 edges from these vertices
-        let edge1 = Vector2.Sub(this.vertices[1], this.vertices[0]);
-        let edge2 = Vector2.Sub(this.vertices[0], this.vertices[2]);
-
-
-        // flip coordinates and negate one to get normal
-        normals.push(edge1.LeftNormal().Normalized());
-        normals.push(edge2.LeftNormal().Normalized());
-        normals.push(edge1.LeftNormal().Normalized().Inverse());
-        normals.push(edge2.LeftNormal().Normalized().Inverse());
-        return normals;
-    }
-
-    GetProjection(axis: Vector2): Vector2 {
-        this.SetVertices();
-        let min = 100000.0, max = -100000.0;
-        for (let v of this.vertices) {
-            let p = Vector2.Dot(axis, v);
-            if (p < min) {
-                min = p;
-            } else if (p > max) {
-                max = p;
-            }
-        }
-        return new Vector2(min, max);
-    }
-
-    private SetVertices(): void {
-        this.vertices = new Array<Vector2>();
-        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-    }
-
-    public ComputeBestEdge(mtv: Vector2): Edge {
-        let max = -100000;
-        let index = 0;
-        for (let i = 0; i < 4; i++) {
-            let proj = Vector2.Dot(mtv.Normalized(), this.vertices[i]);
-            if (proj > max) {
-                max = proj;
-                index = i;
-            }
-        }
-
-        let l = Vector2.Sub(this.vertices[index], this.vertices[(index + 5) % 4]).Normalized();
-        let r = Vector2.Sub(this.vertices[index], this.vertices[(index + 3) % 4]).Normalized();
-        if (Vector2.Dot(r, mtv.Normalized()) <= Vector2.Dot(l, mtv.Normalized())) {
-            return new Edge(this.vertices[index], this.vertices[(index + 3) % 4], this.vertices[index]);
-        } else {
-            return new Edge(this.vertices[index], this.vertices[index], this.vertices[(index + 5) % 4]);
-        }
-    }
-
-    public DrawVertices(): void {
-        if (this.verticesPoints.length != 0) {
-            this.verticesPoints.forEach(point => {
-                point.clear();
-            })
-        }
-
-        this.vertices.forEach(element => {
-            let point = new PIXI.Graphics();
-            point.lineStyle(2, 0xFF0000);
-            point.beginFill(0xFFFF00);
-            point.drawCircle(element.x, element.y, 5);
-            point.endFill();
-            this.application.pixi.stage.addChild(point);
-            this.verticesPoints.push(point);
-        })
     }
 }
 
