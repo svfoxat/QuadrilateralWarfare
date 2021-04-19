@@ -47,7 +47,10 @@ class Main {
         blueBox.transform.rotation = 0.15;
         greenBox.transform.rotation = 0.15 + 180 * Math.PI;
 
-        //let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 800), new Vector2(10, 10), 0xFF0000);
+        let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 800), new Vector2(10, 10), 0xFF0000);
+        let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
+        rb.mass = 1;
+        rb.inertia = 1;
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         sprite2.interactive = true;
         sprite2.on("mousedown", e => {
@@ -76,6 +79,7 @@ class Main {
 
         scene.Add(go2);
         application.pixi.stage.addChild(sprite2);
+
 
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);

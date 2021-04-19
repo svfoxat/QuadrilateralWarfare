@@ -4,7 +4,6 @@ import {Time} from "./Time";
 import {Collider} from "./Components/Collider";
 import {Vector2} from "./Vector2";
 import {ClippingPlane} from "./Geometry";
-import {Gizmos} from "./Gizmos";
 import {InputManager} from "./InputManager";
 import {BoxCollider} from "./Components/BoxCollider";
 
@@ -84,14 +83,14 @@ export default class Application {
                         let cp = new ClippingPlane(null, null, null);
 
                         let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
-                        collisionPoint?.forEach(e => {
-                            this.DrawContactPoint(e)
-                        });
+                        // collisionPoint?.forEach(e => {
+                        //     this.DrawContactPoint(e)
+                        // });
                         let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
                         let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
-                        normalArrow?.clear();
-                        normalArrow = Gizmos.DrawArrow(currCP, Vector2.Add(currCP, Vector2.Mul(normal.Normalized(), 25)), 1, 0x00ff00);
-                        this.pixi.stage.addChild(normalArrow);
+                        //normalArrow?.clear();
+                        //normalArrow = Gizmos.DrawArrow(currCP, Vector2.Add(currCP, Vector2.Mul(normal.Normalized(), 25)), 1, 0x00ff00);
+                        //this.pixi.stage.addChild(normalArrow);
 
                         Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
                     }

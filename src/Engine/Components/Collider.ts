@@ -73,7 +73,7 @@ export abstract class Collider extends Component {
                 //cp = cp.filter(item => item !== cp[1]);
                 delete cp[1];
             }
-            console.log("NUMBER: " + cp.filter(e => e != undefined).length);
+            //console.log("NUMBER: " + cp.filter(e => e != undefined).length);
             return cp;
         } else {
             return null;
@@ -88,30 +88,17 @@ export abstract class Collider extends Component {
             wA1 = c1.attachedRigidbody.angularVelocity;
             wB1 = c2.attachedRigidbody.angularVelocity;
             vA1 = c1.attachedRigidbody.velocity;
-            console.log("rBP: " + rBP.ToString());
-            console.log("vA1: " + vA1.ToString());
             vB1 = c2.attachedRigidbody.velocity;
-            console.log("vB1: " + vB1.ToString());
-
-
             vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
-            console.log("vAP1: " + vAP1.ToString());
-
             vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
-            console.log("vBP1: " + vBP1.ToString());
-
-            vAB1 = vAP1.Sub(vBP1);
             n = normal;
-            console.log("Normal: " + normal.ToString());
             j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
                 rAP, rBP, vAP1, vBP1, n);
 
-            console.log("J= " + j);
-
             c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
             c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
-            //c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, -j)), ForceMode.Impulse);
-            //c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, -j)), ForceMode.Impulse);
+            c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, j)), ForceMode.Impulse);
+            c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, j)), ForceMode.Impulse);
         }
     }
 
@@ -132,7 +119,7 @@ export abstract class Collider extends Component {
 
     private static ImpulseSimple(e: number, m: number, i: number, rAP: Vector2, vAP1: Vector2, n: Vector2): number {
         let rAPN = Vector2.Cross(rAP, n);
-        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m); // + rAPN * rAPN / i;
+        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m + rAPN * rAPN / i);
     }
 
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {
@@ -174,7 +161,6 @@ export abstract class Collider extends Component {
             // // do the projections overlap?
             if (!this.Overlap(p1, p2)) {
                 // // if no: then we can guarantee that the shapes do not overlap
-                console.log("AXIS2 FAIL: " + axis.ToString());
                 return null;
             } else {
                 // // if yes: // get the overlap, check if it is the minimal overlap
