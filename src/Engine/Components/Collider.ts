@@ -2,7 +2,7 @@ import {Component} from "./Component";
 import {Vector2} from "../Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
-import {ClippingPlane, Edge, Geometry} from "../Geometry";
+import {ClippingPlane, Geometry} from "../Geometry";
 import {BoxCollider} from "./BoxCollider";
 
 export abstract class Collider extends Component {
@@ -80,7 +80,7 @@ export abstract class Collider extends Component {
         }
     }
 
-    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2): void {
+    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2, flip: boolean): void {
         if (contactPoint != undefined) {
             let rAP, rBP, wA1, wB1, vA1, vB1, vAP1, vBP1, vAB1, n, j;
             rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
@@ -88,10 +88,19 @@ export abstract class Collider extends Component {
             wA1 = c1.attachedRigidbody.angularVelocity;
             wB1 = c2.attachedRigidbody.angularVelocity;
             vA1 = c1.attachedRigidbody.velocity;
+            console.log("rBP: " + rBP.ToString());
+            console.log("vA1: " + vA1.ToString());
             vB1 = c2.attachedRigidbody.velocity;
+            console.log("vB1: " + vB1.ToString());
+
 
             vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
+            console.log("vAP1: " + vAP1.ToString());
+
             vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
+            console.log("vBP1: " + vBP1.ToString());
+
+            vAB1 = vAP1.Sub(vBP1);
             n = normal;
             console.log("Normal: " + normal.ToString());
             j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
@@ -101,8 +110,8 @@ export abstract class Collider extends Component {
 
             c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
             c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
-            // c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, -j)), ForceMode.Impulse);
-            // c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, -j)), ForceMode.Impulse);
+            //c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, -j)), ForceMode.Impulse);
+            //c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, -j)), ForceMode.Impulse);
         }
     }
 
@@ -111,9 +120,9 @@ export abstract class Collider extends Component {
         if (mA == 0 && iA == 0 && mB == 0 && iB == 0) {
             return 0;
         } else if (mA == 0 && iA == 0) {
-            return this.ImpulseSimple(e, mB, iB, rBP, vBP1.Inverse(), n);
+            return this.ImpulseSimple(e, mB, iB, rBP, Vector2.Sub(vAP1, vBP1), n);
         } else if (mB == 0 && iB == 0) {
-            return this.ImpulseSimple(e, mA, iA, rAP, vAP1, n);
+            return this.ImpulseSimple(e, mA, iA, rAP, Vector2.Sub(vAP1, vBP1), n);
         } else {
             let rAPN = Vector2.Cross(rAP, n);
             let rBPN = Vector2.Cross(rBP, n);
@@ -123,7 +132,7 @@ export abstract class Collider extends Component {
 
     private static ImpulseSimple(e: number, m: number, i: number, rAP: Vector2, vAP1: Vector2, n: Vector2): number {
         let rAPN = Vector2.Cross(rAP, n);
-        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m + rAPN * rAPN / i);
+        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m); // + rAPN * rAPN / i;
     }
 
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {
@@ -199,6 +208,10 @@ export abstract class Collider extends Component {
             return p2.y - p1.x;
         }
     }
+
+    public Enable = (): void => {
+
+    };
 }
 
 export class CircleCollider extends Collider {

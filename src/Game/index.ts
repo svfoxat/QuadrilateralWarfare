@@ -9,9 +9,9 @@ import {BoxCollider} from "../Engine/Components/BoxCollider";
 import {Rigidbody} from "../Engine/Components/Rigidbody";
 import {Vector2} from "../Engine/Vector2";
 import {Time} from "../Engine/Time";
+import ObjectMoveScript from "./Scripts/ObjectMoveScript";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
-import ObjectMoveScript from "./Scripts/ObjectMoveScript";
 
 class Main {
     constructor() {
@@ -60,6 +60,8 @@ class Main {
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.useGravity = false;
+        rb2.angularVelocity = 0;
+        rb2.velocity = Vector2.Zero();
         rb2.velocity.y = 10;
         rb2.mass = 1;
         rb2.inertia = 1;

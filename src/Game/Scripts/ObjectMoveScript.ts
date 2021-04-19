@@ -1,7 +1,7 @@
 import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
-import InteractionEvent = PIXI.interaction.InteractionEvent;
+import {Rigidbody} from "../../Engine/Components/Rigidbody";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
@@ -74,6 +74,8 @@ export default class ObjectMoveScript extends Component {
         if (this.drag) {
             const {x, y } = this.inputManager.Mouse.currPos;
             this.gameObject.transform.position.set(x, y);
+            let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
+            rb.angularVelocity = 0;
         }
     };
 }

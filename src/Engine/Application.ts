@@ -66,7 +66,7 @@ export default class Application {
             let colliders = new Array<BoxCollider>();
             for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
                 let coll = go.GetComponent(BoxCollider) as BoxCollider;
-                if (coll != null) {
+                if (coll != null && coll.enabled) {
                     colliders.push(coll);
                 }
             }
@@ -75,12 +75,14 @@ export default class Application {
                     if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
+                        //Time.t = 0;
                         // Handle collision (move faster body out of collision)
-                        Collider.HandleCollision(colliders[i], colliders[j], collision);
-                        let cp = new ClippingPlane(null, null, null);
                         if (!(collision.Dot(Vector2.Sub(Vector2.FromPoint(colliders[i].gameObject.transform.position), Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
                             collision = collision.Inverse();
                         }
+                        Collider.HandleCollision(colliders[i], colliders[j], collision);
+                        let cp = new ClippingPlane(null, null, null);
+
                         let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
                         collisionPoint?.forEach(e => {
                             this.DrawContactPoint(e)
@@ -91,7 +93,7 @@ export default class Application {
                         normalArrow = Gizmos.DrawArrow(currCP, Vector2.Add(currCP, Vector2.Mul(normal.Normalized(), 25)), 1, 0x00ff00);
                         this.pixi.stage.addChild(normalArrow);
 
-                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized());
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
                     }
                 }
             }
