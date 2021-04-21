@@ -13,25 +13,6 @@ export abstract class Geometry {
 
         return cp;
     }
-
-    public static isPointOnEdge(e: Edge, p: Vector2): boolean {
-        // TODO: NOT SURE IF RIGHT
-        let l = e.vector();
-        p = p.Sub(e.from);
-        let c = Vector2.Cross(p, l);
-        if (Math.abs(c) < 0.001) {
-            if (Math.abs(l.x) >= Math.abs(l.y))
-                return l.x > 0 ?
-                    e.from.x <= p.x && p.x <= e.to.x :
-                    e.to.x <= p.x && p.x <= e.from.x;
-            else
-                return l.y > 0 ?
-                    e.from.y <= p.y && p.y <= e.to.y :
-                    e.to.y <= p.y && p.y <= e.from.y;
-        } else {
-            return false;
-        }
-    }
 }
 
 export class Edge {

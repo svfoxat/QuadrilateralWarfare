@@ -74,23 +74,14 @@ export default class Application {
                     if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
-                        //Time.t = 0;
-                        // Handle collision (move faster body out of collision)
                         if (!(collision.Dot(Vector2.Sub(Vector2.FromPoint(colliders[i].gameObject.transform.position), Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
                             collision = collision.Inverse();
                         }
                         Collider.HandleCollision(colliders[i], colliders[j], collision);
                         let cp = new ClippingPlane(null, null, null);
-
                         let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
-                        // collisionPoint?.forEach(e => {
-                        //     this.DrawContactPoint(e)
-                        // });
                         let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
                         let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
-                        //normalArrow?.clear();
-                        //normalArrow = Gizmos.DrawArrow(currCP, Vector2.Add(currCP, Vector2.Mul(normal.Normalized(), 25)), 1, 0x00ff00);
-                        //this.pixi.stage.addChild(normalArrow);
 
                         Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
                     }
