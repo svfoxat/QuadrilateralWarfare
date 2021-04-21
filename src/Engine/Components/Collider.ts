@@ -23,10 +23,9 @@ export abstract class Collider extends Component {
         } else if (c2?.attachedRigidbody == null || c2.attachedRigidbody.mass == 0) {
             c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
         } else {
-            if (c1.attachedRigidbody.velocity.Mag() > c2.attachedRigidbody.velocity.Mag()) {
-                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
-            } else {
-                c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
+            if (c1.attachedRigidbody.velocity.Mag() > 0 && c2.attachedRigidbody.velocity.Mag() > 0) {
+                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Mul(-.5)).AsPoint();
+                c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv.Mul(.5)).AsPoint();
             }
         }
     }
