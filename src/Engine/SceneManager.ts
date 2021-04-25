@@ -1,9 +1,9 @@
 import Application from "./Application";
 import {Scene} from "./Scene";
+import * as PIXI from "pixi.js";
 import {Transform} from "pixi.js";
 import {Gameobject} from "./Gameobject";
 import {SpriteRenderer} from "./Components/SpriteRenderer";
-import * as PIXI from "pixi.js";
 
 export class SceneManager {
     private static instance: SceneManager;
@@ -31,7 +31,7 @@ export class SceneManager {
             const go = new Gameobject(null, scene.sceneRoot);
             go.transform = new Transform();
             go.transform.rotation = g.transform.rotation;
-            go.transform.position.set(g.transform.position.x, g.transform.position.y)
+            go.transform.position.set(g.transform.position.x, g.transform.position.y);
             go.transform.scale.set(g.transform.scale.x, g.transform.scale.y);
             go.scene = scene;
 
@@ -54,7 +54,7 @@ export class SceneManager {
         }
 
         this.activeScene = scene;
-        this.app.pixi.renderer.render(scene.container)
+        this.app.pixi.renderer.render(scene.container);
         this.app.pixi.stage = scene.container;
     }
 }

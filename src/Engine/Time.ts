@@ -1,11 +1,12 @@
 export class Time
 {
-    public static t = .1;
+    public static t = 1;
+    public static delta = 1;
     public static deltaTime() : number {
-        throw new Error("NOT IMPLEMENTED!!!!!");
+        return this.delta;
     }
 
     public static fixedDeltaTime(): number {
-        return this.t;
+        return this.t / 10;
     }
 }

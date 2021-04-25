@@ -1,11 +1,11 @@
 import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
-import InteractionEvent = PIXI.interaction.InteractionEvent;
+import {Rigidbody} from "../../Engine/Components/Rigidbody";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
-    name: string = "ObjectMoveScript";
+    _name: string = "ObjectMoveScript";
 
     private inputManager: InputManager;
     private moveSpeed = 1.0;
@@ -13,29 +13,29 @@ export default class ObjectMoveScript extends Component {
 
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
-    }
+    };
 
     Enable = () => {
         console.log("ENABLED")
-    }
+    };
 
     OnMouseDown = (): void => {
         if (this.inputManager.Mouse.leftClick) {
             this.drag = true;
         }
-    }
+    };
 
     OnMouseUp = (): void => {
        this.drag = false;
-    }
+    };
 
     Update = (): void => {
         let modifier;
 
         if (this.inputManager.Keyboard.shift) {
-            modifier = 2.0;
+            modifier = 4.0;
         } else {
-            modifier = 1.0;
+            modifier = 2.0;
         }
 
         if (this.inputManager.Keyboard.A) {
@@ -74,6 +74,8 @@ export default class ObjectMoveScript extends Component {
         if (this.drag) {
             const {x, y } = this.inputManager.Mouse.currPos;
             this.gameObject.transform.position.set(x, y);
+            let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
+            rb.angularVelocity = 0;
         }
     };
 }

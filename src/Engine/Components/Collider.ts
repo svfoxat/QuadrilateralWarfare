@@ -1,10 +1,14 @@
 import {Component} from "./Component";
 import {Vector2} from "../Vector2";
-import {Rigidbody} from "./Rigidbody";
+import {ForceMode, Rigidbody} from "./Rigidbody";
+import Application from "../Application";
+import {ClippingPlane, Geometry} from "../Geometry";
+import {BoxCollider} from "./BoxCollider";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
+    application: Application;
 
     abstract Collision(other: Collider): Vector2;
 
@@ -12,7 +16,112 @@ export abstract class Collider extends Component {
 
     abstract GetProjection(axis: Vector2): Vector2;
 
-    public static IsColliding(c1: Collider, c2: Collider) {
+    public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
+        if ((c1?.attachedRigidbody == null || c1.attachedRigidbody.mass == 0) && (c2?.attachedRigidbody == null || c2.attachedRigidbody.mass == 0)) return;
+        if (c1?.attachedRigidbody == null || c1.attachedRigidbody.mass == 0) {
+            c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv).AsPoint();
+        } else if (c2?.attachedRigidbody == null || c2.attachedRigidbody.mass == 0) {
+            c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv).AsPoint();
+        } else {
+            if (c1.attachedRigidbody.velocity.Mag() > 0 && c2.attachedRigidbody.velocity.Mag() > 0) {
+                c1.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c1.gameObject.transform.position), mtv.Mul(-.5)).AsPoint();
+                c2.gameObject.transform.position = Vector2.Add(Vector2.FromPoint(c2.gameObject.transform.position), mtv.Mul(.5)).AsPoint();
+            }
+        }
+    }
+
+    public static GetClippingPlanes(c1: Collider, c2: Collider, mtv: Vector2): ClippingPlane {
+        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+            let edge1 = c1.ComputeBestEdge(mtv);
+            let edge2 = c2.ComputeBestEdge(mtv.Inverse());
+
+            if (Math.abs(Vector2.Dot(edge1.vector(), mtv)) <= Math.abs(Vector2.Dot(edge2.vector(), mtv))) {
+                return new ClippingPlane(edge1, edge2, false);
+            } else {
+                return new ClippingPlane(edge2, edge1, true);
+            }
+        }
+    }
+
+    public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2, pl: ClippingPlane = null): Array<Vector2> {
+        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+            let plane = this.GetClippingPlanes(c1, c2, mtv);
+            let ref = plane.ref, inc = plane.inc, flip = plane.flip;
+            if (pl != null) {
+                pl.ref = ref;
+                pl.inc = inc;
+                pl.flip = flip;
+            }
+
+            let refv = ref.vector().Normalized();
+            let o1 = Vector2.Dot(refv, ref.from);
+            let cp = Geometry.clip(inc.from, inc.to, refv, o1);
+            if (cp.length < 2) return null;
+
+            let o2 = Vector2.Dot(refv, ref.to);
+            cp = Geometry.clip(cp[0], cp[1], refv.Inverse(), -o2);
+            if (cp.length < 2) return null;
+            let refNorm = ref.vector().LeftNormal();
+            if (flip) refNorm.Inverse();
+            let max = Vector2.Dot(refNorm, ref.maxProj);
+            if (Vector2.Dot(refNorm, cp[0]) - max < 0.0) {
+                //cp = cp.filter(item => item !== cp[0]);
+                delete cp[0];
+            }
+            if (Vector2.Dot(refNorm, cp[1]) - max < 0.0) {
+                //cp = cp.filter(item => item !== cp[1]);
+                delete cp[1];
+            }
+            //console.log("NUMBER: " + cp.filter(e => e != undefined).length);
+            return cp;
+        } else {
+            return null;
+        }
+    }
+
+    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2, flip: boolean): void {
+        if (contactPoint != undefined) {
+            let rAP, rBP, wA1, wB1, vA1, vB1, vAP1, vBP1, vAB1, n, j;
+            rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
+            rBP = Vector2.Sub(contactPoint, Vector2.FromPoint(c2.gameObject.transform.position));
+            wA1 = c1.attachedRigidbody.angularVelocity;
+            wB1 = c2.attachedRigidbody.angularVelocity;
+            vA1 = c1.attachedRigidbody.velocity;
+            vB1 = c2.attachedRigidbody.velocity;
+            vAP1 = Vector2.Add(vA1, Vector2.CrossVec(rAP, wA1));
+            vBP1 = Vector2.Add(vB1, Vector2.CrossVec(rBP, wB1));
+            n = normal;
+            j = this.CalculateImpulse(1, c1.attachedRigidbody.mass, c2.attachedRigidbody.mass, c1.attachedRigidbody.inertia, c2.attachedRigidbody.inertia,
+                rAP, rBP, vAP1, vBP1, n);
+
+            c1.attachedRigidbody.AddForce(Vector2.Mul(n, j), ForceMode.Impulse);
+            c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
+            c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, j)), ForceMode.Impulse);
+            c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, j)), ForceMode.Impulse);
+        }
+    }
+
+    private static CalculateImpulse(e: number, mA: number, mB: number, iA: number, iB: number,
+                                    rAP: Vector2, rBP: Vector2, vAP1: Vector2, vBP1: Vector2, n: Vector2): number {
+        if (mA == 0 && iA == 0 && mB == 0 && iB == 0) {
+            return 0;
+        } else if (mA == 0 && iA == 0) {
+            return this.ImpulseSimple(e, mB, iB, rBP, Vector2.Sub(vAP1, vBP1), n);
+        } else if (mB == 0 && iB == 0) {
+            return this.ImpulseSimple(e, mA, iA, rAP, Vector2.Sub(vAP1, vBP1), n);
+        } else {
+            let rAPN = Vector2.Cross(rAP, n);
+            let rBPN = Vector2.Cross(rBP, n);
+            return -(1 + e) * Vector2.Dot(Vector2.Sub(vAP1, vBP1), n) / (1 / mA + 1 / mB + rAPN * rAPN / iA + rBPN * rBPN / iB);
+        }
+    }
+
+    private static ImpulseSimple(e: number, m: number, i: number, rAP: Vector2, vAP1: Vector2, n: Vector2): number {
+        let rAPN = Vector2.Cross(rAP, n);
+        return -(1 + e) * Vector2.Dot(vAP1, n) / (1 / m + rAPN * rAPN / i);
+    }
+
+    public static IsColliding(c1: Collider, c2: Collider): Vector2 {
         return c1.Collision(c2);
     }
 
@@ -84,89 +193,21 @@ export abstract class Collider extends Component {
             return p2.y - p1.x;
         }
     }
-}
 
-export class BoxCollider extends Collider {
-    FixedUpdate: () => void;
-    OnEnable: () => void;
-    Start: () => void;
-    name: string = "BoxCollider2D";
-
-    size: Vector2 = new Vector2(1, 1);
-    offset: Vector2 = new Vector2(0, 0);
-
-    Update = () => {
-        let rb = this.attachedRigidbody;
-        if (this.attachedRigidbody != null && !this.isTrigger) {
-            this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
-        }
+    public Enable = (): void => {
 
     };
-
-    Collision(other: Collider): Vector2 {
-        let box = other as BoxCollider;
-        if (box != null) {
-            return Collider.BoxBox(this, box);
-        }
-
-        let circle = other as CircleCollider;
-        if (circle != null) {
-            return Collider.BoxCircle(this, circle);
-        }
-
-        // TODO: Box/Triangle, Box/Mesh Collision
-        return undefined;
-    }
-
-    GetSeperatingAxes(): Array<Vector2> {
-        let normals = new Array<Vector2>();
-        // get 3 vertices
-        let vertex1 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
-        let vertex2 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
-        let vertex3 =
-            Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation));
-
-        // take 2 edges from these vertices
-        let edge1 = Vector2.Sub(vertex2, vertex1);
-        let edge2 = Vector2.Sub(vertex1, vertex3);
-
-
-        // flip coordinates and negate one to get normal
-        normals.push(edge1.LeftNormal().Normalized());
-        normals.push(edge2.LeftNormal().Normalized());
-        // normals.push(edge1.LeftNormal().Normalized().Inverse());
-        // normals.push(edge2.LeftNormal().Normalized().Inverse());
-        return normals;
-    }
-
-    GetProjection(axis: Vector2): Vector2 {
-        let vertices = new Array<Vector2>();
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        vertices.push(Vector2.Add(Vector2.FromPoint(this.gameObject.absoluteTransform.position), new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        let min = 100000.0, max = -100000.0;
-        for (let v of vertices) {
-            let p = Vector2.Dot(axis, v);
-            if (p < min) {
-                min = p;
-            } else if (p > max) {
-                max = p;
-            }
-        }
-        return new Vector2(min, max);
-    }
-
 }
 
 export class CircleCollider extends Collider {
-    name: string = "CircleCollider2D";
+    _name: string = "CircleCollider2D";
     offset: Vector2 = new Vector2(0, 0);
     radius: number = 0.5;
 
-    Update = () => {
+    Update = (): void => {
+    };
+
+    FixedUpdate = () => {
         let rb = this.attachedRigidbody;
         if (this.attachedRigidbody != null && !this.isTrigger) {
             this.attachedRigidbody.inertia = rb.mass * this.radius * this.radius / 2;
@@ -198,7 +239,7 @@ export class CircleCollider extends Collider {
 }
 
 export class MeshCollider extends Collider {
-    name: string = "MeshCollider2D";
+    _name: string = "MeshCollider2D";
 
     Collision(other: Collider): Vector2 {
         return undefined;
