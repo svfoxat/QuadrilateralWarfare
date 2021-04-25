@@ -5,7 +5,7 @@ import {Gameobject} from "../Gameobject";
 export class SpriteRenderer extends Component
 {
     gameObject: Gameobject;
-    _name: string;
+    name: string;
     sprite: PIXI.Sprite = new PIXI.Sprite();
 
     Update = (): void => {

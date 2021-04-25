@@ -1,7 +1,7 @@
 import {Gameobject} from "../Gameobject";
 
 export class Component {
-    _name: string;
+    name: string;
     gameObject: Gameobject;
     enabled: boolean;
 

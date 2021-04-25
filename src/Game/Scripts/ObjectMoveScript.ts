@@ -2,10 +2,12 @@ import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
+import {Vector2} from "../../Engine/Vector2";
+import {Time} from "../../Engine/Time";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
-    _name: string = "ObjectMoveScript";
+    name: string = "ObjectMoveScript";
 
     private inputManager: InputManager;
     private moveSpeed = 1.0;
@@ -16,7 +18,6 @@ export default class ObjectMoveScript extends Component {
     };
 
     Enable = () => {
-        console.log("ENABLED")
     };
 
     OnMouseDown = (): void => {
@@ -72,10 +73,12 @@ export default class ObjectMoveScript extends Component {
         }
 
         if (this.drag) {
-            const {x, y } = this.inputManager.Mouse.currPos;
+            const {x, y} = this.inputManager.Mouse.currPos;
+            let prevPos = Vector2.FromPoint(this.gameObject.transform.position);
             this.gameObject.transform.position.set(x, y);
             let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
             rb.angularVelocity = 0;
+            rb.velocity = new Vector2(x, y).Sub(prevPos).Div(Time.deltaTime() * 5);
         }
     };
 }
