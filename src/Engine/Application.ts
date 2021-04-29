@@ -71,7 +71,7 @@ export default class Application {
             }
             for (let i = 0; i < colliders.length; i++) {
                 for (let j = 0; j < colliders.length; j++) {
-                    if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
+                    if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0) || (colliders[i].attachedRigidbody.isAsleep && colliders[j].attachedRigidbody.isAsleep)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
                         if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
@@ -82,8 +82,9 @@ export default class Application {
                         let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
                         let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
                         let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
-
                         Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
+                        colliders[i].SleepTick();
+                        colliders[j].SleepTick();
                     }
                 }
             }

@@ -25,6 +25,7 @@ export class Rigidbody extends Component
     angularAcceleration = 0;
     elasticity: number = 0;
     isStatic: boolean = false;
+    isAsleep: boolean = false;
 
     FixedUpdate = (): void => {
         if (!this.isStatic && this.mass > 0) {
@@ -38,12 +39,13 @@ export class Rigidbody extends Component
     };
 
     Update = (): void => {
-        if (!this.isStatic && this.mass > 0) {
+        if (!this.isStatic && this.mass > 0 && !this.isAsleep) {
             this.gameObject.transform.position.x += this.velocity.x * Time.deltaTime();
             this.gameObject.transform.position.y += this.velocity.y * Time.deltaTime();
             this.gameObject.transform.rotation += this.angularVelocity * Time.deltaTime();
         }
     };
+
 
     AddForce(force: Vector2, mode: ForceMode) {
         if (!this.isStatic && this.mass > 0) {
