@@ -6,14 +6,19 @@ import {Vector2} from "./Vector2";
 import {ClippingPlane} from "./Geometry";
 import {InputManager} from "./InputManager";
 import {BoxCollider} from "./Components/BoxCollider";
+import {Scene} from "./Scene";
 
 export default class Application {
     name: string;
     pixi: PIXI.Application;
     userScripts: any;
     appContainer: HTMLElement;
+    activeScene: Scene = null;
 
     constructor({ width, height, name, userScripts }: IApplicationProperties) {
+        // @ts-ignore
+        window.app = this;
+
         PIXI.settings.RESOLUTION = window.devicePixelRatio;
         PIXI.settings.RENDER_OPTIONS.antialias = true;
 

@@ -54,6 +54,7 @@ export class SceneManager {
         }
 
         this.activeScene = scene;
+        this.app.activeScene = scene;
         this.app.pixi.renderer.render(scene.container);
         this.app.pixi.stage = scene.container;
     }

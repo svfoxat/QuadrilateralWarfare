@@ -100,6 +100,7 @@ class Main {
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);
         application.pixi.stage = scene.container;
+        application.activeScene = scene;
     }
 }
 
