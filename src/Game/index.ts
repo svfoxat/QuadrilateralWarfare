@@ -101,9 +101,13 @@ class Main {
             stroke: "white",
             strokeThickness: 2,
         }
-
-        scene.sceneRoot.AddComponent(PerformanceDisplay);
         scene.Add(go2);
+
+
+        const overlay = new Gameobject(new Transform(), scene.sceneRoot);
+        overlay.AddComponent(PerformanceDisplay);
+        scene.Add(overlay);
+
         application.pixi.stage.addChild(sprite2);
 
         SceneManager.getInstance().activeScene = scene;

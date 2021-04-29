@@ -55,9 +55,10 @@ export default class Application {
     }
 
     private start() {
-        this.pixi.ticker.add((deltaTime => {
+        this.pixi.ticker.add(((deltaTime) => {
             document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
             Time.delta = deltaTime;
+            Time.elapsedMS = this.pixi.ticker.elapsedMS;
             SceneManager.getInstance().activeScene.sceneRoot.Update();
         }));
 

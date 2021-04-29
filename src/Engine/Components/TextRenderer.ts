@@ -6,18 +6,17 @@ export class TextRenderer extends Component {
     _text: PIXI.Text;
 
     public text: string = "";
-    public style: PIXI.TextStyleOptions = { fontFamily : 'Arial', fontSize: 100, fill : 0xff1010, align : 'center'}
+    public style: PIXI.TextStyleOptions = { fontFamily : 'Arial', fontSize: 100, fill : 0xff1010, align : 'left'}
     public position: PIXI.Point;
 
     Enable = () => {
         this._text = new PIXI.Text(this.text, this.style);
         this.position = new PIXI.Point(0,0);
-        this._text.
     }
 
     Start = () => {
         this._text["textRenderer"] = this;
-        this.gameObject.scene?.container.addChild(this._text);
+        this.gameObject.scene?.container.addChild(this._text)
     }
 
     Update = () => {
