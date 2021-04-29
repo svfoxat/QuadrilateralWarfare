@@ -74,7 +74,7 @@ export default class Application {
                     if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
-                        if (!(collision.Dot(Vector2.Sub(Vector2.FromPoint(colliders[i].gameObject.transform.position), Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
+                        if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
                             collision = collision.Inverse();
                         }
                         Collider.HandleCollision(colliders[i], colliders[j], collision);
