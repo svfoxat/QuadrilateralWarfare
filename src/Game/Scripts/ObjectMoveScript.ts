@@ -4,6 +4,7 @@ import {InputManager} from "../../Engine/InputManager";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {Vector2} from "../../Engine/Vector2";
 import {Time} from "../../Engine/Time";
+import {TextRenderer} from "../../Engine/Components/TextRenderer";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
@@ -12,6 +13,9 @@ export default class ObjectMoveScript extends Component {
     private inputManager: InputManager;
     private moveSpeed = 1.0;
     private drag: boolean = false;
+
+
+    private text: TextRenderer;
 
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
@@ -30,7 +34,9 @@ export default class ObjectMoveScript extends Component {
        this.drag = false;
     };
 
-    Update = (): void => {
+    Update = () => null;
+
+    FixedUpdate = (): void => {
         let modifier;
 
         if (this.inputManager.Keyboard.shift) {

@@ -66,8 +66,8 @@ export default class Application {
             Time.elapsedMS = ticker.elapsedMS;
 
             if (ticker.elapsedMS > 0) {
-                this.pixi.renderer.render(this.pixi.stage);
                 SceneManager.getInstance().activeScene?.sceneRoot.Update();
+                this.pixi.renderer.render(this.pixi.stage);
             }
             requestAnimationFrame(render)
         }

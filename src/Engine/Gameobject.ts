@@ -30,7 +30,6 @@ export class Gameobject  {
     }
 
     public Update() {
-        this.UpdateTransform();
         this.UpdateAllComponents();
 
         for (let go of this.children) {
@@ -137,7 +136,7 @@ export class Gameobject  {
     }
 
     public FixedUpdate() {
-        // this.UpdateTransform();
+        this.UpdateTransform();
         this.FixedUpdateAllComponents();
 
         for (let go of this.children) {
