@@ -12,6 +12,8 @@ import {Time} from "../Engine/Time";
 import ObjectMoveScript from "./Scripts/ObjectMoveScript";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
+import {TextRenderer} from "../Engine/Components/TextRenderer";
+import PerformanceDisplay from "./Scripts/PerformanceDisplay";
 
 class Main {
     constructor() {
@@ -38,6 +40,7 @@ class Main {
 
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
+
 
         let greenBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
         let blueBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x0000FF);
@@ -77,9 +80,20 @@ class Main {
         boxCollider2.application = application;
         spriteRenderer2.sprite = sprite2;
 
+        const tr = go2.AddComponent(TextRenderer) as TextRenderer;
+        tr.text = "HALLO"
+        tr.style = {
+            fontSize: 50,
+            dropShadow: true,
+            stroke: "white",
+            strokeThickness: 2,
+        }
+
+        scene.sceneRoot.AddComponent(PerformanceDisplay);
+
+
         scene.Add(go2);
         application.pixi.stage.addChild(sprite2);
-
 
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);

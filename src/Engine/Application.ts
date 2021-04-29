@@ -14,6 +14,9 @@ export default class Application {
     appContainer: HTMLElement;
 
     constructor({ width, height, name, userScripts }: IApplicationProperties) {
+        PIXI.settings.RESOLUTION = window.devicePixelRatio;
+        PIXI.settings.RENDER_OPTIONS.antialias = true;
+
         this.name = name;
         this.userScripts = userScripts;
 
