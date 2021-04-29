@@ -14,7 +14,6 @@ export default class ObjectMoveScript extends Component {
     private moveSpeed = 1.0;
     private drag: boolean = false;
 
-
     private text: TextRenderer;
 
     Start = (): void => {
@@ -44,7 +43,7 @@ export default class ObjectMoveScript extends Component {
 
     Update = () => {
         const rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
-        this.text.text = `y:${rb.velocity.y.toFixed(0)} x:${rb.velocity.x.toFixed(0)}`
+        this.text.text = `y:${rb.velocity.y.toFixed(1)} x:${rb.velocity.x.toFixed(1)}`
     };
 
     FixedUpdate = (): void => {
