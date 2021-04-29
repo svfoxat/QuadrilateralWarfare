@@ -9,6 +9,10 @@ export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
     application: Application;
+    maxSleep: number = 15;
+    sleepCount: number = 0;
+    lastPos: Vector2 = Vector2.Zero();
+    lastRot: number = 0;
 
     static bounciness: number = .7;
 
@@ -20,6 +24,19 @@ export abstract class Collider extends Component {
 
     private static MovableRigidbody(c: Collider): boolean {
         return !(c?.attachedRigidbody == null || c.attachedRigidbody.isStatic || c.attachedRigidbody.mass === 0);
+    }
+
+    public SleepTick(): void {
+        if (this.lastPos.Sub(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Mag() < .1 && this.lastRot - this.gameObject.absoluteTransform.rotation < .1) {
+            if (++this.sleepCount >= this.maxSleep) {
+                this.attachedRigidbody.isAsleep = true;
+            }
+        } else {
+            this.sleepCount = 0;
+            this.attachedRigidbody.isAsleep = false;
+        }
+        this.lastPos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+        this.lastRot = this.gameObject.absoluteTransform.rotation;
     }
 
     public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
