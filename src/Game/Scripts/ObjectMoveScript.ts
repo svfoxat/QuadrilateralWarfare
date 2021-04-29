@@ -19,9 +19,17 @@ export default class ObjectMoveScript extends Component {
 
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
+        this.text = this.gameObject.AddComponent(TextRenderer) as TextRenderer;
+        this.text.style = {
+            fontSize: 25,
+            dropShadow: true,
+            stroke: "white",
+            strokeThickness: 2,
+        }
     };
 
     Enable = () => {
+
     };
 
     OnMouseDown = (): void => {
@@ -34,7 +42,10 @@ export default class ObjectMoveScript extends Component {
        this.drag = false;
     };
 
-    Update = () => null;
+    Update = () => {
+        const rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
+        this.text.text = `y:${rb.velocity.y.toFixed(0)} x:${rb.velocity.x.toFixed(0)}`
+    };
 
     FixedUpdate = (): void => {
         let modifier;

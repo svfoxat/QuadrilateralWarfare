@@ -91,15 +91,6 @@ class Main {
             rb2.useGravity = true;
         });
         application.pixi.stage.addChild(sprite2);
-
-        const tr = go2.AddComponent(TextRenderer) as TextRenderer;
-        tr.text = "HALLO"
-        tr.style = {
-            fontSize: 50,
-            dropShadow: true,
-            stroke: "white",
-            strokeThickness: 2,
-        }
         scene.Add(go2);
 
         const overlay = new Gameobject(new Transform(), scene.sceneRoot);

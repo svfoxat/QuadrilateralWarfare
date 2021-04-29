@@ -58,22 +58,16 @@ export default class Application {
     private start() {
         const ticker = new PIXI.ticker.Ticker();
         ticker.autoStart = false;
-
-        const render = (time: number) => {
-            ticker.update(time);
-
-            Time.delta = ticker.deltaTime;
-            Time.elapsedMS = ticker.elapsedMS;
-
-            if (ticker.elapsedMS > 0) {
-                SceneManager.getInstance().activeScene?.sceneRoot.Update();
-                this.pixi.renderer.render(this.pixi.stage);
-            }
-            requestAnimationFrame(render)
-        }
+        const desiredFPS = 30;
 
         ticker.start();
-        render(performance.now());
+        setInterval(() => {
+            ticker.update(performance.now());
+            Time.delta = ticker.deltaTime;
+            Time.elapsedMS = ticker.elapsedMS;
+            SceneManager.getInstance().activeScene?.sceneRoot.Update();
+            this.pixi.renderer.render(this.pixi.stage);
+        }, 1000 / desiredFPS)
 
         let normalArrow: PIXI.Graphics = null;
 
