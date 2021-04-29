@@ -54,16 +54,30 @@ export default class Application {
 
     }
 
+
     private start() {
-        this.pixi.ticker.add(((deltaTime) => {
-            document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
-            Time.delta = deltaTime;
-            Time.elapsedMS = this.pixi.ticker.elapsedMS;
-            SceneManager.getInstance().activeScene.sceneRoot.Update();
-        }));
+        const ticker = new PIXI.ticker.Ticker();
+        ticker.autoStart = false;
+
+        const render = (time: number) => {
+            ticker.update(time);
+
+            Time.delta = ticker.deltaTime;
+            Time.elapsedMS = ticker.elapsedMS;
+
+            if (ticker.elapsedMS > 0) {
+                this.pixi.renderer.render(this.pixi.stage);
+                SceneManager.getInstance().activeScene?.sceneRoot.Update();
+            }
+            requestAnimationFrame(render)
+        }
+
+        ticker.start();
+        render(performance.now());
 
         let normalArrow: PIXI.Graphics = null;
 
+        Time.t = 1;
         setInterval(() => {
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             let colliders = new Array<BoxCollider>();

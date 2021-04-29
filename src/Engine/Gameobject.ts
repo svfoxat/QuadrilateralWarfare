@@ -33,7 +33,7 @@ export class Gameobject  {
         this.UpdateTransform();
         this.UpdateAllComponents();
 
-        for(let go of this.children) {
+        for (let go of this.children) {
             go.Update();
         }
     }

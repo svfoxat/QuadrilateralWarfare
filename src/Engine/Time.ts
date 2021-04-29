@@ -9,6 +9,6 @@ export class Time
     }
 
     public static fixedDeltaTime(): number {
-        return this.t / 10;
+        return this.t / 100;
     }
 }

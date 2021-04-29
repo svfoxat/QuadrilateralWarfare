@@ -35,15 +35,15 @@ export class Rigidbody extends Component
             this.velocity = Vector2.Zero();
             this.angularVelocity = 0;
         }
-    };
 
-    Update = (): void => {
         if (!this.isStatic && this.mass > 0) {
-            this.gameObject.transform.position.x += this.velocity.x * Time.deltaTime();
-            this.gameObject.transform.position.y += this.velocity.y * Time.deltaTime();
-            this.gameObject.transform.rotation += this.angularVelocity * Time.deltaTime();
+            this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
+            this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
+            this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
         }
     };
+
+    Update = () => {}
 
     AddForce(force: Vector2, mode: ForceMode) {
         if (!this.isStatic && this.mass > 0) {
