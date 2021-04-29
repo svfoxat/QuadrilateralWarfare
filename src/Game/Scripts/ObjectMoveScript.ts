@@ -96,6 +96,7 @@ export default class ObjectMoveScript extends Component {
             let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
             rb.angularVelocity = 0;
             rb.velocity = new Vector2(x, y).Sub(prevPos).Div(Time.deltaTime() * 5);
+            rb.isAsleep = false;
         }
     };
 }

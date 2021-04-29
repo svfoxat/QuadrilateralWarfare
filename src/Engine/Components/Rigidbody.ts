@@ -25,18 +25,16 @@ export class Rigidbody extends Component
     angularAcceleration = 0;
     elasticity: number = 0;
     isStatic: boolean = false;
+    isAsleep: boolean = false;
 
     FixedUpdate = (): void => {
-        if (!this.isStatic && this.mass > 0) {
+        if (!this.isStatic && this.mass > 0 && !this.isAsleep) {
             if (this.useGravity && this.acceleration.y == 0) this.acceleration.y = 9.81;
             this.velocity = this.velocity.Add(this.acceleration.Add(this.force.Div(this.mass)).Mul(Time.fixedDeltaTime()));
             this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
-        } else {
-            this.velocity = Vector2.Zero();
-            this.angularVelocity = 0;
         }
 
-        if (!this.isStatic && this.mass > 0) {
+        if (!this.isStatic && this.mass > 0 && !this.isAsleep) {
             this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
             this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
             this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
@@ -44,6 +42,12 @@ export class Rigidbody extends Component
     };
 
     Update = () => {}
+
+    SetAsleep() {
+        this.isAsleep = true;
+        this.velocity = Vector2.Zero();
+        this.angularVelocity = 0;
+    }
 
     AddForce(force: Vector2, mode: ForceMode) {
         if (!this.isStatic && this.mass > 0) {
