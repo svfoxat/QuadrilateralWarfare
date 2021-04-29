@@ -1,23 +1,43 @@
 import {Vector2} from "../Vector2";
 import {Edge} from "../Geometry";
 import {Collider} from "./Collider";
+import {Gizmos} from "../Gizmos";
 
-export class BoxCollider extends Collider {
+export class TriangleCollider extends Collider {
     Start: () => void;
-    name: string = "BoxCollider2D";
+    name: string = "TriangleCollider2D";
 
-    size: Vector2 = new Vector2(1, 1);
+    vertexA: Vector2 = new Vector2(0, 0);
+    vertexB: Vector2 = new Vector2(0, 0);
+    vertexC: Vector2 = new Vector2(0, 0);
     offset: Vector2 = new Vector2(0, 0);
     vertices: Array<Vector2>;
+    a: PIXI.Graphics;
+    b: PIXI.Graphics;
+    c: PIXI.Graphics;
 
     Update = (): void => {
+        this.a?.clear();
+        this.b?.clear();
+        this.c?.clear();
+        if (this.vertices?.length >= 3) {
+            this.a = Gizmos.DrawPoint(this.vertices[0], 5, 0x321314, 1, 0x131245);
+            this.b = Gizmos.DrawPoint(this.vertices[1], 5, 0x321314, 1, 0x131245);
+            this.c = Gizmos.DrawPoint(this.vertices[2], 5, 0x321314, 1, 0x131245);
+        }
+        this.application.pixi.stage.addChild(this.a);
+        this.application.pixi.stage.addChild(this.b);
+        this.application.pixi.stage.addChild(this.c);
     };
 
     FixedUpdate = () => {
         this.SetVertices();
         let rb = this.attachedRigidbody;
         if (this.attachedRigidbody != null && !this.isTrigger) {
-            this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
+            let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
+            this.attachedRigidbody.inertia = rb.mass * (Math.pow(this.vertexA.Sub(pos).Mag(), 2) +
+                Math.pow(this.vertexB.Sub(pos).Mag(), 2) +
+                Math.pow(this.vertexC.Sub(pos).Mag(), 2)) / 3;
         }
     };
 
@@ -26,12 +46,12 @@ export class BoxCollider extends Collider {
         this.SetVertices();
 
         let edge1 = this.vertices[1].Sub(this.vertices[0]);
-        let edge2 = this.vertices[0].Sub(this.vertices[3]);
+        let edge2 = this.vertices[0].Sub(this.vertices[2]);
+        let edge3 = this.vertices[2].Sub(this.vertices[1]);
 
         normals.push(edge1.LeftNormal().Normalized());
         normals.push(edge2.LeftNormal().Normalized());
-        normals.push(edge1.LeftNormal().Inverse().Normalized());
-        normals.push(edge2.LeftNormal().Inverse().Normalized());
+        normals.push(edge3.LeftNormal().Normalized());
 
         return normals;
     }
@@ -53,10 +73,9 @@ export class BoxCollider extends Collider {
 
     private SetVertices(): void {
         this.vertices = new Array<Vector2>();
-        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
-        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexA).Rotate(this.gameObject.absoluteTransform.rotation));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexB).Rotate(this.gameObject.absoluteTransform.rotation));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexC).Rotate(this.gameObject.absoluteTransform.rotation));
     }
 
     public ComputeBestEdge(mtv: Vector2): Edge {
@@ -69,6 +88,7 @@ export class BoxCollider extends Collider {
                 index = i;
             }
         }
+        console.log("BLUB");
 
         let l = this.vertices[index].Sub(this.vertices[(index + 5) % 4]).Normalized();
         let r = this.vertices[index].Sub(this.vertices[(index + 3) % 4]).Normalized();

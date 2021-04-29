@@ -5,11 +5,11 @@ import {Scripts} from "./Scripts/Scripts";
 import {Scene} from "../Engine/Scene";
 import {Gameobject} from "../Engine/Gameobject";
 import {SpriteRenderer} from "../Engine/Components/SpriteRenderer";
-import {BoxCollider} from "../Engine/Components/BoxCollider";
 import {Rigidbody} from "../Engine/Components/Rigidbody";
 import {Vector2} from "../Engine/Vector2";
 import {Time} from "../Engine/Time";
 import ObjectMoveScript from "./Scripts/ObjectMoveScript";
+import {TriangleCollider} from "../Engine/Components/TriangleCollider";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
 
@@ -71,7 +71,7 @@ class Main {
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         let go2 = new Gameobject(new Transform(), null);
         let spriteRenderer2 = go2.AddComponent(SpriteRenderer) as SpriteRenderer;
-        let boxCollider2 = go2.AddComponent(BoxCollider) as BoxCollider;
+        let boxCollider2 = go2.AddComponent(TriangleCollider) as TriangleCollider;
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.angularVelocity = 0;
@@ -81,8 +81,14 @@ class Main {
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(5, 5).AsPoint();
         go2.transform.position = new Point(400, 800);
-        boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
-        boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
+        // boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
+        // boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
+        boxCollider2.vertexA.x = 10 * go2.transform.scale.x;
+        boxCollider2.vertexA.y = 10 * go2.transform.scale.y;
+        boxCollider2.vertexB.x = -10 * go2.transform.scale.x;
+        boxCollider2.vertexB.y = 0 * go2.transform.scale.y;
+        boxCollider2.vertexC.x = 10 * go2.transform.scale.x;
+        boxCollider2.vertexC.y = -10 * go2.transform.scale.y;
         boxCollider2.attachedRigidbody = rb2;
         boxCollider2.application = application;
         spriteRenderer2.sprite = sprite2;

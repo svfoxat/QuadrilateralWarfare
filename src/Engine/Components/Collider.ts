@@ -4,6 +4,7 @@ import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
 import {ClippingPlane, Geometry} from "../Geometry";
 import {BoxCollider} from "./BoxCollider";
+import {TriangleCollider} from "./TriangleCollider";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -11,8 +12,6 @@ export abstract class Collider extends Component {
     application: Application;
 
     static bounciness: number = .7;
-
-    abstract Collision(other: Collider): Vector2;
 
     abstract GetSeperatingAxes(): Array<Vector2>;
 
@@ -37,20 +36,44 @@ export abstract class Collider extends Component {
     }
 
     public static GetClippingPlanes(c1: Collider, c2: Collider, mtv: Vector2): ClippingPlane {
-        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
-            let edge1 = c1.ComputeBestEdge(mtv);
-            let edge2 = c2.ComputeBestEdge(mtv.Inverse());
+        let box1: BoxCollider, box2: BoxCollider, tri1: TriangleCollider, tri2: TriangleCollider, edge1, edge2;
+        box1 = c1 as BoxCollider;
+        box2 = c2 as BoxCollider;
+        tri1 = c1 as TriangleCollider;
+        tri2 = c2 as TriangleCollider;
 
-            if (Math.abs(edge1.vector().Dot(mtv)) <= Math.abs(edge2.vector().Dot(mtv))) {
-                return new ClippingPlane(edge1, edge2, false);
-            } else {
-                return new ClippingPlane(edge2, edge1, true);
-            }
+        if (box1 != null && box2 != null) {
+            edge1 = box1.ComputeBestEdge(mtv);
+            edge2 = box2.ComputeBestEdge(mtv.Inverse());
+        } else if (tri1 != null && box2 != null) {
+            edge1 = tri1.ComputeBestEdge(mtv);
+            edge2 = box2.ComputeBestEdge(mtv.Inverse());
+
+        } else if (box1 != null && tri2 != null) {
+            edge1 = box1.ComputeBestEdge(mtv);
+            edge2 = tri2.ComputeBestEdge(mtv.Inverse());
+
+        } else if (tri1 != null && tri2 != null) {
+            edge1 = tri1.ComputeBestEdge(mtv);
+            edge2 = tri2.ComputeBestEdge(mtv.Inverse());
+        }
+
+        if (Math.abs(edge1.vector().Dot(mtv)) <= Math.abs(edge2.vector().Dot(mtv))) {
+            return new ClippingPlane(edge1, edge2, false);
+        } else {
+            return new ClippingPlane(edge2, edge1, true);
         }
     }
 
     public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2, pl: ClippingPlane = null): Array<Vector2> {
-        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+        let box1, box2, tri1, tri2;
+        box1 = c1 as BoxCollider;
+        box2 = c2 as BoxCollider;
+        tri1 = c1 as TriangleCollider;
+        tri2 = c2 as TriangleCollider;
+
+        if (box1 != null || tri1 != null &&
+            box2 != null || tri2 != null) {
             let plane = this.GetClippingPlanes(c1, c2, mtv);
             let ref = plane.ref, inc = plane.inc, flip = plane.flip;
             if (pl != null) {
@@ -82,7 +105,7 @@ export abstract class Collider extends Component {
         }
     }
 
-    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2, flip: boolean): void {
+    public static ComputeAndApplyForces(c1: Collider, c2: Collider, mtv: Vector2, contactPoint: Vector2, normal: Vector2): void {
         if (contactPoint != undefined) {
             let rAP, rBP, wA1, wB1, vA1, vB1, vAP1, vBP1, n, j;
             rAP = Vector2.Sub(contactPoint, Vector2.FromPoint(c1.gameObject.transform.position));
@@ -125,7 +148,33 @@ export abstract class Collider extends Component {
     }
 
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {
-        return c1.Collision(c2);
+        let box1 = c1 as BoxCollider;
+        let box2 = c2 as BoxCollider;
+        if (box1 != null && box2 != null) {
+            return Collider.BoxBox(box1, box2);
+        }
+
+        let triangle1 = c1 as TriangleCollider;
+        let triangle2 = c2 as TriangleCollider;
+
+        if (triangle1 != null && triangle2 != null) {
+            return Collider.TriangleTriangle(triangle1, triangle2);
+        }
+
+        if (box1 != null && triangle2 != null) {
+            return Collider.BoxTriangle(box1, triangle2);
+        }
+        if (box2 != null && triangle1 != null) {
+            return Collider.BoxTriangle(box2, triangle1);
+        }
+
+        let circle1 = c1 as CircleCollider;
+        let circle2 = c2 as CircleCollider;
+        if (circle1 != null || circle2 != null) {
+            return undefined;
+        }
+
+        return undefined;
     }
 
     public static BoxBox(box1: BoxCollider, box2: BoxCollider): Vector2 {
@@ -179,6 +228,104 @@ export abstract class Collider extends Component {
 
     public static CircleCircle(circle1: CircleCollider, circle2: CircleCollider): Vector2 {
         return null;
+    }
+
+    public static BoxTriangle(box1: BoxCollider, tri2: TriangleCollider): Vector2 {
+        let smallestAxis = null;
+        let overlap = 100000.0;
+        // Obtain seperating axes1 from box1
+        let axes1 = box1.GetSeperatingAxes();
+        // Obtain seperating axes2 from box2
+        let axes2 = tri2.GetSeperatingAxes();
+
+        // Loop over axes1
+        for (let axis of axes1) {
+            // // project both shapes onto the axis
+            let p1 = box1.GetProjection(axis);
+            let p2 = tri2.GetProjection(axis);
+            // // do the projections overlap?
+            if (!this.Overlap(p1, p2)) {
+                // // if no: then we can guarantee that the shapes do not overlap
+                return null;
+            } else {
+                // // if yes: // get the overlap, check if it is the minimal overlap
+                let o = this.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        // Loop over axes2
+        for (let axis of axes2) {
+            // // project both shapes onto the axis
+            let p1 = box1.GetProjection(axis);
+            let p2 = tri2.GetProjection(axis);
+            // // do the projections overlap?
+            if (!this.Overlap(p1, p2)) {
+                // // if no: then we can guarantee that the shapes do not overlap
+                return null;
+            } else {
+                // // if yes: // get the overlap, check if it is the minimal overlap
+                let o = this.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        return Vector2.Mul(smallestAxis, overlap);
+    }
+
+    public static TriangleTriangle(tri1: TriangleCollider, tri2: TriangleCollider): Vector2 {
+        let smallestAxis = null;
+        let overlap = 100000.0;
+        // Obtain seperating axes1 from box1
+        let axes1 = tri1.GetSeperatingAxes();
+        // Obtain seperating axes2 from box2
+        let axes2 = tri2.GetSeperatingAxes();
+
+        // Loop over axes1
+        for (let axis of axes1) {
+            // // project both shapes onto the axis
+            let p1 = tri1.GetProjection(axis);
+            let p2 = tri2.GetProjection(axis);
+            // // do the projections overlap?
+            if (!this.Overlap(p1, p2)) {
+                // // if no: then we can guarantee that the shapes do not overlap
+                return null;
+            } else {
+                // // if yes: // get the overlap, check if it is the minimal overlap
+                let o = this.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        // Loop over axes2
+        for (let axis of axes2) {
+            // // project both shapes onto the axis
+            let p1 = tri1.GetProjection(axis);
+            let p2 = tri2.GetProjection(axis);
+            // // do the projections overlap?
+            if (!this.Overlap(p1, p2)) {
+                // // if no: then we can guarantee that the shapes do not overlap
+                return null;
+            } else {
+                // // if yes: // get the overlap, check if it is the minimal overlap
+                let o = this.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        return Vector2.Mul(smallestAxis, overlap);
     }
 
     public static BoxCircle(box1: BoxCollider, circle2: CircleCollider): Vector2 {

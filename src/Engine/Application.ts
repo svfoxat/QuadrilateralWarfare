@@ -83,7 +83,7 @@ export default class Application {
                         let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
                         let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
 
-                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized());
                     }
                 }
             }
