@@ -4,6 +4,7 @@ import {InputManager} from "../../Engine/InputManager";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {Vector2} from "../../Engine/Vector2";
 import {Time} from "../../Engine/Time";
+import {TextRenderer} from "../../Engine/Components/TextRenderer";
 
 export default class ObjectMoveScript extends Component {
     gameObject: Gameobject;
@@ -13,11 +14,21 @@ export default class ObjectMoveScript extends Component {
     private moveSpeed = 1.0;
     private drag: boolean = false;
 
+    private text: TextRenderer;
+
     Start = (): void => {
         this.inputManager = InputManager.getInstance();
+        this.text = this.gameObject.AddComponent(TextRenderer) as TextRenderer;
+        this.text.style = {
+            fontSize: 25,
+            dropShadow: true,
+            stroke: "white",
+            strokeThickness: 2,
+        }
     };
 
     Enable = () => {
+
     };
 
     OnMouseDown = (): void => {
@@ -30,7 +41,12 @@ export default class ObjectMoveScript extends Component {
        this.drag = false;
     };
 
-    Update = (): void => {
+    Update = () => {
+        const rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
+        this.text.text = `y:${rb.velocity.y.toFixed(1)} x:${rb.velocity.x.toFixed(1)}`
+    };
+
+    FixedUpdate = (): void => {
         let modifier;
 
         if (this.inputManager.Keyboard.shift) {

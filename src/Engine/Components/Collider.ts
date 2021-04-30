@@ -9,7 +9,7 @@ export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
     application: Application;
-    maxSleep: number = 15;
+    maxSleep: number = 100;
     sleepCount: number = 0;
     lastPos: Vector2 = Vector2.Zero();
     lastRot: number = 0;
@@ -27,7 +27,7 @@ export abstract class Collider extends Component {
     }
 
     public SleepTick(): void {
-        if (this.lastPos.Sub(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Mag() < .1 && this.lastRot - this.gameObject.absoluteTransform.rotation < .1) {
+        if (this.attachedRigidbody.velocity.Mag() < 0.8 && this.attachedRigidbody.angularVelocity < 0.1) {
             if (++this.sleepCount >= this.maxSleep) {
                 this.attachedRigidbody.isAsleep = true;
             }
@@ -148,9 +148,9 @@ export abstract class Collider extends Component {
     public static BoxBox(box1: BoxCollider, box2: BoxCollider): Vector2 {
         let smallestAxis = null;
         let overlap = 100000.0;
-        // Obtain seperating axes1 from box1
+        // Obtain separating axes1 from box1
         let axes1 = box1.GetSeperatingAxes();
-        // Obtain seperating axes2 from box2
+        // Obtain separating axes2 from box2
         let axes2 = box2.GetSeperatingAxes();
 
         // Loop over axes1

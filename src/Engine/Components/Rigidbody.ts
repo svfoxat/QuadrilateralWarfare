@@ -33,15 +33,15 @@ export class Rigidbody extends Component
             this.velocity = this.velocity.Add(this.acceleration.Add(this.force.Div(this.mass)).Mul(Time.fixedDeltaTime()));
             this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
         }
-    };
 
-    Update = (): void => {
         if (!this.isStatic && this.mass > 0 && !this.isAsleep) {
-            this.gameObject.transform.position.x += this.velocity.x * Time.deltaTime();
-            this.gameObject.transform.position.y += this.velocity.y * Time.deltaTime();
-            this.gameObject.transform.rotation += this.angularVelocity * Time.deltaTime();
+            this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
+            this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
+            this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
         }
     };
+
+    Update = () => {}
 
     SetAsleep() {
         this.isAsleep = true;

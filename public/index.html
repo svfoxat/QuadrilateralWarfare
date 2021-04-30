@@ -6,9 +6,20 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <script src="vendors~main.bundle.js"></script>
+    <script src="bundle.js"></script>
 </head>
 <body>
     <div id="app_container"></div>
-    <script src="bundle.js"></script>
+    <div id="name"></div>
 </body>
 </html>
+
+<script>
+    (async() => {
+        document.getElementById("name").innerText = "Waiting for Game"
+        while(!window.hasOwnProperty("app"))
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log("Engine found!");
+        document.getElementById("name").innerText = window.app.activeScene.gameObjects.length + " Gameobjects"
+    })();
+</script>

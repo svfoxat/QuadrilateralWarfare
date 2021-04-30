@@ -6,14 +6,22 @@ import {Vector2} from "./Vector2";
 import {ClippingPlane} from "./Geometry";
 import {InputManager} from "./InputManager";
 import {BoxCollider} from "./Components/BoxCollider";
+import {Scene} from "./Scene";
 
 export default class Application {
     name: string;
     pixi: PIXI.Application;
     userScripts: any;
     appContainer: HTMLElement;
+    activeScene: Scene = null;
 
     constructor({ width, height, name, userScripts }: IApplicationProperties) {
+        // @ts-ignore
+        window.app = this;
+
+        PIXI.settings.RESOLUTION = window.devicePixelRatio;
+        PIXI.settings.RENDER_OPTIONS.antialias = true;
+
         this.name = name;
         this.userScripts = userScripts;
 
@@ -51,15 +59,24 @@ export default class Application {
 
     }
 
+
     private start() {
-        this.pixi.ticker.add((deltaTime => {
-            document.title = `${SceneManager.getInstance().activeScene.name} - ${this.name}`;
-            Time.delta = deltaTime;
-            SceneManager.getInstance().activeScene.sceneRoot.Update();
-        }));
+        const ticker = new PIXI.ticker.Ticker();
+        ticker.autoStart = false;
+        const desiredFPS = 30;
+
+        ticker.start();
+        setInterval(() => {
+            ticker.update(performance.now());
+            Time.delta = ticker.deltaTime;
+            Time.elapsedMS = ticker.elapsedMS;
+            SceneManager.getInstance().activeScene?.sceneRoot.Update();
+            this.pixi.renderer.render(this.pixi.stage);
+        }, 1000 / desiredFPS)
 
         let normalArrow: PIXI.Graphics = null;
 
+        Time.t = 1;
         setInterval(() => {
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             let colliders = new Array<BoxCollider>();

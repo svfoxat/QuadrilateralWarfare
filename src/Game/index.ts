@@ -8,10 +8,11 @@ import {SpriteRenderer} from "../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../Engine/Components/BoxCollider";
 import {Rigidbody} from "../Engine/Components/Rigidbody";
 import {Vector2} from "../Engine/Vector2";
-import {Time} from "../Engine/Time";
 import ObjectMoveScript from "./Scripts/ObjectMoveScript";
 import Transform = PIXI.Transform;
 import Point = PIXI.Point;
+import {TextRenderer} from "../Engine/Components/TextRenderer";
+import PerformanceDisplay from "./Scripts/PerformanceDisplay";
 
 class Main {
     constructor() {
@@ -35,7 +36,6 @@ class Main {
         const scene1: string = require("./Scenes/scene1.json");
         const scene2: string = require("./Scenes/scene2.json");
         // SceneManager.getInstance().LoadScene(scene2);
-        Time.t = .01;
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
 
@@ -44,25 +44,25 @@ class Main {
         let greenBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0x00FF00);
         let blueBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
 
-        let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
+        let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 500), new Vector2(10, 10), 0xFF00FF);
         let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
         rb.useGravity = true;
         rb.mass = 10;
         rb.inertia = 10;
 
-        let redBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1100, 800), new Vector2(80, 5), 0xFF0000);
+        let redBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1100, 650), new Vector2(80, 5), 0xFF0000);
         let rb4 = redBox1.GetComponent(Rigidbody) as Rigidbody;
         rb4.useGravity = true;
         rb4.mass = 10;
         rb4.inertia = 10;
 
-        let redBox2 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 1000), new Vector2(5, 30), 0xFF0000);
+        let redBox2 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 830), new Vector2(5, 30), 0xFF0000);
         let rb3 = redBox2.GetComponent(Rigidbody) as Rigidbody;
         rb3.useGravity = true;
         rb3.mass = 10;
         rb3.inertia = 10;
 
-        let redBox3 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(800, 1000), new Vector2(5, 30), 0xFF0000);
+        let redBox3 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(800, 830), new Vector2(5, 30), 0xFF0000);
         let rb5 = redBox3.GetComponent(Rigidbody) as Rigidbody;
         rb5.useGravity = true;
         rb5.mass = 10;
@@ -90,13 +90,17 @@ class Main {
         sprite2.on("mousedown", e => {
             rb2.useGravity = true;
         });
-        scene.Add(go2);
         application.pixi.stage.addChild(sprite2);
+        scene.Add(go2);
 
+        const overlay = new Gameobject(new Transform(), scene.sceneRoot);
+        overlay.AddComponent(PerformanceDisplay);
+        scene.Add(overlay);
 
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);
         application.pixi.stage = scene.container;
+        application.activeScene = scene;
     }
 }
 
