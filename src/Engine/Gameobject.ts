@@ -144,6 +144,16 @@ export class Gameobject  {
         }
     }
 
+    public static Destroy(g: Gameobject) {
+        g.components.forEach(i => i.OnDestroy && i.OnDestroy());
+        g.components = [];
+
+        g.scene.gameObjects = g.scene.gameObjects.filter(j => j !== g);
+        g.children.forEach(c => Gameobject.Destroy(c));
+
+        g = null;
+    }
+
     public static CreateSprite(application: Application, scene: Scene, texture: Texture, pos: Vector2, size: Vector2, color: number): Gameobject {
         const sprite = new PIXI.Sprite(texture);
         sprite.tint = color;

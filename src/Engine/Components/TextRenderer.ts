@@ -32,4 +32,8 @@ export class TextRenderer extends Component {
         this._text.pivot.set((this._text.width / transform.scale.x) / 2, (this._text.height / transform.scale.y) / 2);
         this._text.rotation = transform.rotation;
     }
+
+    OnDestroy = () => {
+        this._text.destroy();
+    }
 }

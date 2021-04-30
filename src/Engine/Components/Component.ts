@@ -10,6 +10,8 @@ export class Component {
     Update: () => void;
     FixedUpdate: () => void;
 
+    OnDestroy: () => void;
+
     OnTriggerEnter: () => void;
     OnTriggerExit: () => void;
     OnTriggerStay: () => void;
