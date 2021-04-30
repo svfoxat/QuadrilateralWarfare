@@ -28,4 +28,8 @@ export class SpriteRenderer extends Component
         this.sprite.pivot.set((this.sprite.width / transform.scale.x) / 2, (this.sprite.height / transform.scale.y) / 2);
         this.sprite.rotation = transform.rotation;
     };
+
+    OnDestroy = () => {
+        this.sprite.destroy();
+    }
 }

@@ -39,6 +39,7 @@ export default class ObjectMoveScript extends Component {
 
     OnMouseUp = (): void => {
        this.drag = false;
+       // Gameobject.Destroy(this.gameObject);
     };
 
     Update = () => {
