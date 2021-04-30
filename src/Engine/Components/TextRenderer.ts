@@ -29,7 +29,8 @@ export class TextRenderer extends Component {
         // pivot, (position, rotation, scale) from transform
         let transform = this.gameObject.absoluteTransform;
         this._text.position.set(transform.position.x + this.position.x, transform.position.y + this.position.y);
-        this._text.pivot.set((this._text.width / transform.scale.x) / 2, (this._text.height / transform.scale.y) / 2);
+        this._text.pivot.set((this._text.width / transform.scale.x) / 2,
+            (this._text.height / transform.scale.y) / 2);
         this._text.rotation = transform.rotation;
     }
 

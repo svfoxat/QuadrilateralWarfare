@@ -17,7 +17,10 @@ export default class PerformanceDisplay extends Component {
         let frameTime = Time.elapsedMS;
         let fps = Math.ceil(1000/frameTime)
 
+        let animFrameTime = Time.animationElapsedMS;
+        let animFPS = Math.ceil(1000 / animFrameTime);
+
         this.text1.text = `Renderloop:  ${Math.ceil(frameTime)}ms, ${fps}fps\n` +
-                          `Physicsloop: ${Time.t}ms, ${Math.ceil(1000 / Time.t)}it/s`
+                          `Physicsloop: ${Math.ceil(animFrameTime)}ms, ${animFPS}it/s`
     }
 }

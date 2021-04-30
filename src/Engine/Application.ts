@@ -15,6 +15,14 @@ export default class Application {
     appContainer: HTMLElement;
     activeScene: Scene = null;
 
+    public desiredFPS: number = 30;
+    private renderTicker: PIXI.ticker.Ticker;
+    private renderInterval: NodeJS.Timeout;
+
+    private animationTicker: PIXI.ticker.Ticker;
+    private animationInterval: NodeJS.Timeout;
+    public desiredT: number = 1;
+
     constructor({ width, height, name, userScripts }: IApplicationProperties) {
         // @ts-ignore
         window.app = this;
@@ -48,7 +56,6 @@ export default class Application {
     }
 
     contactPoint = new PIXI.Graphics();
-
     private DrawContactPoint(contactPoint: Vector2): void {
         this.contactPoint.clear();
         this.contactPoint.lineStyle(2, 0xFF0000);
@@ -56,28 +63,56 @@ export default class Application {
         this.contactPoint.drawCircle(contactPoint.x, contactPoint.y, 5);
         this.contactPoint.endFill();
         this.pixi.stage.addChild(this.contactPoint);
-
     }
 
-
     private start() {
-        const ticker = new PIXI.ticker.Ticker();
-        ticker.autoStart = false;
-        const desiredFPS = 30;
+        this.renderInterval && clearInterval(this.renderInterval);
+        this.animationInterval && clearInterval(this.animationInterval);
 
-        ticker.start();
-        setInterval(() => {
-            ticker.update(performance.now());
-            Time.delta = ticker.deltaTime;
-            Time.elapsedMS = ticker.elapsedMS;
+        this.renderInterval = this.startRenderLoop(this.desiredFPS);
+        this.animationInterval = this.startAnimationLoop(this.desiredT);
+    }
+
+    public SetMaxFPS(fps: number) {
+        this.desiredFPS = fps;
+        this.start();
+    }
+
+    public SetAnimationT(t: number) {
+        this.desiredT = t;
+        this.start();
+    }
+
+    private startRenderLoop(desiredFPS: number) {
+        if (!this.renderTicker) {
+            this.renderTicker = new PIXI.ticker.Ticker()
+            this.renderTicker.autoStart = false;
+            this.renderTicker.start();
+        }
+
+        return setInterval(() => {
+            this.renderTicker.update(performance.now());
+            Time.delta = this.renderTicker.deltaTime;
+            Time.elapsedMS = this.renderTicker.elapsedMS;
             SceneManager.getInstance().activeScene?.sceneRoot.Update();
             this.pixi.renderer.render(this.pixi.stage);
         }, 1000 / desiredFPS)
+    }
 
-        let normalArrow: PIXI.Graphics = null;
+    private startAnimationLoop(t: number) {
+        if (!this.animationTicker) {
+            this.animationTicker = new PIXI.ticker.Ticker()
+            this.animationTicker.autoStart = false;
+            this.animationTicker.start();
+        }
 
-        Time.t = 1;
-        setInterval(() => {
+        Time.t = t;
+        return setInterval(() => {
+            this.animationTicker.update(performance.now());
+
+            Time.animationDelta = this.animationTicker.deltaTime;
+            Time.animationElapsedMS = this.animationTicker.elapsedMS;
+
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             let colliders = new Array<BoxCollider>();
             for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
@@ -106,7 +141,7 @@ export default class Application {
                 }
             }
 
-        }, Time.t)
+        }, t)
     }
 }
 
