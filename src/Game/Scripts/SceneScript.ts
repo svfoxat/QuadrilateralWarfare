@@ -7,16 +7,14 @@ import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../../Engine/Components/BoxCollider";
 import ObjectMoveScript from "./ObjectMoveScript";
-import {EnemyScript} from "./EnemyScript";
-import {GameController} from "./GameController";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
 
-        let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
-        gamecontroller.AddComponent(GameController);
+        // let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
+        // gamecontroller.AddComponent(GameController);
 
         let floor = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
         let top = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x00FF00);
@@ -24,9 +22,9 @@ export class SceneScript {
         let left = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
 
         let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
-        redBox.parent = gamecontroller;
+        // redBox.parent = gamecontroller;
         let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
-        let es = redBox.AddComponent(EnemyScript) as EnemyScript;
+        // let es = redBox.AddComponent(EnemyScript) as EnemyScript;
         rb.useGravity = true;
         rb.mass = 1;
 
@@ -34,7 +32,6 @@ export class SceneScript {
         let rb4 = redBox1.GetComponent(Rigidbody) as Rigidbody;
         rb4.useGravity = true;
         rb4.mass = 1;
-
 
         let redBox2 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 1000), new Vector2(5, 30), 0xFF0000);
         let rb3 = redBox2.GetComponent(Rigidbody) as Rigidbody;
@@ -54,7 +51,7 @@ export class SceneScript {
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.angularVelocity = 0;
-        rb2.velocity = Vector2.Zero();
+        rb2.velocity = new Vector2(1, 0);//Vector2.Zero();
         rb2.mass = 10;
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(5, 5).AsPoint();

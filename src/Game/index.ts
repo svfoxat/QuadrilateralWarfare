@@ -2,11 +2,10 @@ import * as PIXI from "pixi.js";
 import Application from "../Engine/Application";
 import {SceneManager} from "../Engine/SceneManager";
 import {Scripts} from "./Scripts/Scripts";
-import {Time} from "../Engine/Time";
 import {SceneScript} from "./Scripts/SceneScript";
 import {Gameobject} from "../Engine/Gameobject";
-import Transform = PIXI.Transform;
 import PerformanceDisplay from "./Scripts/PerformanceDisplay";
+import Transform = PIXI.Transform;
 
 class Main {
     constructor() {
@@ -30,7 +29,6 @@ class Main {
         const scene1: string = require("./Scenes/scene1.json");
         const scene2: string = require("./Scenes/scene2.json");
         // SceneManager.getInstance().LoadScene(scene2);
-        Time.t = .01;
 
         let scene = SceneScript.GetMainScene(application);
 

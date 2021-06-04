@@ -9,7 +9,7 @@ export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
     application: Application;
-    maxSleep: number = 100;
+    maxSleep: number = 1000;
     sleepCount: number = 0;
     lastPos: Vector2 = Vector2.Zero();
     lastRot: number = 0;
@@ -27,7 +27,7 @@ export abstract class Collider extends Component {
     }
 
     public SleepTick(): void {
-        if (this.attachedRigidbody.velocity.Mag() < 0.8 && this.attachedRigidbody.angularVelocity < 0.1) {
+        if (this.attachedRigidbody.velocity.Mag() < 0.5 && this.attachedRigidbody.angularVelocity < 0.5) {
             if (++this.sleepCount >= this.maxSleep) {
                 this.attachedRigidbody.isAsleep = true;
             }
