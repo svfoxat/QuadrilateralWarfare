@@ -38,7 +38,7 @@ export class Gameobject {
     public Update() {
         this.UpdateAllComponents();
 
-        for(let go of this.children) {
+        for (let go of this.children) {
             go.Update();
         }
     }
@@ -160,12 +160,14 @@ export class Gameobject {
         }
     }
 
-    public Destroy() {
-        this.components.forEach(e => e = null);
-        this.components = null;
-        this.children.forEach(e => e.Destroy());
-        this.children = null;
-        this.parent.children = this.parent.children.filter(e => e != this);
+    public static Destroy(g: Gameobject) {
+        g.components.forEach(i => i.OnDestroy && i.OnDestroy());
+        g.components = [];
+
+        g.scene.gameObjects = g.scene.gameObjects.filter(j => j !== g);
+        g.children.forEach(c => Gameobject.Destroy(c));
+
+        g = null;
     }
 
     public static CreateSprite(application: Application, scene: Scene, texture: Texture, pos: Vector2, size: Vector2, color: number): Gameobject {

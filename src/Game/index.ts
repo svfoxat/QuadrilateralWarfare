@@ -4,6 +4,9 @@ import {SceneManager} from "../Engine/SceneManager";
 import {Scripts} from "./Scripts/Scripts";
 import {Time} from "../Engine/Time";
 import {SceneScript} from "./Scripts/SceneScript";
+import {Gameobject} from "../Engine/Gameobject";
+import Transform = PIXI.Transform;
+import PerformanceDisplay from "./Scripts/PerformanceDisplay";
 
 class Main {
     constructor() {
@@ -31,9 +34,14 @@ class Main {
 
         let scene = SceneScript.GetMainScene(application);
 
+        const overlay = new Gameobject(new Transform(), scene.sceneRoot);
+        overlay.AddComponent(PerformanceDisplay);
+        scene.Add(overlay);
+
         SceneManager.getInstance().activeScene = scene;
         application.pixi.renderer.render(scene.container);
         application.pixi.stage = scene.container;
+        application.activeScene = scene;
     }
 }
 

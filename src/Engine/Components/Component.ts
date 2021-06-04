@@ -11,6 +11,7 @@ export class Component {
     Update: () => void;
     FixedUpdate: () => void;
 
+    OnDestroy: () => void;
     OnCollision: (other: Collider) => void;
     OnTriggerEnter: () => void;
     OnTriggerExit: () => void;

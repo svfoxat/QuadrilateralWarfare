@@ -9,6 +9,10 @@ export abstract class Collider extends Component {
     isTrigger: boolean = false;
     attachedRigidbody: Rigidbody;
     application: Application;
+    maxSleep: number = 100;
+    sleepCount: number = 0;
+    lastPos: Vector2 = Vector2.Zero();
+    lastRot: number = 0;
 
     static bounciness: number = .7;
 
@@ -20,6 +24,19 @@ export abstract class Collider extends Component {
 
     private static MovableRigidbody(c: Collider): boolean {
         return !(c?.attachedRigidbody == null || c.attachedRigidbody.isStatic || c.attachedRigidbody.mass === 0);
+    }
+
+    public SleepTick(): void {
+        if (this.attachedRigidbody.velocity.Mag() < 0.8 && this.attachedRigidbody.angularVelocity < 0.1) {
+            if (++this.sleepCount >= this.maxSleep) {
+                this.attachedRigidbody.isAsleep = true;
+            }
+        } else {
+            this.sleepCount = 0;
+            this.attachedRigidbody.isAsleep = false;
+        }
+        this.lastPos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+        this.lastRot = this.gameObject.absoluteTransform.rotation;
     }
 
     public static HandleCollision(c1: Collider, c2: Collider, mtv: Vector2): void {
@@ -131,9 +148,9 @@ export abstract class Collider extends Component {
     public static BoxBox(box1: BoxCollider, box2: BoxCollider): Vector2 {
         let smallestAxis = null;
         let overlap = 100000.0;
-        // Obtain seperating axes1 from box1
+        // Obtain separating axes1 from box1
         let axes1 = box1.GetSeperatingAxes();
-        // Obtain seperating axes2 from box2
+        // Obtain separating axes2 from box2
         let axes2 = box2.GetSeperatingAxes();
 
         // Loop over axes1
