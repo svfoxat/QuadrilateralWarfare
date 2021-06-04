@@ -100,6 +100,13 @@ export class Gameobject  {
         return component;
     }
 
+    public AddExistingComponent<T extends Component>(component: T): T {
+        component.gameObject = this;
+        this.components.push(component);
+        this.EnableComponents();
+        return component;
+    }
+
     public OnMouseDown() {
         if (!this._enabled) return;
 
