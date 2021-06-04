@@ -7,9 +7,15 @@ import {Vector2} from "./Vector2";
 import {SpriteRenderer} from "./Components/SpriteRenderer";
 import {BoxCollider} from "./Components/BoxCollider";
 import {Rigidbody} from "./Components/Rigidbody";
+import {Collider} from "./Components/Collider";
 import Texture = PIXI.Texture;
 
-export class Gameobject  {
+export class Gameobject {
+    get enabled(): boolean {
+        return this._enabled;
+    }
+
+    public name: string;
     public transform: Transform;
     public absoluteTransform: Transform = new Transform();
     public parent: Gameobject;
@@ -120,6 +126,16 @@ export class Gameobject  {
         }
     }
 
+    public OnCollision(other: Collider) {
+        if (!this._enabled) return;
+        for (let component of this.components) {
+            if (component.OnCollision) {
+                component.OnCollision(other);
+            }
+        }
+        this.children?.forEach(e => e.OnCollision(other));
+    }
+
     private UpdateTransform() {
         if (!this.parent) {
             this.absoluteTransform = this.transform;
@@ -161,9 +177,7 @@ export class Gameobject  {
         let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
         let rb = go.AddComponent(Rigidbody) as Rigidbody;
-        rb.useGravity = false;
         rb.mass = 0;
-        rb.inertia = 0;
         rb.elasticity = 1;
         go.transform.position = pos.AsPoint();
         go.transform.scale = size.AsPoint();

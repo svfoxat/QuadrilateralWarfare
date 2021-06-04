@@ -14,7 +14,7 @@ export class Rigidbody extends Component
 {
     gameObject: Gameobject;
     name: string = "Rigidbody";
-    mass: number = 0;
+    mass: number = 1;
     velocity: Vector2 = new Vector2(0, 0);
     angularVelocity: number = 0;
     inertia: number = 0;

@@ -117,7 +117,7 @@ export default class Application {
             let colliders = new Array<BoxCollider>();
             for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
                 let coll = go.GetComponent(BoxCollider) as BoxCollider;
-                if (coll != null && coll.enabled) {
+                if (coll != null && coll.enabled && go.enabled) {
                     colliders.push(coll);
                 }
             }
@@ -137,6 +137,8 @@ export default class Application {
                         Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
                         colliders[i].SleepTick();
                         colliders[j].SleepTick();
+                        colliders[i].gameObject.OnCollision(colliders[j]);
+                        colliders[j].gameObject.OnCollision(colliders[i]);
                     }
                 }
             }
