@@ -1,6 +1,7 @@
 import {Component} from "../../Engine/Components/Component";
 import {GameController} from "./GameController";
 import {Collider} from "../../Engine/Components/Collider";
+import {Gameobject} from "../../Engine/Gameobject";
 
 export class EnemyScript extends Component {
     private game: GameController;
@@ -20,8 +21,7 @@ export class EnemyScript extends Component {
         }
         if (other.gameObject.name === "Player") {
             this.game.KillEnemy();
-            // this.gameObject.Destroy();
-            // this.gameObject = null;
+            Gameobject.Destroy(this.gameObject);
         } else if (other.gameObject.name === "Ground") {
             if (++this.ticks === this.maxTicks) {
                 // this.gameObject.Destroy();

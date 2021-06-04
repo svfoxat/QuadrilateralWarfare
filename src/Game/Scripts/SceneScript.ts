@@ -7,14 +7,16 @@ import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../../Engine/Components/BoxCollider";
 import ObjectMoveScript from "./ObjectMoveScript";
+import {GameController} from "./GameController";
+import {EnemyScript} from "./EnemyScript";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
 
-        // let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
-        // gamecontroller.AddComponent(GameController);
+        let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
+        gamecontroller.AddComponent(GameController);
 
         let floor = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
         let top = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x00FF00);
@@ -22,9 +24,9 @@ export class SceneScript {
         let left = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
 
         let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
-        // redBox.parent = gamecontroller;
+        redBox.parent = gamecontroller;
         let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
-        // let es = redBox.AddComponent(EnemyScript) as EnemyScript;
+        let es = redBox.AddComponent(EnemyScript) as EnemyScript;
         rb.useGravity = true;
         rb.mass = 1;
 

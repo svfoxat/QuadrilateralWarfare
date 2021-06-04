@@ -10,7 +10,7 @@ export class GameController extends Component {
 
     public KillEnemy(): void {
         this.points++;
-        if (--this.enemiesAlive === 0) {
+        if (--this.enemiesAlive == 0) {
             this.WinGame();
         }
     }
