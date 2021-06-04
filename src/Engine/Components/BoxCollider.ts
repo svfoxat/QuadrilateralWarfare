@@ -1,5 +1,5 @@
-import {Vector2} from "../Vector2";
-import {Edge} from "../Geometry";
+import {Vector2} from "../Math/Vector2";
+import {Edge} from "../Math/Geometry";
 import {CircleCollider, Collider} from "./Collider";
 
 export class BoxCollider extends Collider {

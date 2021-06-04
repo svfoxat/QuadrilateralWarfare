@@ -2,7 +2,7 @@ import {Scene} from "../../Engine/Scene";
 import Application from "../../Engine/Application";
 import {Gameobject} from "../../Engine/Gameobject";
 import {Point, Transform} from "pixi.js";
-import {Vector2} from "../../Engine/Vector2";
+import {Vector2} from "../../Engine/Math/Vector2";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../../Engine/Components/BoxCollider";
