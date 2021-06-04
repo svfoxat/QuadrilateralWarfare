@@ -1,7 +1,8 @@
 import {Vector2} from "../Vector2";
 import {Component} from "./Component";
+import {Time} from "../Time";
 
-export class Particle {
+export interface Particle {
     pos: Vector2;
     velocity: Vector2;
     color: number;
@@ -47,7 +48,23 @@ export class ParticleSystem extends Component {
     }
 
     FixedUpdate = () => {
-        // Update TTL of each particle
-        // Do physic calculations for each particle (Runge Kutta)
+        // Respawn particles up to this.newAmount
+        for (let i = 0; i < this.newParticles; i++) {
+            let p = this.FirstUnusedParticle();
+            if (p != -1) {
+                this.RespawnParticle(this.particles[i]);
+            }
+        }
+
+        for (let i = 0; i < this.amount; i++) {
+            let particle = this.particles[i];
+            // Update TTL of each particle
+            particle.life -= Time.fixedDeltaTime();
+
+            if (particle.life > 0) {
+                // Do physic calculations for each particle (Runge Kutta)
+
+            }
+        }
     }
 }
