@@ -34,4 +34,8 @@ export class MeshComponent extends Component {
         }
         this.mesh.vertices = this.realVertices;
     }
+
+    OnDestroy = () => {
+        this.mesh.destroy();
+    }
 }
