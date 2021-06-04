@@ -2,7 +2,7 @@ import {Component} from "../../Engine/Components/Component";
 import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
-import {Vector2} from "../../Engine/Vector2";
+import {Vector2} from "../../Engine/Math/Vector2";
 import {Time} from "../../Engine/Time";
 import {TextRenderer} from "../../Engine/Components/TextRenderer";
 

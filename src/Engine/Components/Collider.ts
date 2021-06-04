@@ -1,8 +1,8 @@
 import {Component} from "./Component";
-import {Vector2} from "../Vector2";
+import {Vector2} from "../Math/Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
-import {ClippingPlane, Geometry} from "../Geometry";
+import {ClippingPlane, Geometry} from "../Math/Geometry";
 import {BoxCollider} from "./BoxCollider";
 
 export abstract class Collider extends Component {
