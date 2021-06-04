@@ -1,5 +1,5 @@
 import {Component} from "./Component";
-import {Vector3} from "../Vector3";
+import {Vector3} from "../Math/Vector3";
 import {Gameobject} from "../Gameobject";
 
 export class Transform extends Component {

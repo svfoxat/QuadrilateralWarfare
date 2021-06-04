@@ -1,4 +1,4 @@
-import {Vector2} from "./Vector2";
+import {Vector2} from "./Math/Vector2";
 
 export class Gizmos {
     public static DrawPoint(pos: Vector2, radius: number, color: number, lineWidth: number, lineColor: number): PIXI.Graphics {

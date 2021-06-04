@@ -3,7 +3,7 @@ import {Point, Transform} from "pixi.js";
 import {Component} from "./Components/Component";
 import {Scene} from "./Scene";
 import Application from "./Application";
-import {Vector2} from "./Vector2";
+import {Vector2} from "./Math/Vector2";
 import {SpriteRenderer} from "./Components/SpriteRenderer";
 import {BoxCollider} from "./Components/BoxCollider";
 import {Rigidbody} from "./Components/Rigidbody";
