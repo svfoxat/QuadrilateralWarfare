@@ -9,11 +9,18 @@ import {BoxCollider} from "../../Engine/Components/BoxCollider";
 import ObjectMoveScript from "./ObjectMoveScript";
 import {GameController} from "./GameController";
 import {EnemyScript} from "./EnemyScript";
+import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
+
+        let go = new Gameobject(new Transform(), scene.sceneRoot);
+        go.transform.position = new Point(500, 0);
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 1500, 1, 11, 0xff00ff, new Vector2(-1, -5), new Vector2(0, 0));
+        go.AddExistingComponent(ps);
+        scene.Add(go);
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
         gamecontroller.AddComponent(GameController);

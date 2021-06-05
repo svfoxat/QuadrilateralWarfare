@@ -1,5 +1,5 @@
 import {Component} from "./Component";
-import {Vector2} from "../Vector2";
+import {Vector2} from "../Math/Vector2";
 
 export class MeshComponent extends Component {
     mesh: PIXI.mesh.Mesh;

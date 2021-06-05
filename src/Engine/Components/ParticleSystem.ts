@@ -1,12 +1,20 @@
-import {Vector2} from "../Vector2";
+import {Vector2} from "../Math/Vector2";
 import {Component} from "./Component";
 import {Time} from "../Time";
+import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
+import {Forcefield} from "../Forcefield";
 
-export interface Particle {
-    pos: Vector2;
-    velocity: Vector2;
-    color: number;
-    life: number;
+export class Particle {
+    sprite: PIXI.Sprite;
+    pos: Vector2 = Vector2.Zero();
+    velocity: Vector2 = Vector2.Zero();
+    color: number = 0x000000;
+    life: number = 0;
+    mass: number = 1;
+
+    ToString() {
+        return "x: " + this.pos.x + ", y: " + this.pos.y;
+    }
 }
 
 export class ParticleSystem extends Component {
@@ -18,6 +26,7 @@ export class ParticleSystem extends Component {
     initVelocity: Vector2;
     offset: Vector2;
     particles: Array<Particle>;
+    lastUsedParticle: number = 0;
 
     constructor(texture: PIXI.Texture, amount: number, newParticles: number, ttl: number, color: number, initVelocity: Vector2, offset: Vector2) {
         super();
@@ -27,24 +36,60 @@ export class ParticleSystem extends Component {
         this.newParticles = newParticles;
         this.ttl = ttl;
         this.baseColor = color;
+        this.initVelocity = initVelocity;
         this.offset = offset;
-
-        // Add particles to renderer
     }
 
+    Enable = () => {
+        // Add particles to renderer
+        for (let i = 0; i < this.amount; i++) {
+            this.particles[i] = new Particle();
+            this.particles[i].sprite = new PIXI.Sprite(this.texture);
+            this.particles[i].sprite.tint = this.baseColor;
+            this.particles[i].sprite.x = this.gameObject.absoluteTransform.position.x + this.offset.x;
+            this.particles[i].sprite.y = this.gameObject.absoluteTransform.position.y + this.offset.y;
+            this.gameObject.scene?.container.addChild(this.particles[i].sprite);
+        }
+    }
+
+    f1(x1: Vector2, x2: Vector2, t: number): Vector2 {
+        return x1;
+    }
+
+    f2(x1: Vector2, x2: Vector2, t: number): Vector2 {
+        return x2;
+    }
 
     FirstUnusedParticle(): number {
-        for (let i = 0; i < this.amount; i++) {
-            if (this.particles[i].life <= 0) return i;
+        for (let i = this.lastUsedParticle; i < this.amount; i++) {
+            if (this.particles[i].life <= 0) {
+                this.lastUsedParticle = i;
+                return i;
+            }
+        }
+
+        for (let i = 0; i < this.lastUsedParticle; i++) {
+            if (this.particles[i].life <= 0) {
+                this.lastUsedParticle = i;
+                return i;
+            }
         }
         return -1;
     }
 
     RespawnParticle(particle: Particle) {
+        this.gameObject.scene?.container.removeChild(particle.sprite);
         particle.pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
+        particle.pos.x += Math.random() * 1000;
+        particle.sprite.position = particle.pos.AsPoint();
         particle.color = this.baseColor;
         particle.life = this.ttl;
-        particle.velocity = this.initVelocity;
+        particle.velocity = new Vector2(0, Math.random() * 100);
+        this.gameObject.scene?.container.addChild(particle.sprite);
+    }
+
+    Update = () => {
+
     }
 
     FixedUpdate = () => {
@@ -52,18 +97,24 @@ export class ParticleSystem extends Component {
         for (let i = 0; i < this.newParticles; i++) {
             let p = this.FirstUnusedParticle();
             if (p != -1) {
-                this.RespawnParticle(this.particles[i]);
+                this.RespawnParticle(this.particles[p]);
             }
         }
 
         for (let i = 0; i < this.amount; i++) {
-            let particle = this.particles[i];
             // Update TTL of each particle
-            particle.life -= Time.fixedDeltaTime();
+            this.particles[i].life -= Time.fixedDeltaTime();
 
-            if (particle.life > 0) {
+            if (this.particles[i].life > 0) {
                 // Do physic calculations for each particle (Runge Kutta)
+                let solver = new RungeKuttaSolver(this.particles[i].velocity, Forcefield.GetForceAtPosition(this.particles[i].pos).Div(this.particles[i].mass),
+                    this.ttl - this.particles[i].life, Time.fixedDeltaTime(), this.f1, this.f2)
+                solver.SolveForIterations(1);
+                this.particles[i].pos = solver.x1;
+                //this.particles[i].velocity = solver.x2;
 
+                this.particles[i].sprite.position.x = this.particles[i].sprite.position.x + this.particles[i].pos.x;
+                this.particles[i].sprite.position.y = this.particles[i].sprite.position.y + this.particles[i].pos.y;
             }
         }
     }
