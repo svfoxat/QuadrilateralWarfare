@@ -12,8 +12,18 @@ export class Particle {
     life: number = 0;
     mass: number = 1;
 
+    solver: RungeKuttaSolver;
+
     ToString() {
         return "x: " + this.pos.x + ", y: " + this.pos.y;
+    }
+
+    f1(x1: Vector2, x2: Vector2, t: number, m: number): Vector2 {
+        return x2;
+    }
+
+    f2(x1: Vector2, x2: Vector2, t: number, m: number): Vector2 {
+        return Forcefield.GetForceAtPosition(x1).Div(m);
     }
 }
 
@@ -52,14 +62,6 @@ export class ParticleSystem extends Component {
         }
     }
 
-    f1(x1: Vector2, x2: Vector2, t: number): Vector2 {
-        return x1;
-    }
-
-    f2(x1: Vector2, x2: Vector2, t: number): Vector2 {
-        return x2;
-    }
-
     FirstUnusedParticle(): number {
         for (let i = this.lastUsedParticle; i < this.amount; i++) {
             if (this.particles[i].life <= 0) {
@@ -84,7 +86,10 @@ export class ParticleSystem extends Component {
         particle.sprite.position = particle.pos.AsPoint();
         particle.color = this.baseColor;
         particle.life = this.ttl;
-        particle.velocity = new Vector2(0, Math.random() * 100);
+        particle.velocity = this.initVelocity;
+        particle.mass = Math.random() + 0.5;
+        particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
+            0, Time.fixedDeltaTime(), particle.f1, particle.f2)
         this.gameObject.scene?.container.addChild(particle.sprite);
     }
 
@@ -106,15 +111,13 @@ export class ParticleSystem extends Component {
             this.particles[i].life -= Time.fixedDeltaTime();
 
             if (this.particles[i].life > 0) {
-                // Do physic calculations for each particle (Runge Kutta)
-                let solver = new RungeKuttaSolver(this.particles[i].velocity, Forcefield.GetForceAtPosition(this.particles[i].pos).Div(this.particles[i].mass),
-                    this.ttl - this.particles[i].life, Time.fixedDeltaTime(), this.f1, this.f2)
-                solver.SolveForIterations(1);
-                this.particles[i].pos = solver.x1;
-                //this.particles[i].velocity = solver.x2;
+                // Do physic calculations for each alive particle (Runge Kutta)
+                this.particles[i].solver.SolveForIterations(1, this.particles[i].mass);
+                this.particles[i].pos = this.particles[i].solver.x1;
+                this.particles[i].velocity = this.particles[i].solver.x2;
 
-                this.particles[i].sprite.position.x = this.particles[i].sprite.position.x + this.particles[i].pos.x;
-                this.particles[i].sprite.position.y = this.particles[i].sprite.position.y + this.particles[i].pos.y;
+                this.particles[i].sprite.position.x = this.particles[i].pos.x;
+                this.particles[i].sprite.position.y = this.particles[i].pos.y;
             }
         }
     }
