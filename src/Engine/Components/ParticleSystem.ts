@@ -14,7 +14,7 @@ export class Particle {
 
     solver: RungeKuttaSolver;
 
-    ToString() {
+    public ToString() {
         return "x: " + this.pos.x + ", y: " + this.pos.y;
     }
 
@@ -62,7 +62,7 @@ export class ParticleSystem extends Component {
         }
     }
 
-    FirstUnusedParticle(): number {
+    private FirstUnusedParticle(): number {
         for (let i = this.lastUsedParticle; i < this.amount; i++) {
             if (this.particles[i].life <= 0) {
                 this.lastUsedParticle = i;
@@ -79,7 +79,7 @@ export class ParticleSystem extends Component {
         return -1;
     }
 
-    RespawnParticle(particle: Particle) {
+    private RespawnParticle(particle: Particle) {
         this.gameObject.scene?.container.removeChild(particle.sprite);
         particle.pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
         particle.pos.x += Math.random() * 1000;
@@ -87,6 +87,7 @@ export class ParticleSystem extends Component {
         particle.color = this.baseColor;
         particle.life = this.ttl;
         particle.velocity = this.initVelocity;
+        particle.velocity.x = 10 - (Math.random() * 20);
         particle.mass = Math.random() + 0.5;
         particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
             0, Time.fixedDeltaTime(), particle.f1, particle.f2)
