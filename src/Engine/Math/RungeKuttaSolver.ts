@@ -1,34 +1,25 @@
-export class RungeKuttaSolver {
-    x1: number;
-    x2: number;
-    t: number;
-    dt: number;
-    f1: (x1: number, x2: number, t: number) => number;
-    f2: (x1: number, x2: number, t: number) => number;
+import {Vector2} from "./Vector2";
+import {ODESolver} from "./ODESolver";
 
-    constructor(init_x1: number, init_x2: number, init_t: number, delta: number,
-                f1: (x1: number, x2: number, t: number) => number,
-                f2: (x1: number, x2: number, t: number) => number) {
-        this.x1 = init_x1;
-        this.x2 = init_x2;
-        this.t = init_t;
-        this.dt = delta;
-        this.f1 = f1;
-        this.f2 = f2;
+export class RungeKuttaSolver extends ODESolver {
+    constructor(init_x1: Vector2, init_x2: Vector2, init_t: number, delta: number,
+                f1: (x1: Vector2, x2: Vector2, t: number, m: number) => Vector2,
+                f2: (x1: Vector2, x2: Vector2, t: number, m: number) => Vector2) {
+        super(init_x1, init_x2, init_t, delta, f1, f2);
     }
 
-    public SolveForIterations(it: number): void {
+    SolveForIterations = (it: number, m: number): void => {
         for (let i = 0; i < it; i++) {
-            let k11 = this.dt * this.f1(this.x1, this.x2, this.t);
-            let k21 = this.dt * this.f2(this.x1, this.x2, this.t);
-            let k12 = this.dt * this.f1(this.x1 + 0.5 * k11, this.x2 + 0.5 * k21, this.t + 0.5 * this.dt);
-            let k22 = this.dt * this.f2(this.x1 + 0.5 * k11, this.x2 + 0.5 * k21, this.t + 0.5 * this.dt);
-            let k13 = this.dt * this.f1(this.x1 + 0.5 * k12, this.x2 + 0.5 * k22, this.t + 0.5 * this.dt);
-            let k23 = this.dt * this.f2(this.x1 + 0.5 * k12, this.x2 + 0.5 * k22, this.t + 0.5 * this.dt);
-            let k14 = this.dt * this.f1(this.x1 + k13, this.x2 + k23, this.t + this.dt);
-            let k24 = this.dt * this.f2(this.x1 + k13, this.x2 + k23, this.t + this.dt);
-            this.x1 += (k11 + 2 * k12 + 2 * k13 + k14) / 6;
-            this.x2 += (k21 + 2 * k22 + 2 * k23 + k24) / 6;
+            let k11 = this.f1(this.x1, this.x2, this.t, m).Mul(this.dt);
+            let k21 = this.f2(this.x1, this.x2, this.t, m).Mul(this.dt);
+            let k12 = this.f1(this.x1.Add(k11.Mul(0.5)), this.x2.Add(k21.Mul(0.5)), this.t + 0.5 * this.dt, m).Mul(this.dt);
+            let k22 = this.f2(this.x1.Add(k11.Mul(0.5)), this.x2.Add(k21.Mul(0.5)), this.t + 0.5 * this.dt, m).Mul(this.dt);
+            let k13 = this.f1(this.x1.Add(k12.Mul(0.5)), this.x2.Add(k22.Mul(0.5)), this.t + 0.5 * this.dt, m).Mul(this.dt);
+            let k23 = this.f2(this.x1.Add(k12.Mul(0.5)), this.x2.Add(k22.Mul(0.5)), this.t + 0.5 * this.dt, m).Mul(this.dt);
+            let k14 = this.f1(this.x1.Add(k13), this.x2.Add(k23), this.t + this.dt, m).Mul(this.dt);
+            let k24 = this.f2(this.x1.Add(k13), this.x2.Add(k23), this.t + this.dt, m).Mul(this.dt);
+            this.x1 = this.x1.Add(k11.Add(k12.Mul(2).Add(k13.Mul(2).Add(k14))).Div(6));
+            this.x2 = this.x2.Add(k21.Add(k22.Mul(2).Add(k23.Mul(2).Add(k24))).Div(6));
             this.t += this.dt;
         }
     }
