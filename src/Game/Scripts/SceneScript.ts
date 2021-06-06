@@ -12,7 +12,7 @@ export class SceneScript {
 
         let go = new Gameobject(new Transform(), scene.sceneRoot);
         go.transform.position = new Point(500, 100);
-        let ps = new ParticleSystem(PIXI.Texture.WHITE, 2000, 1, 20, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
         go.AddExistingComponent(ps);
         scene.Add(go);
 
