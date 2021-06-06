@@ -27,8 +27,17 @@ export class Rigidbody extends Component
     isStatic: boolean = false;
     isAsleep: boolean = false;
 
+    verletVelocity: boolean;
+
     FixedUpdate = (): void => {
-        if (!this.isStatic && this.mass > 0 && !this.isAsleep) {
+        if (this.verletVelocity) {
+            const {position} = this.gameObject.transform;
+            const [time, vel, pos] = this.velocity_verlet(new Vector2(position.x, position.y), this.acceleration, Time.fixedDeltaTime());
+            // @ts-ignore
+            this.velocity = vel;
+        }
+
+        if (!this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
             if (this.useGravity && this.acceleration.y == 0) this.acceleration.y = 9.81;
             this.velocity = this.velocity.Add(this.acceleration.Add(this.force.Div(this.mass)).Mul(Time.fixedDeltaTime()));
             this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
@@ -85,5 +94,23 @@ export class Rigidbody extends Component
                     break;
             }
         }
+    }
+
+    private velocity_verlet(pos: Vector2, acceleration: Vector2, timestep: number) {
+        let prev_pos: Vector2 = pos;
+        let time: number = 0.0;
+        let velocity: Vector2 = new Vector2(0.0, 0.0);
+
+        for (let i = 0; i <= 1; i++) {
+            time += timestep;
+
+            pos.x += velocity.x * timestep + 0.5 * acceleration.x * timestep * timestep
+            pos.y += velocity.y * timestep + 0.5 * acceleration.y * timestep * timestep
+
+            velocity.x += acceleration.x * timestep;
+            velocity.y += acceleration.y * timestep;
+        }
+
+        return [time, velocity];
     }
 }
