@@ -4,55 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+</head>
 
+<body>
+    <div id="root"/>
     <script src="vendors~main.bundle.js"></script>
     <script src="bundle.js"></script>
-</head>
-<body>
-<div id="app_container"></div>
-<div id="name"></div>
-
-<div class="controls">
-    <div class="control">
-        <p id="fps-label">Target FPS:</p>
-        <input id="fps" type="range" min="1" max="240" value="60" step="1"/>
-    </div>
-    <div class="control">
-        <p id="timestep-label">Timestep:</p>
-        <input id="timestep" type="range" min="0" max="2" value="1" step="0.1"/>
-    </div>
 </div>
+
 </body>
 </html>
 
-<style>
-    .controls {
-        display: flex;
-    }
-
-    .control {
-        margin: 5px;
-    }
-</style>
-
 <script>
-    (async() => {
-        document.getElementById("name").innerText = "Waiting for Game"
-        while(!window.hasOwnProperty("app"))
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        document.getElementById("name").innerText = "Connected to Game"
-
-        document.getElementById("fps-label").innerHTML = "Target FPS: " + app.desiredFPS;
-        document.getElementById("timestep-label").innerHTML = "Target Timestep: " + app.desiredT;
-    })();
-
-    document.getElementById("fps").addEventListener("change", (e) => {
-        window.app.SetMaxFPS(e.target.value);
-        document.getElementById("fps-label").innerText = "Target FPS: " + app.desiredFPS;
-    })
-
-    document.getElementById("timestep").addEventListener("change", (e) => {
-        window.app.SetAnimationT(e.target.value)
-        document.getElementById("timestep-label").innerText = "Target Timestep: " + app.desiredT;
-    })
+    // document.getElementById("fps").addEventListener("change", (e) => {
+    //     window.app.SetMaxFPS(e.target.value);
+    //     document.getElementById("fps-label").innerText = "Target FPS: " + app.desiredFPS;
+    // })
+    //
+    // document.getElementById("timestep").addEventListener("change", (e) => {
+    //     window.app.SetAnimationT(e.target.value)
+    //     document.getElementById("timestep-label").innerText = "Target Timestep: " + app.desiredT;
+    // })
 </script>

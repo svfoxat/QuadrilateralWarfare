@@ -90,7 +90,7 @@ export default class Application {
             this.renderTicker.start();
         }
 
-        return setInterval(() => {
+        return global.setInterval(() => {
             this.renderTicker.update(performance.now());
             Time.delta = this.renderTicker.deltaTime;
             Time.elapsedMS = this.renderTicker.elapsedMS;
@@ -107,7 +107,7 @@ export default class Application {
         }
 
         Time.t = t;
-        return setInterval(() => {
+        return global.setInterval(() => {
             this.animationTicker.update(performance.now());
 
             Time.animationDelta = this.animationTicker.deltaTime;
