@@ -116,7 +116,6 @@ export class Rigidbody extends Component {
     }
 
     private velocity_verlet(pos: Vector2, acceleration: Vector2, timestep: number) {
-        let time: number = 0.0;
         let newVel = this.velocity;
         let newPos = pos;
         let newAcc = Vector2.Zero();
@@ -127,10 +126,10 @@ export class Rigidbody extends Component {
 
             newAcc = this.GetSumForcesAt(pos);
 
+            // newVel.x += 0.5 * (newAcc.x + acceleration.x) * timestep;
+            // newVel.y += 0.5 * (newAcc.x + acceleration.y) * timestep;
             newVel.x += acceleration.x * timestep;
             newVel.y += acceleration.y * timestep;
-
-            time += timestep;
 
             this.acceleration = newAcc;
             this.gameObject.transform.position = newPos.AsPoint();
