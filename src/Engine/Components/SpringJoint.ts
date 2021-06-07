@@ -9,7 +9,7 @@ export class SpringJoint extends Component {
 
     public attachedObject: Gameobject;
     public Spring: number = 1;
-    public Damper: number = 0;
+    public Damper: number = .1;
     public Frequency: number = 1;
     public Distance: number = 100;
     public BreakForce: number = Infinity;
@@ -35,11 +35,11 @@ export class SpringJoint extends Component {
         }
     }
 
-    GetForce(pos: Vector2): Vector2 {
+    GetForce(pos: Vector2, velo: Vector2): Vector2 {
         const attached_pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
         let dist = attached_pos.Sub(pos).Mag();
         let dir = attached_pos.Sub(pos).Normalized();
 
-        return dir.Mul(this.Spring * (dist - this.Distance));
+        return dir.Mul(this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
     }
 }

@@ -62,7 +62,7 @@ export class Rigidbody extends Component {
     GetLocalForce(pos: Vector2): Vector2 {
         let springForce = Vector2.Zero();
         if (this.attachedSpring) {
-            springForce = this.attachedSpring.GetForce(pos);
+            springForce = this.attachedSpring.GetForce(pos, this.velocity);
         }
 
         return springForce;
