@@ -117,7 +117,7 @@ export class Rigidbody extends Component {
 
     private velocity_verlet(pos: Vector2, acceleration: Vector2, timestep: number) {
         let time: number = 0.0;
-        let newVel = Vector2.Zero();
+        let newVel = this.velocity;
         let newPos = pos;
         let newAcc = Vector2.Zero();
 
