@@ -20,7 +20,7 @@ export class Rigidbody extends Component {
     angularVelocity: number = 0;
     inertia: number = 0;
     torque: number = 0;
-    useGravity: boolean = true;
+    useGravity: boolean = false;
     globalForce: Vector2 = Vector2.Zero();
     localForce: Vector2 = Vector2.Zero();
     acceleration: Vector2 = Vector2.Zero();
@@ -29,13 +29,13 @@ export class Rigidbody extends Component {
     isStatic: boolean = false;
     isAsleep: boolean = false;
 
-    attachedSpring: SpringJoint = null;
+    attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
 
     verletVelocity: boolean;
 
     FixedUpdate = (): void => {
         if (this.verletVelocity) {
-            if (this.attachedSpring) {
+            if (this.attachedSprings.length > 0) {
                 this.velocity_verlet(Vector2.FromPoint(this.gameObject.absoluteTransform.position), this.acceleration, Time.fixedDeltaTime());
             }
         }
@@ -61,8 +61,10 @@ export class Rigidbody extends Component {
 
     GetLocalForce(pos: Vector2): Vector2 {
         let springForce = Vector2.Zero();
-        if (this.attachedSpring) {
-            springForce = this.attachedSpring.GetForce(pos, this.velocity);
+        if (this.attachedSprings.length > 0) {
+            for (const spring of this.attachedSprings) {
+                springForce = springForce.Add(spring.GetForce(this.gameObject, pos, this.velocity));
+            }
         }
 
         return springForce;

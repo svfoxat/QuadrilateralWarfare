@@ -123,7 +123,7 @@ export default class Application {
             }
             for (let i = 0; i < colliders.length; i++) {
                 for (let j = 0; j < colliders.length; j++) {
-                    if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0) || (colliders[i].attachedRigidbody.isAsleep && colliders[j].attachedRigidbody.isAsleep)) continue;
+                    if (i >= j || (colliders[i].attachedRigidbody?.mass == 0 && colliders[j].attachedRigidbody?.mass == 0) || (colliders[i].attachedRigidbody?.isAsleep && colliders[j].attachedRigidbody?.isAsleep)) continue;
                     let collision = Collider.IsColliding(colliders[i], colliders[j]);
                     if (collision != null) {
                         if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {

@@ -10,6 +10,10 @@ export class BoxCollider extends Collider {
     offset: Vector2 = new Vector2(0, 0);
     vertices: Array<Vector2>;
 
+    Enable = () => {
+
+    }
+
     Update = (): void => {
     };
 

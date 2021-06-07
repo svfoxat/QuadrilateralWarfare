@@ -20,6 +20,14 @@ export class SpringJoint extends Component {
     private _lineColor: number = 0xFFFFFF;
 
     Enable = (): void => {
+        let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
+        if (rb) {
+            rb.attachedSprings.push(this);
+        } else {
+            rb = this.gameObject.AddComponent(Rigidbody) as Rigidbody;
+            rb.verletVelocity = true;
+            rb.attachedSprings.push(this);
+        }
     }
 
     Start = (): void => {
@@ -36,20 +44,23 @@ export class SpringJoint extends Component {
     }
 
     FixedUpdate = (): void => {
-        const rb = this.attachedObject.GetComponent(Rigidbody) as Rigidbody;
-        if (rb) {
-            if (rb.attachedSpring == null)
-                rb.attachedSpring = this;
-        }
     }
 
-    GetForce(pos: Vector2, velo: Vector2): Vector2 {
-        const attached_pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
-        let dist = attached_pos.Sub(pos).Mag();
-        let dir = attached_pos.Sub(pos).Normalized();
+    GetForce(go: Gameobject, pos: Vector2, velo: Vector2): Vector2 {
+        let dir, dist;
+        const attached_pos = go === this.gameObject ? Vector2.FromPoint(this.attachedObject.absoluteTransform.position) : Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+        dist = attached_pos.Sub(pos).Mag();
+        dir = attached_pos.Sub(pos).Normalized();
+
         let force = dir.Mul(this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
         this._lineColor = Math.round(force.Mag() / 1000 * 256) * 256 * 256 + (256 - Math.round(force.Mag() / 1000 * 256));
 
         return force;
+    }
+
+    AttachObject(go: Gameobject) {
+        this.attachedObject = go;
+        let rb = go.GetComponent(Rigidbody) as Rigidbody;
+        rb.attachedSprings.push(this);
     }
 }

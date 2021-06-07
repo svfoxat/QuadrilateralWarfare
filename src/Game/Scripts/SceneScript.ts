@@ -3,12 +3,10 @@ import Application from "../../Engine/Application";
 import {Gameobject} from "../../Engine/Gameobject";
 import {Point, Transform} from "pixi.js";
 import {Vector2} from "../../Engine/Math/Vector2";
-import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../../Engine/Components/BoxCollider";
 import ObjectMoveScript from "./ObjectMoveScript";
-import {GameController} from "./GameController";
 import {SpringJoint} from "../../Engine/Components/SpringJoint";
 
 export class SceneScript {
@@ -104,10 +102,10 @@ export class SceneScript {
         spring_go.transform.position = new Point(960, 540);
         let spriteRenderer3 = spring_go.AddComponent(SpriteRenderer) as SpriteRenderer;
         spriteRenderer3.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-        spring_go.transform.scale = new Vector2(3, 3).AsPoint()
+        spring_go.transform.scale = new Point(3, 3)
 
         const sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
-        sj.attachedObject = go2;
+        sj.AttachObject(go2);
         rb2.mass = 25;
         rb2.useGravity = false;
         rb2.verletVelocity = true;
