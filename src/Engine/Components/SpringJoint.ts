@@ -49,10 +49,10 @@ export class SpringJoint extends Component {
     GetForce(go: Gameobject, pos: Vector2, velo: Vector2): Vector2 {
         let dir, dist;
         const attached_pos = go === this.gameObject ? Vector2.FromPoint(this.attachedObject.absoluteTransform.position) : Vector2.FromPoint(this.gameObject.absoluteTransform.position);
-        dist = attached_pos.Sub(pos).Mag();
-        dir = attached_pos.Sub(pos).Normalized();
+        dist = pos.Sub(attached_pos).Mag();
+        dir = pos.Sub(attached_pos).Normalized();
 
-        let force = dir.Mul(this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
+        let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
         this._lineColor = Math.round(force.Mag() / 1000 * 256) * 256 * 256 + (256 - Math.round(force.Mag() / 1000 * 256));
 
         return force;

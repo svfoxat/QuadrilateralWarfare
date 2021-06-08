@@ -1,6 +1,7 @@
 import {Vector2} from "../Math/Vector2";
 import {Edge} from "../Math/Geometry";
 import {CircleCollider, Collider} from "./Collider";
+import {Gizmos} from "../Gizmos";
 
 export class BoxCollider extends Collider {
     Start: () => void;
@@ -10,11 +11,24 @@ export class BoxCollider extends Collider {
     offset: Vector2 = new Vector2(0, 0);
     vertices: Array<Vector2>;
 
-    Enable = () => {
+    drawCorners: boolean = false;
+    vertexGizmos: Array<PIXI.Graphics>;
 
+    Enable = () => {
+        this.vertexGizmos = new Array<PIXI.Graphics>(4);
+        for (let giz of this.vertexGizmos) {
+            giz = new PIXI.Graphics;
+        }
     }
 
     Update = (): void => {
+        if (this.drawCorners) {
+            for (let i = 0; i < this.vertices.length; i++) {
+                this.gameObject.scene.container.removeChild(this.vertexGizmos[i]);
+                this.vertexGizmos[i] = Gizmos.DrawPoint(this.vertices[i], 3, 0x22ff00, 1, 0x336699);
+                this.gameObject.scene.container.addChild(this.vertexGizmos[i]);
+            }
+        }
     };
 
     FixedUpdate = () => {
