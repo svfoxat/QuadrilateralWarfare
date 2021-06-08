@@ -19,7 +19,7 @@ export class Vector2 {
 
     public Normalized(): Vector2 {
         let mag = this.Mag();
-        if (mag == 0) return Vector2.Zero();
+        if (mag === 0) return Vector2.Zero();
         return new Vector2(this.x / mag, this.y / mag);
     }
 

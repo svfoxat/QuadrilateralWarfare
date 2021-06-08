@@ -41,7 +41,6 @@ export class Rigidbody extends Component {
         }
 
         if (!this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
-            //if (this.useGravity && this.acceleration.y == 0) this.acceleration.y = 9.81;
             this.velocity = this.velocity.Add(this.acceleration.Add(this.GetGlobalForce(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Div(this.mass)).Mul(Time.fixedDeltaTime()));
             this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
 

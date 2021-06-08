@@ -6,8 +6,7 @@ export class Random {
     }
 
     public static OnUnitCircle(): Vector2 {
-        let a = Math.random() * 2 - 1;
-        let s = Math.sign(Math.random() - 0.5);
-        return new Vector2(a, s * Math.sqrt(1 - a * a));
+        let a = Math.random() * 2 * Math.PI;
+        return new Vector2(Math.cos(a), Math.sin(a));
     }
 }
