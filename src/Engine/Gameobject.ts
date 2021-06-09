@@ -91,14 +91,29 @@ export class Gameobject {
     public GetComponent<T extends Component>(type: (new() => T)): Component {
         for (let component of this.components) {
             let ret = component as T;
-            if (ret != null && ret instanceof type) {
+            if (ret !== null && ret instanceof type) {
                 return ret;
             }
         }
         return null;
     }
 
+    public HasComponent<T extends Component>(type: (new() => T)): boolean {
+        for (let comp of this.components) {
+            let c = comp as T;
+            if (c !== null && c instanceof type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public AddComponent<T extends Component>(type: (new() => T)): Component {
+        let exists = this.GetComponent(type);
+        if (exists) {
+            return exists;
+        }
+
         let component = new type();
         component.gameObject = this;
         this.components.push(component);
