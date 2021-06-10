@@ -20,13 +20,15 @@ export class SpringJoint extends Component {
     private _lineColor: number = 0xFFFFFF;
 
     Enable = (): void => {
-        let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
-        if (rb) {
-            rb.attachedSprings.push(this);
+        let rb1 = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
+        let rb2 = this.attachedObject?.GetComponent(Rigidbody) as Rigidbody;
+        if (rb1 && rb2) {
+            rb1.attachedSprings.push(this);
+            rb2.attachedSprings.push(this);
+            console.log("SPRING ENABLED!!!");
         } else {
-            rb = this.gameObject.AddComponent(Rigidbody) as Rigidbody;
-            rb.verletVelocity = true;
-            rb.attachedSprings.push(this);
+            console.log("MISSING RIGIDBODIES!!!");
+            this.SetEnabled(false);
         }
     }
 
@@ -60,7 +62,6 @@ export class SpringJoint extends Component {
 
     AttachObject(go: Gameobject) {
         this.attachedObject = go;
-        let rb = go.GetComponent(Rigidbody) as Rigidbody;
-        rb.attachedSprings.push(this);
+        this.SetEnabled(true);
     }
 }

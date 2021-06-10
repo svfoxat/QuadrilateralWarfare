@@ -6,7 +6,8 @@ export class Component {
     gameObject: Gameobject;
     enabled: boolean;
 
-    Enable: () => void;
+    Enable: () => void = (): void => {
+    };
     Start: () => void;
     Update: () => void;
     FixedUpdate: () => void;
@@ -19,4 +20,13 @@ export class Component {
 
     OnMouseDown: () => void;
     OnMouseUp: () => void;
+
+    SetEnabled(enabled: boolean) {
+        if (enabled) {
+            this.enabled = true;
+            this.Enable();
+        } else {
+            this.enabled = false;
+        }
+    }
 }

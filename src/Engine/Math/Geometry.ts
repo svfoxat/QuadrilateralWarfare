@@ -1,6 +1,18 @@
 import {Vector2} from "./Vector2";
 
 export abstract class Geometry {
+    public static Overlap(p1: Vector2, p2: Vector2): boolean {
+        return p1.x < p2.x && p1.y > p2.x || p2.x < p1.x && p2.y > p1.x;
+    }
+
+    public static GetOverlap(p1: Vector2, p2: Vector2): number {
+        if (p1.x < p2.x && p1.y > p2.x) {
+            return p1.y - p2.x;
+        } else if (p2.x < p1.x && p2.y > p1.x) {
+            return p2.y - p1.x;
+        }
+    }
+
     public static clip(v1: Vector2, v2: Vector2, n: Vector2, o: number): Array<Vector2> {
         let cp = new Array<Vector2>();
         let d1 = Vector2.Dot(n, v1) - o;

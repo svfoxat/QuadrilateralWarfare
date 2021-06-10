@@ -4,6 +4,7 @@ import {Time} from "../Time";
 import {Vector2} from "../Math/Vector2";
 import {SpringJoint} from "./SpringJoint";
 import {Forcefield} from "../Forcefield";
+import {BoxCollider, TriangleCollider} from "./Collider";
 
 export enum ForceMode {
     Force,
@@ -18,7 +19,7 @@ export class Rigidbody extends Component {
     mass: number = 1;
     velocity: Vector2 = new Vector2(0, 0);
     angularVelocity: number = 0;
-    inertia: number = 0;
+    inertia: number = 1;
     torque: number = 0;
     useGravity: boolean = false;
     globalForce: Vector2 = Vector2.Zero();
@@ -33,11 +34,23 @@ export class Rigidbody extends Component {
 
     verletVelocity: boolean;
 
+    Enable = () => {
+        let tri = this.gameObject?.GetComponent(TriangleCollider) as TriangleCollider;
+        if (tri) {
+            tri.attachedRigidbody = this;
+            tri.SetEnabled(true);
+        }
+
+        let box = this.gameObject?.GetComponent(BoxCollider) as BoxCollider;
+        if (box) {
+            box.attachedRigidbody = this;
+            box.SetEnabled(true);
+        }
+    }
+
     FixedUpdate = (): void => {
-        if (this.verletVelocity) {
-            if (this.attachedSprings.length > 0) {
-                this.velocity_verlet(Vector2.FromPoint(this.gameObject.absoluteTransform.position), this.acceleration, Time.fixedDeltaTime());
-            }
+        if (this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
+            this.velocity_verlet(Vector2.FromPoint(this.gameObject.absoluteTransform.position), this.acceleration, Time.fixedDeltaTime());
         }
 
         if (!this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
@@ -51,7 +64,7 @@ export class Rigidbody extends Component {
     };
 
     GetSumForcesAt(pos: Vector2): Vector2 {
-        return this.GetGlobalForce(pos).Add(this.GetLocalForce(pos));
+        return this.globalForce.Add(this.GetGlobalForce(pos).Add(this.GetLocalForce(pos)));
     }
 
     GetGlobalForce(pos: Vector2): Vector2 {
@@ -127,14 +140,18 @@ export class Rigidbody extends Component {
 
             newAcc = this.GetSumForcesAt(pos);
 
-            // newVel.x += 0.5 * (newAcc.x + acceleration.x) * timestep;
-            // newVel.y += 0.5 * (newAcc.x + acceleration.y) * timestep;
-            newVel.x += acceleration.x * timestep;
-            newVel.y += acceleration.y * timestep;
+            newVel.x += 0.5 * (newAcc.x + acceleration.x) * timestep;
+            newVel.y += 0.5 * (newAcc.x + acceleration.y) * timestep;
+            // newVel.x += acceleration.x * timestep;
+            // newVel.y += acceleration.y * timestep;
 
             this.acceleration = newAcc;
             this.gameObject.transform.position = newPos.AsPoint();
             this.velocity = newVel;
         }
+
+        this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * timestep;
+        this.gameObject.transform.rotation += this.angularVelocity * timestep;
+
     }
 }
