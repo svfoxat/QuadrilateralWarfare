@@ -17,9 +17,7 @@ export abstract class Collider extends Component {
 
     static bounciness: number = .7;
 
-    abstract GetSeperatingAxes(): Array<Vector2>;
-
-    abstract GetProjection(axis: Vector2): Vector2;
+    abstract GetSeparatingAxes(): Array<Vector2>;
 
     private static MovableRigidbody(c: Collider): boolean {
         return !(c?.attachedRigidbody == null || c.attachedRigidbody.isStatic || c.attachedRigidbody.mass === 0);
@@ -157,12 +155,12 @@ export abstract class Collider extends Component {
     public static BoxBox(box1: BoxCollider, box2: BoxCollider): Vector2 {
         let smallestAxis = null;
         let overlap = 100000.0;
-        let axes1 = box1.GetSeperatingAxes();
-        let axes2 = box2.GetSeperatingAxes();
+        let axes1 = box1.GetSeparatingAxes();
+        let axes2 = box2.GetSeparatingAxes();
 
         for (let axis of axes1) {
-            let p1 = box1.GetProjection(axis);
-            let p2 = box2.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, box1.vertices);
+            let p2 = Geometry.GetProjection(axis, box2.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -174,8 +172,8 @@ export abstract class Collider extends Component {
             }
         }
         for (let axis of axes2) {
-            let p1 = box1.GetProjection(axis);
-            let p2 = box2.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, box1.vertices);
+            let p2 = Geometry.GetProjection(axis, box2.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -189,15 +187,6 @@ export abstract class Collider extends Component {
 
         return Vector2.Mul(smallestAxis, overlap);
     }
-
-    Enable = () => {
-        let rb = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
-        if (rb) {
-            this.attachedRigidbody = rb;
-        } else {
-            this.SetEnabled(false);
-        }
-    };
 
     public static CollisionCheck() {
         let colliders = new Array<Collider>();
@@ -238,12 +227,12 @@ export abstract class Collider extends Component {
     public static BoxTriangle(tri: TriangleCollider, box: BoxCollider) {
         let smallestAxis = null;
         let overlap = 100000.0;
-        let axes1 = tri.GetSeperatingAxes();
-        let axes2 = box.GetSeperatingAxes();
+        let axes1 = tri.GetSeparatingAxes();
+        let axes2 = box.GetSeparatingAxes();
 
         for (let axis of axes1) {
-            let p1 = tri.GetProjection(axis);
-            let p2 = box.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, tri.vertices);
+            let p2 = Geometry.GetProjection(axis, box.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -255,8 +244,8 @@ export abstract class Collider extends Component {
             }
         }
         for (let axis of axes2) {
-            let p1 = tri.GetProjection(axis);
-            let p2 = box.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, tri.vertices);
+            let p2 = Geometry.GetProjection(axis, box.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -302,12 +291,12 @@ export abstract class Collider extends Component {
     public static TriangleTriangle(tri1: TriangleCollider, tri2: TriangleCollider) {
         let smallestAxis = null;
         let overlap = 100000.0;
-        let axes1 = tri1.GetSeperatingAxes();
-        let axes2 = tri2.GetSeperatingAxes();
+        let axes1 = tri1.GetSeparatingAxes();
+        let axes2 = tri2.GetSeparatingAxes();
 
         for (let axis of axes1) {
-            let p1 = tri1.GetProjection(axis);
-            let p2 = tri2.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, tri1.vertices);
+            let p2 = Geometry.GetProjection(axis, tri2.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -319,8 +308,8 @@ export abstract class Collider extends Component {
             }
         }
         for (let axis of axes2) {
-            let p1 = tri1.GetProjection(axis);
-            let p2 = tri2.GetProjection(axis);
+            let p1 = Geometry.GetProjection(axis, tri1.vertices);
+            let p2 = Geometry.GetProjection(axis, tri2.vertices);
             if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
@@ -354,6 +343,13 @@ export class TriangleCollider extends Collider {
         for (let giz of this.vertexGizmos) {
             giz = new PIXI.Graphics;
         }
+
+        let rb = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
+        if (rb) {
+            this.attachedRigidbody = rb;
+        } else {
+            this.SetEnabled(false);
+        }
     }
 
     Update = (): void => {
@@ -377,7 +373,7 @@ export class TriangleCollider extends Collider {
         }
     };
 
-    GetSeperatingAxes(): Array<Vector2> {
+    GetSeparatingAxes(): Array<Vector2> {
         let normals = new Array<Vector2>();
         this.SetVertices();
 
@@ -390,21 +386,6 @@ export class TriangleCollider extends Collider {
         normals.push(edge3.LeftNormal().Normalized());
 
         return normals;
-    }
-
-    GetProjection(axis: Vector2): Vector2 {
-        this.SetVertices();
-        let min = Infinity, max = -Infinity;
-        for (let v of this.vertices) {
-            let p = axis.Dot(v);
-            if (p < min) {
-                min = p;
-            }
-            if (p > max) {
-                max = p;
-            }
-        }
-        return new Vector2(min, max);
     }
 
     private SetVertices(): void {
@@ -450,6 +431,13 @@ export class BoxCollider extends Collider {
         for (let giz of this.vertexGizmos) {
             giz = new PIXI.Graphics;
         }
+
+        let rb = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
+        if (rb) {
+            this.attachedRigidbody = rb;
+        } else {
+            this.SetEnabled(false);
+        }
     }
 
     Update = (): void => {
@@ -471,7 +459,7 @@ export class BoxCollider extends Collider {
         }
     };
 
-    GetSeperatingAxes(): Array<Vector2> {
+    GetSeparatingAxes(): Array<Vector2> {
         let normals = new Array<Vector2>();
         this.SetVertices();
 
@@ -484,21 +472,6 @@ export class BoxCollider extends Collider {
         normals.push(edge2.LeftNormal().Inverse().Normalized());
 
         return normals;
-    }
-
-    GetProjection(axis: Vector2): Vector2 {
-        this.SetVertices();
-        let min = Infinity, max = -Infinity;
-        for (let v of this.vertices) {
-            let p = axis.Dot(v);
-            if (p < min) {
-                min = p;
-            }
-            if (p > max) {
-                max = p;
-            }
-        }
-        return new Vector2(min, max);
     }
 
     private SetVertices(): void {

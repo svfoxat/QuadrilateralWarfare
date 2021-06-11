@@ -11,7 +11,7 @@ import {SpringJoint} from "../../Engine/Components/SpringJoint";
 import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
 import {GameController} from "./GameController";
 import {EnemyScript} from "./EnemyScript";
-import {MeshComponent} from "../../Engine/Components/MeshComponent";
+import {TriangleRenderer} from "../../Engine/Components/TriangleRenderer";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
@@ -30,23 +30,19 @@ export class SceneScript {
         redBox.parent = gamecontroller;
         let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
         let es = redBox.AddComponent(EnemyScript) as EnemyScript;
-        rb.useGravity = true;
-        rb.mass = 1;
+        rb.isStatic = false;
 
         let redBox1 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1100, 800), new Vector2(80, 5), 0xFF0000);
         let rb4 = redBox1.GetComponent(Rigidbody) as Rigidbody;
-        rb4.useGravity = true;
-        rb4.mass = 1;
+        rb4.isStatic = false;
 
         let redBox2 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 1000), new Vector2(5, 30), 0xFF0000);
         let rb3 = redBox2.GetComponent(Rigidbody) as Rigidbody;
-        rb3.useGravity = true;
-        rb3.mass = 1;
+        rb3.isStatic = false;
 
         let redBox3 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(800, 1000), new Vector2(5, 30), 0xFF0000);
         let rb5 = redBox3.GetComponent(Rigidbody) as Rigidbody;
-        rb5.useGravity = true;
-        rb5.mass = 1;
+        rb5.isStatic = false;
 
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         let go2 = new Gameobject(new Transform(), null);
@@ -72,23 +68,26 @@ export class SceneScript {
         const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
         scene.Add(spring_go);
 
+        let vertA = new Vector2(0, 10);
+        let vertB = new Vector2(-5, -5);
+        let vertC = new Vector2(5, -5);
+
         spring_go.name = "Spring";
         spring_go.transform.position = new Point(960, 540);
-        //let spriteRenderer3 = spring_go.AddComponent(SpriteRenderer) as SpriteRenderer;
-        let mesh = new MeshComponent(PIXI.Texture.WHITE, new Float32Array([0, 10, -5, -5, 5, -5]), null, new Uint16Array([0, 1, 2]));
-        //spriteRenderer3.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-        spring_go.components.push(mesh);
+        let mesh = new TriangleRenderer(PIXI.Texture.WHITE, vertA, vertB, vertC);
+        spring_go.AddExistingComponent(mesh);
+
         mesh.gameObject = spring_go;
+
         spring_go.transform.scale = new Point(5, 5);
 
         let sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
         let rb6 = spring_go.AddComponent(Rigidbody) as Rigidbody;
         let tri = spring_go.AddComponent(TriangleCollider) as TriangleCollider;
         tri.attachedRigidbody = rb6;
-        tri.vertexA = new Vector2(0, 10);
-        tri.vertexB = new Vector2(-5, -5);
-        tri.vertexC = new Vector2(5, -5);
-        tri.drawCorners = true;
+        tri.vertexA = vertA;
+        tri.vertexB = vertB;
+        tri.vertexC = vertC;
 
         sj.AttachObject(go2);
         rb2.mass = 25;
@@ -114,7 +113,7 @@ export class SceneScript {
         let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
         let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
         let rb = go.AddComponent(Rigidbody) as Rigidbody;
-        rb.mass = 0;
+        rb.isStatic = true;
         rb.elasticity = 1;
         go.transform.position = pos.AsPoint();
         go.transform.scale = size.AsPoint();

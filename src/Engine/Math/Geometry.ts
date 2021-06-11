@@ -25,6 +25,20 @@ export abstract class Geometry {
 
         return cp;
     }
+
+    public static GetProjection(axis: Vector2, vertices: Array<Vector2>): Vector2 {
+        let min = Infinity, max = -Infinity;
+        for (let v of vertices) {
+            let p = axis.Dot(v);
+            if (p < min) {
+                min = p;
+            }
+            if (p > max) {
+                max = p;
+            }
+        }
+        return new Vector2(min, max);
+    }
 }
 
 export class Edge {

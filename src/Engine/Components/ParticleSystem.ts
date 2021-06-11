@@ -5,6 +5,7 @@ import {Forcefield} from "../Forcefield";
 import {ODESolver} from "../Math/ODESolver";
 import {Random} from "../Math/Random";
 import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
+import {EulerSolver} from "../Math/EulerSolver";
 
 export class Particle {
     sprite: PIXI.Sprite;
@@ -32,6 +33,7 @@ export class ParticleSystem extends Component {
     particles: Array<Particle>;
     lastUsedParticle: number = 0;
     stepSize: number = 1;
+    rungeKutta: boolean = true;
 
     constructor(texture: PIXI.Texture, amount: number, newParticles: number, ttl: number, color: number, initVelocity: Vector2, offset: Vector2) {
         super();
@@ -85,13 +87,15 @@ export class ParticleSystem extends Component {
         particle.velocity = particle.velocity.Add(Random.OnUnitCircle().Mul(10));
         //particle.velocity.x = 10 - (Math.random() * 20);
         particle.mass = Math.random() + 0.5;
-        particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
-            0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt)
+        if (this.rungeKutta) {
+            particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
+                0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt);
+        } else {
+            particle.solver = new EulerSolver(particle.pos, particle.velocity,
+                0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt)
+        }
+
         this.gameObject.scene?.container.addChild(particle.sprite);
-    }
-
-    Update = () => {
-
     }
 
     dxdt(x1: Vector2, x2: Vector2, t: number, m: number): Vector2 {

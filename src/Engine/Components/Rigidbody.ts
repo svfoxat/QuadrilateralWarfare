@@ -49,17 +49,19 @@ export class Rigidbody extends Component {
     }
 
     FixedUpdate = (): void => {
-        if (this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
-            this.velocity_verlet(Vector2.FromPoint(this.gameObject.absoluteTransform.position), this.acceleration, Time.fixedDeltaTime());
-        }
+        if (this.inertia > 0 && !this.isStatic && this.mass > 0 && !this.isAsleep) {
+            if (this.verletVelocity) {
+                this.velocity_verlet(Time.fixedDeltaTime());
+            }
 
-        if (!this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
-            this.velocity = this.velocity.Add(this.acceleration.Add(this.GetGlobalForce(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Div(this.mass)).Mul(Time.fixedDeltaTime()));
-            this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
+            if (!this.verletVelocity) {
+                this.velocity = this.velocity.Add(this.acceleration.Add(this.GetSumForcesAt(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Div(this.mass)).Mul(Time.fixedDeltaTime()));
+                this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
 
-            this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
-            this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
-            this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
+                this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
+                this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
+                this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
+            }
         }
     };
 
@@ -78,17 +80,7 @@ export class Rigidbody extends Component {
                 springForce = springForce.Add(spring.GetForce(this.gameObject, pos, this.velocity));
             }
         }
-
         return springForce;
-    }
-
-    Update = () => {
-    }
-
-    SetAsleep() {
-        this.isAsleep = true;
-        this.velocity = Vector2.Zero();
-        this.angularVelocity = 0;
     }
 
     AddForce(force: Vector2, mode: ForceMode) {
@@ -129,29 +121,26 @@ export class Rigidbody extends Component {
         }
     }
 
-    private velocity_verlet(pos: Vector2, acceleration: Vector2, timestep: number) {
+    private velocity_verlet(timestep: number) {
         let newVel = this.velocity;
-        let newPos = pos;
+        let newPos = this.gameObject.transform.position;
         let newAcc = Vector2.Zero();
 
         for (let i = 0; i < 1; i++) {
-            newPos.x += this.velocity.x * timestep + 0.5 * acceleration.x * timestep * timestep;
-            newPos.y += this.velocity.y * timestep + 0.5 * acceleration.y * timestep * timestep;
+            newPos.x += this.velocity.x * timestep + 0.5 * this.acceleration.x * timestep * timestep;
+            newPos.y += this.velocity.y * timestep + 0.5 * this.acceleration.y * timestep * timestep;
 
-            newAcc = this.GetSumForcesAt(pos);
+            newAcc = this.GetSumForcesAt(Vector2.FromPoint(newPos));
 
-            newVel.x += 0.5 * (newAcc.x + acceleration.x) * timestep;
-            newVel.y += 0.5 * (newAcc.x + acceleration.y) * timestep;
-            // newVel.x += acceleration.x * timestep;
-            // newVel.y += acceleration.y * timestep;
+            newVel.x += 0.5 * (newAcc.x + this.acceleration.x) * timestep;
+            newVel.y += 0.5 * (newAcc.y + this.acceleration.y) * timestep;
 
             this.acceleration = newAcc;
-            this.gameObject.transform.position = newPos.AsPoint();
+            this.gameObject.transform.position = newPos;
             this.velocity = newVel;
+
+            this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * timestep;
+            this.gameObject.transform.rotation += this.angularVelocity * timestep;
         }
-
-        this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * timestep;
-        this.gameObject.transform.rotation += this.angularVelocity * timestep;
-
     }
 }
