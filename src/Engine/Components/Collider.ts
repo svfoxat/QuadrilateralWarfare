@@ -2,7 +2,7 @@ import {Component} from "./Component";
 import {Vector2} from "../Math/Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
-import {ClippingPlane, Edge, Geometry} from "../Math/Geometry";
+import {AABB, ClippingPlane, Edge, Geometry} from "../Math/Geometry";
 import {SceneManager} from "../SceneManager";
 import {Gizmos} from "../Gizmos";
 
@@ -18,6 +18,8 @@ export abstract class Collider extends Component {
     static bounciness: number = .7;
 
     abstract GetSeparatingAxes(): Array<Vector2>;
+
+    abstract GetAABB(): AABB;
 
     private static MovableRigidbody(c: Collider): boolean {
         return !(c?.attachedRigidbody == null || c.attachedRigidbody.isStatic || c.attachedRigidbody.mass === 0);
@@ -204,21 +206,23 @@ export abstract class Collider extends Component {
         for (let i = 0; i < colliders.length; i++) {
             for (let j = 0; j < colliders.length; j++) {
                 if (i >= j || (colliders[i].attachedRigidbody?.mass === 0 && colliders[j].attachedRigidbody?.mass === 0) || (colliders[i].attachedRigidbody?.isAsleep && colliders[j].attachedRigidbody?.isAsleep)) continue;
-                let collision = Collider.IsColliding(colliders[i], colliders[j]);
-                if (collision != null) {
-                    if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
-                        collision = collision.Inverse();
+                if (this.BroadCollisionCheck(colliders[i], colliders[j])) {
+                    let collision = Collider.IsColliding(colliders[i], colliders[j]);
+                    if (collision != null) {
+                        if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
+                            collision = collision.Inverse();
+                        }
+                        Collider.HandleCollision(colliders[i], colliders[j], collision);
+                        let cp = new ClippingPlane(null, null, null);
+                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
+                        let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
+                        let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
+                        colliders[i].SleepTick();
+                        colliders[j].SleepTick();
+                        colliders[i].gameObject.OnCollision(colliders[j]);
+                        colliders[j].gameObject.OnCollision(colliders[i]);
                     }
-                    Collider.HandleCollision(colliders[i], colliders[j], collision);
-                    let cp = new ClippingPlane(null, null, null);
-                    let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
-                    let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
-                    let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
-                    Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
-                    colliders[i].SleepTick();
-                    colliders[j].SleepTick();
-                    colliders[i].gameObject.OnCollision(colliders[j]);
-                    colliders[j].gameObject.OnCollision(colliders[i]);
                 }
             }
         }
@@ -323,6 +327,12 @@ export abstract class Collider extends Component {
 
         return Vector2.Mul(smallestAxis, overlap);
     }
+
+    private static BroadCollisionCheck(collider: Collider, collider2: Collider): boolean {
+        let aabb1 = collider.GetAABB();
+        let aabb2 = collider2.GetAABB();
+        return Geometry.AABBOverlap(aabb1, aabb2);
+    }
 }
 
 export class TriangleCollider extends Collider {
@@ -372,6 +382,11 @@ export class TriangleCollider extends Collider {
                 (Math.pow(this.vertexA.Sub(this.vertexC.Sub(this.vertexB).Div(2)).Mag(), 3) * this.vertexC.Sub(this.vertexB).Div(2).Mag()) / 36;
         }
     };
+
+    GetAABB(): AABB {
+        this.SetVertices();
+        return Geometry.GetAABB(this.vertices);
+    }
 
     GetSeparatingAxes(): Array<Vector2> {
         let normals = new Array<Vector2>();
@@ -458,6 +473,11 @@ export class BoxCollider extends Collider {
             this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
         }
     };
+
+    GetAABB(): AABB {
+        this.SetVertices();
+        return Geometry.GetAABB(this.vertices);
+    }
 
     GetSeparatingAxes(): Array<Vector2> {
         let normals = new Array<Vector2>();

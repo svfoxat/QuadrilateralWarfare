@@ -1,6 +1,28 @@
 import {Vector2} from "./Vector2";
 
 export abstract class Geometry {
+    public static AABBOverlap(p1: AABB, p2: AABB): boolean {
+        return true;
+    }
+
+    public static GetAABB(vertices: Array<Vector2>): AABB {
+        let ret = new AABB();
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        for (const vertex of vertices) {
+            if (vertex.x > maxX) maxX = vertex.x;
+            if (vertex.y > maxY) maxY = vertex.y;
+            if (vertex.x < minX) minX = vertex.x;
+            if (vertex.y < minY) minY = vertex.y;
+        }
+        ret.min = new Vector2(minX, minY);
+        ret.max = new Vector2(maxX, maxY);
+        return ret;
+    }
+
     public static Overlap(p1: Vector2, p2: Vector2): boolean {
         return p1.x < p2.x && p1.y > p2.x || p2.x < p1.x && p2.y > p1.x;
     }
@@ -66,5 +88,14 @@ export class ClippingPlane {
         this.ref = ref;
         this.inc = inc;
         this.flip = flip;
+    }
+}
+
+export class AABB {
+    max: Vector2;
+    min: Vector2;
+
+    ToString(): string {
+        return "AABB: Min: " + this.min.ToString() + ", Max: " + this.max.ToString();
     }
 }

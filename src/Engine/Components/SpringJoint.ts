@@ -44,7 +44,11 @@ export class SpringJoint extends Component {
         dir = pos.Sub(attached_pos).Normalized();
 
         let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
-        this._lineColor = Math.round(force.Mag() / 100 * 256) * 256 * 256 + (256 - Math.round(force.Mag() / 100 * 256));
+        if (this.showSpringStrain) {
+            this._lineColor = Math.round(force.Mag() / 100 * 256) * 256 * 256 + (256 - Math.round(force.Mag() / 100 * 256));
+        } else {
+            this._lineColor = 0xFFFFFF;
+        }
 
         return force;
     }

@@ -12,9 +12,6 @@ export class MeshComponent extends Component {
         this.localVertices = vertices;
     }
 
-    Start = () => {
-    }
-
     Enable = () => {
         this.gameObject.scene?.container.addChild(this.mesh);
     }
@@ -31,7 +28,6 @@ export class MeshComponent extends Component {
             this.realVertices[i + 1] = scale.y * rota.y + pos.y;
         }
         this.mesh.vertices = this.realVertices;
-
     }
 
     OnDestroy = () => {
