@@ -2,7 +2,11 @@ import {Vector2} from "./Vector2";
 
 export abstract class Geometry {
     public static AABBOverlap(p1: AABB, p2: AABB): boolean {
-        return true;
+        if (p2.max.x > p1.min.x && p2.max.y > p1.min.y && p2.max.x < p1.max.x && p2.max.y < p1.max.y ||
+            p1.max.x > p2.min.x && p1.max.y > p2.min.y && p1.max.x < p2.max.x && p1.max.y < p2.max.y ||
+            p2.max.x > p1.max.x && p1.max.y > p2.max.y && p1.max.x > p2.min.x && p2.max.y > p1.min.y ||
+            p1.max.x > p2.max.x && p2.max.y > p1.max.y && p2.max.x > p1.min.x && p1.max.y > p2.min.y) return true;
+        return false;
     }
 
     public static GetAABB(vertices: Array<Vector2>): AABB {
