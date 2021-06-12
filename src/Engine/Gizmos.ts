@@ -12,15 +12,19 @@ export class Gizmos {
 
     public static DrawArrow(from: Vector2, to: Vector2, width: number, color: number): PIXI.Graphics {
         let arrow = new PIXI.Graphics();
-        let normal = Vector2.Sub(to, from).LeftNormal().Normalized();
+        let normal = Vector2.Sub(to, from).LeftNormal().Normalized().Mul(2 * width);
+        let arrowStart = from.Add(to.Sub(from).Sub(to.Sub(from).Normalized().Mul(4 * width)));
         arrow
             .lineStyle(width, color)
             .moveTo(from.x, from.y)
             .lineTo(to.x, to.y)
             .lineStyle(width, color, 1, .5)
             .beginFill(color)
-            .lineTo(to.x + normal.x * 10, to.y + normal.y * 10)
-            .lineTo(to.x - normal.x * 10, to.y - normal.y * 10)
+            .moveTo(arrowStart.x, arrowStart.y)
+            .lineTo(arrowStart.x + normal.x, arrowStart.y + normal.y)
+            .lineTo(to.x, to.y)
+            .moveTo(arrowStart.x, arrowStart.y)
+            .lineTo(arrowStart.x - normal.x, arrowStart.y - normal.y)
             .lineTo(to.x, to.y)
             .endFill();
         return arrow;

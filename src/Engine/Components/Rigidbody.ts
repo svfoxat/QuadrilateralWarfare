@@ -5,6 +5,7 @@ import {Vector2} from "../Math/Vector2";
 import {SpringJoint} from "./SpringJoint";
 import {Forcefield} from "../Forcefield";
 import {BoxCollider, TriangleCollider} from "./Collider";
+import {Gizmos} from "../Gizmos";
 
 export enum ForceMode {
     Force,
@@ -30,6 +31,12 @@ export class Rigidbody extends Component {
     isStatic: boolean = false;
     isAsleep: boolean = false;
 
+    linearVector: PIXI.Graphics = new PIXI.Graphics();
+    angularVector: PIXI.Graphics = new PIXI.Graphics();
+    velocityDrawThreshold: number = 0.5;
+    angularVelocityDrawThreshold: number = 0.05;
+    drawMomentum: boolean = false;
+
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
 
     verletVelocity: boolean;
@@ -45,6 +52,27 @@ export class Rigidbody extends Component {
         if (box) {
             box.attachedRigidbody = this;
             box.SetEnabled(true);
+        }
+    }
+
+    OnDestroy = (): void => {
+        this.gameObject.scene.container.removeChild(this.linearVector);
+        this.gameObject.scene.container.removeChild(this.angularVector);
+    }
+
+    Update = (): void => {
+        this.gameObject.scene.container.removeChild(this.linearVector);
+        this.gameObject.scene.container.removeChild(this.angularVector);
+        if (this.drawMomentum) {
+            let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+            if (this.velocity.Mag() > this.velocityDrawThreshold) {
+                this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
+                this.gameObject.scene.container.addChild(this.linearVector);
+            }
+            if (this.angularVelocity > this.angularVelocityDrawThreshold) {
+                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity), pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
+                this.gameObject.scene.container.addChild(this.angularVector);
+            }
         }
     }
 

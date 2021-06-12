@@ -68,9 +68,9 @@ export class SceneScript {
         const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
         scene.Add(spring_go);
 
-        let vertA = new Vector2(0, 10);
-        let vertB = new Vector2(-5, -5);
-        let vertC = new Vector2(5, -5);
+        let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
+        let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
+        let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
 
         spring_go.name = "Spring";
         spring_go.transform.position = new Point(960, 540);
