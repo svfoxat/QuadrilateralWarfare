@@ -37,6 +37,10 @@ export class Rigidbody extends Component {
     angularVelocityDrawThreshold: number = 0.05;
     drawMomentum: boolean = false;
 
+    forceThreshold = 0.5;
+    forceVector: PIXI.Graphics = new PIXI.Graphics();
+    drawForce: boolean = false;
+
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
 
     verletVelocity: boolean;
@@ -58,20 +62,33 @@ export class Rigidbody extends Component {
     OnDestroy = (): void => {
         this.gameObject.scene.container.removeChild(this.linearVector);
         this.gameObject.scene.container.removeChild(this.angularVector);
+        this.gameObject.scene.container.removeChild(this.forceVector);
+
     }
 
     Update = (): void => {
         this.gameObject.scene.container.removeChild(this.linearVector);
         this.gameObject.scene.container.removeChild(this.angularVector);
+        this.gameObject.scene.container.removeChild(this.forceVector);
+
+        let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
         if (this.drawMomentum) {
-            let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
             if (this.velocity.Mag() > this.velocityDrawThreshold) {
                 this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
                 this.gameObject.scene.container.addChild(this.linearVector);
             }
             if (this.angularVelocity > this.angularVelocityDrawThreshold) {
-                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity), pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
+                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
+                    pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
                 this.gameObject.scene.container.addChild(this.angularVector);
+            }
+        }
+
+        if (this.drawForce) {
+            let force = this.GetSumForcesAt(pos);
+            if (force.Mag() > this.forceThreshold) {
+                this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
+                this.gameObject.scene.container.addChild(this.forceVector);
             }
         }
     }
