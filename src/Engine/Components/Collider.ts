@@ -129,8 +129,6 @@ export abstract class Collider extends Component {
             c2.attachedRigidbody.AddForce(Vector2.Mul(n, -j), ForceMode.Impulse);
             c1.attachedRigidbody.AddTorque(Vector2.Cross(rAP, Vector2.Mul(n, j)), ForceMode.Impulse);
             c2.attachedRigidbody.AddTorque(-Vector2.Cross(rBP, Vector2.Mul(n, j)), ForceMode.Impulse);
-            // this.DrawMomentumVectors(c1.attachedRigidbody, Vector2.FromPoint(c1.gameObject.absoluteTransform.position), vA1, c1.attachedRigidbody.velocity, wA1, c1.attachedRigidbody.angularVelocity);
-            // this.DrawMomentumVectors(c2.attachedRigidbody, Vector2.FromPoint(c2.gameObject.absoluteTransform.position), vB1, c2.attachedRigidbody.velocity, wB1, c2.attachedRigidbody.angularVelocity);
         }
     }
 
@@ -209,32 +207,6 @@ export abstract class Collider extends Component {
             scene.container.addChild(this.collisionPoints[this.collisionIndex]);
         }
         this.collisionIndex = (this.collisionIndex + 1) % this.maxCollisionPoints;
-    }
-
-    public static DrawMomentumVectors(rb: Rigidbody, pos: Vector2, lin1: Vector2, lin2: Vector2, ang1: number, ang2: number) {
-        // rb.gameObject.scene.container.removeChild(rb.linearVectorBefore);
-        // if (this.drawCollisionVectors) {
-        //     rb.linearVectorBefore = Gizmos.DrawArrow(pos, pos.Add(lin1), 3, 0xFF0000);
-        //     rb.gameObject.scene.container.addChild(rb.linearVectorBefore);
-        // }
-        //
-        // rb.gameObject.scene.container.removeChild(rb.linearVectorAfter);
-        // if (this.drawCollisionVectors) {
-        //     rb.linearVectorAfter = Gizmos.DrawArrow(pos, pos.Add(lin2), 3, 0xF0000F);
-        //     rb.gameObject.scene.container.addChild(rb.linearVectorAfter);
-        // }
-        //
-        // rb.gameObject.scene.container.removeChild(rb.angularVectorBefore);
-        // if (this.drawCollisionVectors) {
-        //     rb.angularVectorBefore = Gizmos.DrawArrow(pos.Add(lin1), pos.Add(lin1).Add(lin1.LeftNormal().Normalized().Mul(ang1 / (2*Math.PI) * 50)), 3, 0x00FF00);
-        //     rb.gameObject.scene.container.addChild(rb.angularVectorBefore);
-        // }
-        //
-        // rb.gameObject.scene.container.removeChild(rb.angularVectorAfter);
-        // if (this.drawCollisionVectors) {
-        //     rb.angularVectorAfter = Gizmos.DrawArrow(pos.Add(lin2), pos.Add(lin2).Add(lin2.LeftNormal().Normalized().Mul(ang2)), 3, 0x00F00F);
-        //     rb.gameObject.scene.container.addChild(rb.angularVectorAfter);
-        // }
     }
 
     public static CollisionCheck() {

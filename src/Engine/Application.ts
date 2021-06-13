@@ -105,11 +105,13 @@ export default class Application {
         }
 
         Time.t = t;
+
         return setInterval(() => {
             this.animationTicker.update(performance.now());
 
             Time.animationDelta = this.animationTicker.deltaTime;
             Time.animationElapsedMS = this.animationTicker.elapsedMS;
+            Time.realTime += Time.animationElapsedMS;
 
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             Collider.CollisionCheck();

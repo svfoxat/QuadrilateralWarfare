@@ -12,6 +12,8 @@ import {TriangleRenderer} from "../../Engine/Components/TriangleRenderer";
 import {EnemyScript} from "./EnemyScript";
 import {GameController} from "./GameController";
 import {SpringJoint} from "../../Engine/Components/SpringJoint";
+import {ParticleTriggerOnCollision} from "./ParticleTriggerOnCollision";
+import {Random} from "../../Engine/Math/Random";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
@@ -97,8 +99,20 @@ export class SceneScript {
 
         let go = new Gameobject(new Transform(), spring_go);
         go.transform.position = new Point(0, 0);
-        let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 100, 5, 1, 0xffffff,
+            new Vector2(0, 0), new Vector2(0, 0), false, 10, false, new Vector2(10, 10),
+            null, () => {
+                return Random.OnUnitCircle().Mul(10);
+            }, null,
+            (baseColor, timeRatio): number => {
+                let colorRatio = Math.floor(256 * timeRatio);
+                return (colorRatio * 256 * 256 + colorRatio * 256 + colorRatio);
+            },
+            (baseSize, timeRatio): Vector2 => {
+                return baseSize.SimpleMult(new Vector2(timeRatio, timeRatio));
+            }, null);
         go.AddExistingComponent(ps);
+        go.AddComponent(ParticleTriggerOnCollision);
 
         scene.Add(go);
         scene.Add(go2);

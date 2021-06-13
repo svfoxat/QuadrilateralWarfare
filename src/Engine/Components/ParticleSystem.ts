@@ -3,7 +3,6 @@ import {Component} from "./Component";
 import {Time} from "../Time";
 import {Forcefield} from "../Forcefield";
 import {ODESolver} from "../Math/ODESolver";
-import {Random} from "../Math/Random";
 import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
 import {EulerSolver} from "../Math/EulerSolver";
 
@@ -34,8 +33,29 @@ export class ParticleSystem extends Component {
     lastUsedParticle: number = 0;
     stepSize: number = 1;
     rungeKutta: boolean = true;
+    particleSize: Vector2;
 
-    constructor(texture: PIXI.Texture, amount: number, newParticles: number, ttl: number, color: number, initVelocity: Vector2, offset: Vector2) {
+    offsetPosFunc: () => Vector2;
+    offsetVelocityFunc: () => Vector2;
+    offsetMassFunc: () => number;
+
+    colorOverLifetime: (baseColor: number, timeRatio: number) => number;
+    sizeOverLifetime: (baseSize: Vector2, timeRatio: number) => Vector2;
+    massOverLifetime: (baseMass: number, timeRatio: number) => number;
+
+    loop: boolean;
+    loopDelayMS: number;
+    delayMSCounter: number;
+    autoStart: boolean;
+    started: boolean;
+    private lastRealTime: number = 0;
+
+    constructor(texture?: PIXI.Texture, amount?: number, newParticles?: number, ttl?: number, color?: number,
+                initVelocity?: Vector2, offset?: Vector2, loop?: boolean, loopDelayMS?: number, autoStart?: boolean,
+                particleSize?: Vector2, offsetPosFunc?: () => Vector2, offsetVelocityFunc?: () => Vector2,
+                offsetMassFunc?: () => number, colorOverLifetime?: (baseColor: number, timeRatio: number) => number,
+                sizeOverLifetime?: (baseSize: Vector2, timeRatio: number) => Vector2,
+                massOverLifetime?: (baseMass: number, timeRatio: number) => number) {
         super();
         this.particles = new Array<Particle>(amount);
         this.texture = texture;
@@ -45,6 +65,18 @@ export class ParticleSystem extends Component {
         this.baseColor = color;
         this.initVelocity = initVelocity;
         this.offset = offset;
+        this.loop = loop;
+        this.loopDelayMS = loopDelayMS;
+        this.delayMSCounter = loopDelayMS;
+        this.autoStart = autoStart;
+        this.started = this.autoStart;
+        this.particleSize = particleSize;
+        this.offsetPosFunc = offsetPosFunc;
+        this.offsetVelocityFunc = offsetVelocityFunc;
+        this.offsetMassFunc = offsetMassFunc;
+        this.colorOverLifetime = colorOverLifetime;
+        this.sizeOverLifetime = sizeOverLifetime;
+        this.massOverLifetime = massOverLifetime;
     }
 
     Enable = () => {
@@ -52,9 +84,9 @@ export class ParticleSystem extends Component {
         for (let i = 0; i < this.amount; i++) {
             this.particles[i] = new Particle();
             this.particles[i].sprite = new PIXI.Sprite(this.texture);
-            this.particles[i].sprite.tint = this.baseColor;
-            this.particles[i].sprite.x = this.gameObject.absoluteTransform.position.x + this.offset.x;
-            this.particles[i].sprite.y = this.gameObject.absoluteTransform.position.y + this.offset.y;
+            // this.particles[i].sprite.tint = this.baseColor;
+            // this.particles[i].sprite.x = this.gameObject.absoluteTransform.position.x + this.offset.x;
+            // this.particles[i].sprite.y = this.gameObject.absoluteTransform.position.y + this.offset.y;
             this.gameObject.scene?.container.addChild(this.particles[i].sprite);
         }
     }
@@ -79,14 +111,23 @@ export class ParticleSystem extends Component {
     private RespawnParticle(particle: Particle) {
         this.gameObject.scene?.container.removeChild(particle.sprite);
         particle.pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
-        //particle.pos.x += Math.random() * 1000;
-        particle.sprite.position = particle.pos.AsPoint();
         particle.color = this.baseColor;
         particle.life = this.ttl;
         particle.velocity = this.initVelocity;
-        particle.velocity = particle.velocity.Add(Random.OnUnitCircle().Mul(10));
-        //particle.velocity.x = 10 - (Math.random() * 20);
-        particle.mass = Math.random() + 0.5;
+        particle.mass = 1;
+
+        if (this.offsetPosFunc) {
+            particle.pos = particle.pos.Add(this.offsetPosFunc());
+        }
+
+        if (this.offsetVelocityFunc) {
+            particle.velocity = particle.velocity.Add(this.offsetVelocityFunc());
+        }
+
+        if (this.offsetMassFunc) {
+            particle.mass = this.offsetMassFunc();
+        }
+
         if (this.rungeKutta) {
             particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
                 0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt);
@@ -95,6 +136,13 @@ export class ParticleSystem extends Component {
                 0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt)
         }
 
+        if (this.particleSize) {
+            particle.sprite.width = this.particleSize.x;
+            particle.sprite.height = this.particleSize.y;
+        }
+
+        particle.sprite.position = particle.pos.AsPoint();
+        particle.sprite.tint = particle.color;
         this.gameObject.scene?.container.addChild(particle.sprite);
     }
 
@@ -106,18 +154,31 @@ export class ParticleSystem extends Component {
         return Forcefield.GetForceAtPosition(x1).Div(m);
     }
 
+    SetStarted() {
+        this.started = true;
+    }
+
     FixedUpdate = () => {
-        // Respawn particles up to this.newAmount
-        for (let i = 0; i < this.newParticles; i++) {
-            let p = this.FirstUnusedParticle();
-            if (p != -1) {
-                this.RespawnParticle(this.particles[p]);
+        let msPassed = (Time.realTime - this.lastRealTime);
+
+        if (this.started) {
+            this.delayMSCounter -= msPassed;
+            if (this.delayMSCounter <= 0) {
+                // Respawn particles up to this.newAmount
+                for (let i = 0; i < this.newParticles; i++) {
+                    let p = this.FirstUnusedParticle();
+                    if (p != -1) {
+                        this.RespawnParticle(this.particles[p]);
+                    }
+                }
+                this.delayMSCounter += this.loopDelayMS;
             }
+            this.started = this.loop;
         }
 
         for (let i = 0; i < this.amount; i++) {
             // Update TTL of each particle
-            this.particles[i].life -= Time.fixedDeltaTime();
+            this.particles[i].life -= msPassed / 1000;
 
             if (this.particles[i].life > 0) {
                 // Do physic calculations for each alive particle (Runge Kutta)
@@ -127,7 +188,25 @@ export class ParticleSystem extends Component {
 
                 this.particles[i].sprite.position.x = this.particles[i].pos.x;
                 this.particles[i].sprite.position.y = this.particles[i].pos.y;
+
+                let ratio = this.particles[i].life / this.ttl;
+                if (this.colorOverLifetime) {
+                    this.particles[i].color = this.colorOverLifetime(this.baseColor, ratio);
+                    this.particles[i].sprite.tint = this.particles[i].color;
+                }
+
+                if (this.sizeOverLifetime) {
+                    this.particles[i].sprite.width = this.sizeOverLifetime(this.particleSize, ratio).x;
+                    this.particles[i].sprite.height = this.sizeOverLifetime(this.particleSize, ratio).y;
+                }
+
+                if (this.massOverLifetime) {
+                    this.particles[i].mass = this.massOverLifetime(1, ratio);
+                }
+            } else {
+                this.gameObject.scene.container.removeChild(this.particles[i].sprite);
             }
         }
+        this.lastRealTime = Time.realTime;
     }
 }
