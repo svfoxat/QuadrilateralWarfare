@@ -15,10 +15,6 @@ export class Particle {
     mass: number = 1;
 
     solver: ODESolver;
-
-    public ToString() {
-        return "x: " + this.pos.x + ", y: " + this.pos.y;
-    }
 }
 
 export class ParticleSystem extends Component {

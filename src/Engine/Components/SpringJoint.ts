@@ -19,6 +19,8 @@ export class SpringJoint extends Component {
     private _lineColor: number = 0xFFFFFF;
     public showSpringStrain: boolean = false;
 
+    public maxForce: number = 1000;
+
     Enable = (): void => {
         let rb1 = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
         let rb2 = this.attachedObject?.GetComponent(Rigidbody) as Rigidbody;
@@ -44,8 +46,9 @@ export class SpringJoint extends Component {
         dir = pos.Sub(attached_pos).Normalized();
 
         let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
+        if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
         if (this.showSpringStrain) {
-            this._lineColor = Math.round(force.Mag() / 100 * 256) * 256 * 256 + (256 - Math.round(force.Mag() / 100 * 256));
+            this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));
         } else {
             this._lineColor = 0xFFFFFF;
         }
