@@ -14,6 +14,7 @@ import {GameController} from "./GameController";
 import {SpringJoint} from "../../Engine/Components/SpringJoint";
 import {ParticleTriggerOnCollision} from "./ParticleTriggerOnCollision";
 import {Random} from "../../Engine/Math/Random";
+import {Forcefield} from "../../Engine/Forcefield";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
@@ -117,6 +118,7 @@ export class SceneScript {
         scene.Add(go);
         scene.Add(go2);
         application.pixi.stage.addChild(sprite2);
+        Forcefield.DrawForceField(scene);
         return scene;
     }
 
