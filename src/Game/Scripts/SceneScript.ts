@@ -16,14 +16,20 @@ export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
+        scene.sceneRoot.name = "ROOT"
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
         gamecontroller.AddComponent(GameController);
+        gamecontroller.name = "Gamecontroller"
 
         let floor = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
         let top = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x00FF00);
         let right = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0x00FF00);
         let left = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
+        floor.name = "floor";
+        top.name = "top";
+        right.name = "right";
+        left.name = "left";
 
         let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
         redBox.parent = gamecontroller;
@@ -73,6 +79,7 @@ export class SceneScript {
         let spriteRenderer3 = spring_go.AddComponent(SpriteRenderer) as SpriteRenderer;
         spriteRenderer3.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
         spring_go.transform.scale = new Point(3, 3);
+        spring_go.name = "Spring"
 
         const sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
         let box = spring_go.AddComponent(BoxCollider) as BoxCollider;
@@ -89,6 +96,7 @@ export class SceneScript {
         go.transform.position = new Point(0, 0);
         let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
         go.AddExistingComponent(ps);
+        go.name = "Particles"
 
         scene.Add(go);
         scene.Add(go2);

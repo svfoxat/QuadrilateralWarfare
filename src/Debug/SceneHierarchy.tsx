@@ -21,9 +21,9 @@ export default(props: IProps) => {
 
     useEffect(() => {
         setInterval(() => {
-            setTree([...props.app.activeScene.sceneRoot.children])
+            setTree(props.app.activeScene.sceneRoot.children.filter(g => !!g.id))
         }, 100)
-    }, [props.app])
+    }, [])
 
     const handleSelection = (node: Gameobject) => {
         props.onSelectNode(node);
@@ -37,10 +37,10 @@ export default(props: IProps) => {
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
             >
-                <TreeItem nodeId={"root"} label={"Hierarchy"}>
+                <TreeItem nodeId={"root"} label={`Root (${tree.length})`}>
                     {tree.map((node, idx) => (
                         <TreeItem onClick={() => handleSelection(node)} nodeId={`${idx}`} label={`${node.name}, ${node.children.length} children`} >
-                            {node.children.map((sub_node, idx2) => (
+                           {node.children.map((sub_node, idx2) => (
                                 <TreeItem onClick={() => handleSelection(node)} nodeId={`${idx}-${idx2}`} label={sub_node.name}/>
                             ))}
                         </TreeItem>

@@ -15,9 +15,7 @@ const useStyles = makeStyles({
 
 export default () => {
     let app: Application = window["app"];
-
     const styles = useStyles();
-    const [application, setApplication] = useState<Application>(null);
     const [connected, setConnected] = useState<boolean>(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string>(null);
 
@@ -31,6 +29,7 @@ export default () => {
 
     const handleNodeSelection = (node: any) => {
         setSelectedNodeId(node.id);
+        node.selected = true;
     }
 
     return (

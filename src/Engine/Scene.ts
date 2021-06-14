@@ -10,6 +10,7 @@ export class Scene {
     constructor() {
         this.container = new PIXI.Container();
         this.sceneRoot = new Gameobject(new Transform(), null);
+        this.sceneRoot.name = "ROOT"
     }
 
     public Add(g: Gameobject) {

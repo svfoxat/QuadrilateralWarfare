@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) => ({
     },
     parameterHeadline: {
         width: '100px',
+        marginRight: '0px'
     }
 }));
 
@@ -89,7 +90,7 @@ export default(props: IProps) => {
                     />
                     <TextField
                         type={"number"}
-                        label="x:"
+                        label="y:"
                         id="outlined-margin-dense"
                         className={classes.textField}
                         value={selectedNode?.absoluteTransform.scale.y.toFixed(2)}

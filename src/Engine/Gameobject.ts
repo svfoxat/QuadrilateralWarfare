@@ -24,8 +24,10 @@ export class Gameobject {
     public components: Array<Component> = [];
     public scene: Scene;
     public id: string;
+    public selected: boolean = false;
 
     private _enabled: boolean = false;
+
 
     constructor(transform: Transform, parent: Gameobject = null) {
         this.id = uuid();
