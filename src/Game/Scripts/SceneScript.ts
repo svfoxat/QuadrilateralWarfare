@@ -3,24 +3,19 @@ import Application from "../../Engine/Application";
 import {Gameobject} from "../../Engine/Gameobject";
 import {Point, Transform} from "pixi.js";
 import {Vector2} from "../../Engine/Math/Vector2";
-import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
-import {GameController} from "./GameController";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
-import {EnemyScript} from "./EnemyScript";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
 import {BoxCollider} from "../../Engine/Components/BoxCollider";
 import ObjectMoveScript from "./ObjectMoveScript";
+import {SpringJoint} from "../../Engine/Components/SpringJoint";
+import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
+import {GameController} from "./GameController";
+import {EnemyScript} from "./EnemyScript";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
-
-        // let go = new Gameobject(new Transform(), scene.sceneRoot);
-        // go.transform.position = new Point(500, 100);
-        // let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
-        // go.AddExistingComponent(ps);
-        // scene.Add(go);
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
         gamecontroller.AddComponent(GameController);
@@ -60,11 +55,9 @@ export class SceneScript {
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.angularVelocity = 0;
-        rb2.velocity = new Vector2(1, 0);//Vector2.Zero();
-        rb2.mass = 10;
+        rb2.velocity = Vector2.Zero()
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(5, 5).AsPoint();
-        go2.transform.position = new Point(400, 800);
         boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
         boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
         boxCollider2.attachedRigidbody = rb2;
@@ -74,7 +67,32 @@ export class SceneScript {
         sprite2.on("mousedown", e => {
             rb2.useGravity = true;
         });
+
+        const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
+        spring_go.transform.position = new Point(960, 540);
+        let spriteRenderer3 = spring_go.AddComponent(SpriteRenderer) as SpriteRenderer;
+        spriteRenderer3.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+        spring_go.transform.scale = new Point(3, 3);
+
+        const sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
+        let box = spring_go.AddComponent(BoxCollider) as BoxCollider;
+        box.attachedRigidbody = sj.gameObject.GetComponent(Rigidbody) as Rigidbody;
+        box.size = new Vector2(spriteRenderer3.sprite.width * 3, spriteRenderer3.sprite.height * 3);
+
+        sj.AttachObject(go2);
+        rb2.mass = 25;
+        rb2.useGravity = false;
+        rb2.verletVelocity = true;
+        go2.transform.position = new Point(960, 300);
+
+        let go = new Gameobject(new Transform(), spring_go);
+        go.transform.position = new Point(0, 0);
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
+        go.AddExistingComponent(ps);
+
+        scene.Add(go);
         scene.Add(go2);
+        scene.Add(spring_go);
         application.pixi.stage.addChild(sprite2);
         return scene;
     }

@@ -214,7 +214,7 @@ export abstract class Collider extends Component {
         }
     }
 
-    public Enable = (): void => {
+    Enable = () => {
 
     };
 }

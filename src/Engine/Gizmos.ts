@@ -25,4 +25,13 @@ export class Gizmos {
             .endFill();
         return arrow;
     }
+
+    public static DrawLine(from: Vector2, to: Vector2, width: number, color: number): PIXI.Graphics {
+        let line = new PIXI.Graphics();
+        line
+            .lineStyle(width, color)
+            .moveTo(from.x, from.y)
+            .lineTo(to.x, to.y);
+        return line;
+    }
 }

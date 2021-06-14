@@ -2,8 +2,9 @@ import {Vector2} from "../Math/Vector2";
 import {Component} from "./Component";
 import {Time} from "../Time";
 import {Forcefield} from "../Forcefield";
-import {EulerSolver} from "../Math/EulerSolver";
 import {ODESolver} from "../Math/ODESolver";
+import {Random} from "../Math/Random";
+import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
 
 export class Particle {
     sprite: PIXI.Sprite;
@@ -76,14 +77,15 @@ export class ParticleSystem extends Component {
     private RespawnParticle(particle: Particle) {
         this.gameObject.scene?.container.removeChild(particle.sprite);
         particle.pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
-        particle.pos.x += Math.random() * 1000;
+        //particle.pos.x += Math.random() * 1000;
         particle.sprite.position = particle.pos.AsPoint();
         particle.color = this.baseColor;
         particle.life = this.ttl;
         particle.velocity = this.initVelocity;
-        particle.velocity.x = 10 - (Math.random() * 20);
+        particle.velocity = particle.velocity.Add(Random.OnUnitCircle().Mul(10));
+        //particle.velocity.x = 10 - (Math.random() * 20);
         particle.mass = Math.random() + 0.5;
-        particle.solver = new EulerSolver(particle.pos, particle.velocity,
+        particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
             0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt)
         this.gameObject.scene?.container.addChild(particle.sprite);
     }
