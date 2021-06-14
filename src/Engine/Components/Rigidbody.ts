@@ -4,6 +4,8 @@ import {Time} from "../Time";
 import {Vector2} from "../Math/Vector2";
 import {SpringJoint} from "./SpringJoint";
 import {Forcefield} from "../Forcefield";
+import {BoxCollider, TriangleCollider} from "./Collider";
+import {Gizmos} from "../Gizmos";
 
 export enum ForceMode {
     Force,
@@ -18,7 +20,7 @@ export class Rigidbody extends Component {
     mass: number = 1;
     velocity: Vector2 = new Vector2(0, 0);
     angularVelocity: number = 0;
-    inertia: number = 0;
+    inertia: number = 1;
     torque: number = 0;
     useGravity: boolean = false;
     globalForce: Vector2 = Vector2.Zero();
@@ -29,29 +31,87 @@ export class Rigidbody extends Component {
     isStatic: boolean = false;
     isAsleep: boolean = false;
 
+    linearVector: PIXI.Graphics = new PIXI.Graphics();
+    angularVector: PIXI.Graphics = new PIXI.Graphics();
+    velocityDrawThreshold: number = 0.5;
+    angularVelocityDrawThreshold: number = 0.05;
+    drawMomentum: boolean = false;
+
+    forceThreshold = 0.5;
+    forceVector: PIXI.Graphics = new PIXI.Graphics();
+    drawForce: boolean = false;
+
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
 
     verletVelocity: boolean;
 
-    FixedUpdate = (): void => {
-        if (this.verletVelocity) {
-            if (this.attachedSprings.length > 0) {
-                this.velocity_verlet(Vector2.FromPoint(this.gameObject.absoluteTransform.position), this.acceleration, Time.fixedDeltaTime());
+    Enable = () => {
+        let tri = this.gameObject?.GetComponent(TriangleCollider) as TriangleCollider;
+        if (tri) {
+            tri.attachedRigidbody = this;
+            tri.SetEnabled(true);
+        }
+
+        let box = this.gameObject?.GetComponent(BoxCollider) as BoxCollider;
+        if (box) {
+            box.attachedRigidbody = this;
+            box.SetEnabled(true);
+        }
+    }
+
+    OnDestroy = (): void => {
+        this.gameObject.scene.container.removeChild(this.linearVector);
+        this.gameObject.scene.container.removeChild(this.angularVector);
+        this.gameObject.scene.container.removeChild(this.forceVector);
+
+    }
+
+    Update = (): void => {
+        this.gameObject.scene.container.removeChild(this.linearVector);
+        this.gameObject.scene.container.removeChild(this.angularVector);
+        this.gameObject.scene.container.removeChild(this.forceVector);
+
+        let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+        if (this.drawMomentum) {
+            if (this.velocity.Mag() > this.velocityDrawThreshold) {
+                this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
+                this.gameObject.scene.container.addChild(this.linearVector);
+            }
+            if (this.angularVelocity > this.angularVelocityDrawThreshold) {
+                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
+                    pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
+                this.gameObject.scene.container.addChild(this.angularVector);
             }
         }
 
-        if (!this.verletVelocity && !this.isStatic && this.mass > 0 && !this.isAsleep) {
-            this.velocity = this.velocity.Add(this.acceleration.Add(this.GetGlobalForce(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Div(this.mass)).Mul(Time.fixedDeltaTime()));
-            this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
+        if (this.drawForce) {
+            let force = this.GetSumForcesAt(pos);
+            if (force.Mag() > this.forceThreshold) {
+                this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
+                this.gameObject.scene.container.addChild(this.forceVector);
+            }
+        }
+    }
 
-            this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
-            this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
-            this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
+    FixedUpdate = (): void => {
+        if (this.inertia > 0 && !this.isStatic && this.mass > 0 && !this.isAsleep) {
+            if (this.verletVelocity) {
+                this.velocity_verlet(Time.fixedDeltaTime());
+            }
+
+            if (!this.verletVelocity) {
+                this.velocity = this.velocity.Add(this.acceleration.Add(this.GetSumForcesAt(Vector2.FromPoint(this.gameObject.absoluteTransform.position)).Div(this.mass)).Mul(Time.fixedDeltaTime()));
+                this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
+
+                this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
+                this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();
+                this.gameObject.transform.rotation += this.angularVelocity * Time.fixedDeltaTime();
+            }
         }
     };
 
     GetSumForcesAt(pos: Vector2): Vector2 {
-        return this.GetGlobalForce(pos).Add(this.GetLocalForce(pos));
+        return this.globalForce.Add(this.GetGlobalForce(pos).Add(this.GetLocalForce(pos)));
     }
 
     GetGlobalForce(pos: Vector2): Vector2 {
@@ -65,17 +125,7 @@ export class Rigidbody extends Component {
                 springForce = springForce.Add(spring.GetForce(this.gameObject, pos, this.velocity));
             }
         }
-
         return springForce;
-    }
-
-    Update = () => {
-    }
-
-    SetAsleep() {
-        this.isAsleep = true;
-        this.velocity = Vector2.Zero();
-        this.angularVelocity = 0;
     }
 
     AddForce(force: Vector2, mode: ForceMode) {
@@ -116,25 +166,26 @@ export class Rigidbody extends Component {
         }
     }
 
-    private velocity_verlet(pos: Vector2, acceleration: Vector2, timestep: number) {
+    private velocity_verlet(timestep: number) {
         let newVel = this.velocity;
-        let newPos = pos;
+        let newPos = this.gameObject.transform.position;
         let newAcc = Vector2.Zero();
 
         for (let i = 0; i < 1; i++) {
-            newPos.x += this.velocity.x * timestep + 0.5 * acceleration.x * timestep * timestep;
-            newPos.y += this.velocity.y * timestep + 0.5 * acceleration.y * timestep * timestep;
+            newPos.x += this.velocity.x * timestep + 0.5 * this.acceleration.x * timestep * timestep;
+            newPos.y += this.velocity.y * timestep + 0.5 * this.acceleration.y * timestep * timestep;
 
-            newAcc = this.GetSumForcesAt(pos);
+            newAcc = this.GetSumForcesAt(Vector2.FromPoint(newPos));
 
-            // newVel.x += 0.5 * (newAcc.x + acceleration.x) * timestep;
-            // newVel.y += 0.5 * (newAcc.x + acceleration.y) * timestep;
-            newVel.x += acceleration.x * timestep;
-            newVel.y += acceleration.y * timestep;
+            newVel.x += 0.5 * (newAcc.x + this.acceleration.x) * timestep;
+            newVel.y += 0.5 * (newAcc.y + this.acceleration.y) * timestep;
 
             this.acceleration = newAcc;
-            this.gameObject.transform.position = newPos.AsPoint();
+            this.gameObject.transform.position = newPos;
             this.velocity = newVel;
+
+            this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * timestep;
+            this.gameObject.transform.rotation += this.angularVelocity * timestep;
         }
     }
 }

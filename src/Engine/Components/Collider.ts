@@ -2,8 +2,10 @@ import {Component} from "./Component";
 import {Vector2} from "../Math/Vector2";
 import {ForceMode, Rigidbody} from "./Rigidbody";
 import Application from "../Application";
-import {ClippingPlane, Geometry} from "../Math/Geometry";
-import {BoxCollider} from "./BoxCollider";
+import {AABB, ClippingPlane, Edge, Geometry} from "../Math/Geometry";
+import {SceneManager} from "../SceneManager";
+import {Gizmos} from "../Gizmos";
+import {Scene} from "../Scene";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -15,12 +17,19 @@ export abstract class Collider extends Component {
     lastRot: number = 0;
 
     static bounciness: number = .7;
+    static maxCollisionPoints = 50;
+    static collisionPoints: Array<PIXI.Graphics> = new Array<PIXI.Graphics>(Collider.maxCollisionPoints);
+    static collisionIndex: number = 0;
+    static drawCollisionPoints: boolean = false;
 
-    abstract Collision(other: Collider): Vector2;
+    static maxCollisionVectors = 20;
+    static collisionVectors: Array<PIXI.Graphics> = new Array<PIXI.Graphics>(Collider.maxCollisionPoints);
+    static collisionVectorIndex: number = 0;
+    static drawCollisionVectors: boolean = true;
 
-    abstract GetSeperatingAxes(): Array<Vector2>;
+    abstract GetSeparatingAxes(): Array<Vector2>;
 
-    abstract GetProjection(axis: Vector2): Vector2;
+    abstract GetAABB(): AABB;
 
     private static MovableRigidbody(c: Collider): boolean {
         return !(c?.attachedRigidbody == null || c.attachedRigidbody.isStatic || c.attachedRigidbody.mass === 0);
@@ -54,7 +63,8 @@ export abstract class Collider extends Component {
     }
 
     public static GetClippingPlanes(c1: Collider, c2: Collider, mtv: Vector2): ClippingPlane {
-        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+        if ((c1 instanceof BoxCollider || c1 instanceof TriangleCollider) &&
+            (c2 instanceof BoxCollider || c2 instanceof TriangleCollider)) {
             let edge1 = c1.ComputeBestEdge(mtv);
             let edge2 = c2.ComputeBestEdge(mtv.Inverse());
 
@@ -67,7 +77,8 @@ export abstract class Collider extends Component {
     }
 
     public static GetContactPoint(c1: Collider, c2: Collider, mtv: Vector2, pl: ClippingPlane = null): Array<Vector2> {
-        if (c1 instanceof BoxCollider && c2 instanceof BoxCollider) {
+        if ((c1 instanceof BoxCollider || c1 instanceof TriangleCollider) &&
+            (c2 instanceof BoxCollider || c2 instanceof TriangleCollider)) {
             let plane = this.GetClippingPlanes(c1, c2, mtv);
             let ref = plane.ref, inc = plane.inc, flip = plane.flip;
             if (pl != null) {
@@ -142,48 +153,43 @@ export abstract class Collider extends Component {
     }
 
     public static IsColliding(c1: Collider, c2: Collider): Vector2 {
-        return c1.Collision(c2);
+        if (c1 instanceof BoxCollider) {
+            return this.BoxCollision(c1, c2);
+        }
+
+        if (c1 instanceof TriangleCollider) {
+            return this.TriangleCollision(c1, c2);
+        }
+
+        return undefined;
     }
 
     public static BoxBox(box1: BoxCollider, box2: BoxCollider): Vector2 {
         let smallestAxis = null;
         let overlap = 100000.0;
-        // Obtain separating axes1 from box1
-        let axes1 = box1.GetSeperatingAxes();
-        // Obtain separating axes2 from box2
-        let axes2 = box2.GetSeperatingAxes();
+        let axes1 = box1.GetSeparatingAxes();
+        let axes2 = box2.GetSeparatingAxes();
 
-        // Loop over axes1
         for (let axis of axes1) {
-            // // project both shapes onto the axis
-            let p1 = box1.GetProjection(axis);
-            let p2 = box2.GetProjection(axis);
-            // // do the projections overlap?
-            if (!this.Overlap(p1, p2)) {
-                // // if no: then we can guarantee that the shapes do not overlap
+            let p1 = Geometry.GetProjection(axis, box1.vertices);
+            let p2 = Geometry.GetProjection(axis, box2.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
-                // // if yes: // get the overlap, check if it is the minimal overlap
-                let o = this.GetOverlap(p1, p2);
+                let o = Geometry.GetOverlap(p1, p2);
                 if (o < overlap) {
                     overlap = o;
                     smallestAxis = axis;
                 }
             }
         }
-
-        // Loop over axes2
         for (let axis of axes2) {
-            // // project both shapes onto the axis
-            let p1 = box1.GetProjection(axis);
-            let p2 = box2.GetProjection(axis);
-            // // do the projections overlap?
-            if (!this.Overlap(p1, p2)) {
-                // // if no: then we can guarantee that the shapes do not overlap
+            let p1 = Geometry.GetProjection(axis, box1.vertices);
+            let p2 = Geometry.GetProjection(axis, box2.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
                 return null;
             } else {
-                // // if yes: // get the overlap, check if it is the minimal overlap
-                let o = this.GetOverlap(p1, p2);
+                let o = Geometry.GetOverlap(p1, p2);
                 if (o < overlap) {
                     overlap = o;
                     smallestAxis = axis;
@@ -194,84 +200,345 @@ export abstract class Collider extends Component {
         return Vector2.Mul(smallestAxis, overlap);
     }
 
-    public static CircleCircle(circle1: CircleCollider, circle2: CircleCollider): Vector2 {
-        return null;
+    public static DrawCollisionPoint(scene: Scene, pos: Vector2) {
+        scene.container.removeChild(this.collisionPoints[this.collisionIndex]);
+        if (this.drawCollisionPoints) {
+            this.collisionPoints[this.collisionIndex] = Gizmos.DrawPoint(pos, 5, 0x009999, 1, 0x00FFFF);
+            scene.container.addChild(this.collisionPoints[this.collisionIndex]);
+        }
+        this.collisionIndex = (this.collisionIndex + 1) % this.maxCollisionPoints;
     }
 
-    public static BoxCircle(box1: BoxCollider, circle2: CircleCollider): Vector2 {
-        return null;
-    }
-
-    private static Overlap(p1: Vector2, p2: Vector2): boolean {
-        return p1.x < p2.x && p1.y > p2.x || p2.x < p1.x && p2.y > p1.x;
-    }
-
-    private static GetOverlap(p1: Vector2, p2: Vector2): number {
-        if (p1.x < p2.x && p1.y > p2.x) {
-            return p1.y - p2.x;
-        } else if (p2.x < p1.x && p2.y > p1.x) {
-            return p2.y - p1.x;
+    public static CollisionCheck() {
+        let colliders = new Array<Collider>();
+        for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
+            let box = go.GetComponent(BoxCollider) as BoxCollider;
+            if (box != null && box.enabled && go.enabled) {
+                colliders.push(box);
+                continue;
+            }
+            let tri = go.GetComponent(TriangleCollider) as TriangleCollider;
+            if (tri != null && tri.enabled && go.enabled) {
+                colliders.push(tri);
+            }
+        }
+        for (let i = 0; i < colliders.length; i++) {
+            for (let j = 0; j < colliders.length; j++) {
+                if (i >= j || (colliders[i].attachedRigidbody?.mass === 0 && colliders[j].attachedRigidbody?.mass === 0) || (colliders[i].attachedRigidbody?.isAsleep && colliders[j].attachedRigidbody?.isAsleep)) continue;
+                if (this.BroadCollisionCheck(colliders[i], colliders[j])) {
+                    let collision = Collider.IsColliding(colliders[i], colliders[j]);
+                    if (collision != null) {
+                        if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
+                            collision = collision.Inverse();
+                        }
+                        Collider.HandleCollision(colliders[i], colliders[j], collision);
+                        let cp = new ClippingPlane(null, null, null);
+                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
+                        let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
+                        let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
+                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
+                        colliders[i].SleepTick();
+                        colliders[j].SleepTick();
+                        colliders[i].gameObject.OnCollision(colliders[j]);
+                        colliders[j].gameObject.OnCollision(colliders[i]);
+                        this.DrawCollisionPoint(colliders[i].gameObject.scene, currCP);
+                    }
+                }
+            }
         }
     }
 
-    Enable = () => {
+    public static BoxTriangle(tri: TriangleCollider, box: BoxCollider) {
+        let smallestAxis = null;
+        let overlap = 100000.0;
+        let axes1 = tri.GetSeparatingAxes();
+        let axes2 = box.GetSeparatingAxes();
 
-    };
+        for (let axis of axes1) {
+            let p1 = Geometry.GetProjection(axis, tri.vertices);
+            let p2 = Geometry.GetProjection(axis, box.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
+                return null;
+            } else {
+                let o = Geometry.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+        for (let axis of axes2) {
+            let p1 = Geometry.GetProjection(axis, tri.vertices);
+            let p2 = Geometry.GetProjection(axis, box.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
+                return null;
+            } else {
+                let o = Geometry.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        return Vector2.Mul(smallestAxis, overlap);
+    }
+
+    public static BoxCollision(box: BoxCollider, other: Collider): Vector2 {
+        let b = other as BoxCollider;
+        if (b != null) {
+            return Collider.BoxBox(box, b);
+        }
+
+        let tri = other as TriangleCollider;
+        if (tri != null) {
+            return Collider.BoxTriangle(tri, box);
+        }
+
+        return undefined;
+    }
+
+    public static TriangleCollision(triangle: TriangleCollider, other: Collider): Vector2 {
+        let box = other as BoxCollider;
+        if (box != null) {
+            return Collider.BoxTriangle(triangle, box);
+        }
+
+        let tri = other as TriangleCollider;
+        if (tri != null) {
+            return Collider.TriangleTriangle(triangle, tri);
+        }
+
+        return undefined;
+    }
+
+    public static TriangleTriangle(tri1: TriangleCollider, tri2: TriangleCollider) {
+        let smallestAxis = null;
+        let overlap = 100000.0;
+        let axes1 = tri1.GetSeparatingAxes();
+        let axes2 = tri2.GetSeparatingAxes();
+
+        for (let axis of axes1) {
+            let p1 = Geometry.GetProjection(axis, tri1.vertices);
+            let p2 = Geometry.GetProjection(axis, tri2.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
+                return null;
+            } else {
+                let o = Geometry.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+        for (let axis of axes2) {
+            let p1 = Geometry.GetProjection(axis, tri1.vertices);
+            let p2 = Geometry.GetProjection(axis, tri2.vertices);
+            if (!Geometry.Overlap(p1, p2)) {
+                return null;
+            } else {
+                let o = Geometry.GetOverlap(p1, p2);
+                if (o < overlap) {
+                    overlap = o;
+                    smallestAxis = axis;
+                }
+            }
+        }
+
+        return Vector2.Mul(smallestAxis, overlap);
+    }
+
+    private static BroadCollisionCheck(collider: Collider, collider2: Collider): boolean {
+        let aabb1 = collider.GetAABB();
+        let aabb2 = collider2.GetAABB();
+        return Geometry.AABBOverlap(aabb1, aabb2);
+    }
 }
 
-//TODO: Export
-export class CircleCollider extends Collider {
-    name: string = "CircleCollider2D";
+export class TriangleCollider extends Collider {
+    Start: () => void;
+    name: string = "TriangleCollider2D";
+
     offset: Vector2 = new Vector2(0, 0);
-    radius: number = 0.5;
+    vertexA: Vector2 = new Vector2(0, 0);
+    vertexB: Vector2 = new Vector2(0, 0);
+    vertexC: Vector2 = new Vector2(0, 0);
+    vertices: Array<Vector2> = new Array<Vector2>(3);
+
+    drawCorners: boolean = false;
+    vertexGizmos: Array<PIXI.Graphics>;
+
+    Enable = () => {
+        this.vertexGizmos = new Array<PIXI.Graphics>(3);
+        for (let giz of this.vertexGizmos) {
+            giz = new PIXI.Graphics;
+        }
+
+        let rb = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
+        if (rb) {
+            this.attachedRigidbody = rb;
+        } else {
+            this.SetEnabled(false);
+        }
+    }
 
     Update = (): void => {
+        if (this.drawCorners) {
+            for (let i = 0; i < this.vertices.length; i++) {
+                this.gameObject.scene.container.removeChild(this.vertexGizmos[i]);
+                this.vertexGizmos[i] = Gizmos.DrawPoint(this.vertices[i], 3, 0x22ff00, 1, 0x336699);
+                this.gameObject.scene.container.addChild(this.vertexGizmos[i]);
+            }
+        }
     };
 
     FixedUpdate = () => {
+        this.SetVertices();
         let rb = this.attachedRigidbody;
+
         if (this.attachedRigidbody != null && !this.isTrigger) {
-            this.attachedRigidbody.inertia = rb.mass * this.radius * this.radius / 2;
+            // I = (bh^3) / 36
+            this.attachedRigidbody.inertia = rb.mass *
+                (Math.pow(this.vertexA.Sub(this.vertexC.Sub(this.vertexB).Div(2)).Mag(), 3) * this.vertexC.Sub(this.vertexB).Div(2).Mag()) / 36;
         }
     };
 
-    Collision(other: Collider): Vector2 {
-        let box = other as BoxCollider;
-        if (box != null) {
-            return Collider.BoxCircle(box, this);
-        }
-
-        let circle = other as CircleCollider;
-        if (circle != null) {
-            return Collider.CircleCircle(this, circle);
-        }
-
-        // TODO: Circle/Triangle, Circle/Mesh Collision
-        return undefined;
+    GetAABB(): AABB {
+        this.SetVertices();
+        return Geometry.GetAABB(this.vertices);
     }
 
-    GetSeperatingAxes(): Array<Vector2> {
-        return undefined;
+    GetSeparatingAxes(): Array<Vector2> {
+        let normals = new Array<Vector2>();
+        this.SetVertices();
+
+        let edge1 = this.vertices[1].Sub(this.vertices[0]);
+        let edge2 = this.vertices[2].Sub(this.vertices[1]);
+        let edge3 = this.vertices[0].Sub(this.vertices[2]);
+
+        normals.push(edge1.LeftNormal().Normalized());
+        normals.push(edge2.LeftNormal().Normalized());
+        normals.push(edge3.LeftNormal().Normalized());
+
+        return normals;
     }
 
-    GetProjection(axis: Vector2): Vector2 {
-        return undefined;
+    private SetVertices(): void {
+        this.vertices[0] = (Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexA.SimpleMult(Vector2.FromPoint(this.gameObject.absoluteTransform.scale)).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices[1] = (Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexB.SimpleMult(Vector2.FromPoint(this.gameObject.absoluteTransform.scale)).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices[2] = (Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(this.vertexC.SimpleMult(Vector2.FromPoint(this.gameObject.absoluteTransform.scale)).Rotate(this.gameObject.absoluteTransform.rotation)));
+    }
+
+    public ComputeBestEdge(mtv: Vector2): Edge {
+        let max = -100000;
+        let index = 0;
+        for (let i = 0; i < 3; i++) {
+            let proj = mtv.Normalized().Dot(this.vertices[i]);
+            if (proj > max) {
+                max = proj;
+                index = i;
+            }
+        }
+
+        let l = this.vertices[index].Sub(this.vertices[(index + 4) % 3]).Normalized();
+        let r = this.vertices[index].Sub(this.vertices[(index + 2) % 3]).Normalized();
+        if (r.Dot(mtv.Normalized()) <= l.Dot(mtv.Normalized())) {
+            return new Edge(this.vertices[index], this.vertices[(index + 2) % 3], this.vertices[index]);
+        } else {
+            return new Edge(this.vertices[index], this.vertices[index], this.vertices[(index + 4) % 3]);
+        }
     }
 }
 
-export class MeshCollider extends Collider {
-    name: string = "MeshCollider2D";
+export class BoxCollider extends Collider {
+    Start: () => void;
+    name: string = "BoxCollider2D";
 
-    Collision(other: Collider): Vector2 {
-        return undefined;
+    size: Vector2 = new Vector2(1, 1);
+    offset: Vector2 = new Vector2(0, 0);
+    vertices: Array<Vector2>;
+
+    drawCorners: boolean = false;
+    vertexGizmos: Array<PIXI.Graphics>;
+
+    Enable = () => {
+        this.vertexGizmos = new Array<PIXI.Graphics>(4);
+        for (let giz of this.vertexGizmos) {
+            giz = new PIXI.Graphics;
+        }
+
+        let rb = this.gameObject?.GetComponent(Rigidbody) as Rigidbody;
+        if (rb) {
+            this.attachedRigidbody = rb;
+        } else {
+            this.SetEnabled(false);
+        }
     }
 
-    GetSeperatingAxes(): Array<Vector2> {
-        return undefined;
+    Update = (): void => {
+        if (this.drawCorners) {
+            for (let i = 0; i < this.vertices.length; i++) {
+                this.gameObject.scene.container.removeChild(this.vertexGizmos[i]);
+                this.vertexGizmos[i] = Gizmos.DrawPoint(this.vertices[i], 3, 0x22ff00, 1, 0x336699);
+                this.gameObject.scene.container.addChild(this.vertexGizmos[i]);
+            }
+        }
+    };
+
+    FixedUpdate = () => {
+        this.SetVertices();
+        let rb = this.attachedRigidbody;
+        if (this.attachedRigidbody != null && !this.isTrigger) {
+            // I = (x^2 y^2) / 12
+            this.attachedRigidbody.inertia = rb.mass * (this.size.x * this.size.x + this.size.y * this.size.y) / 12;
+        }
+    };
+
+    GetAABB(): AABB {
+        this.SetVertices();
+        return Geometry.GetAABB(this.vertices);
     }
 
-    GetProjection(axis: Vector2): Vector2 {
-        return undefined;
+    GetSeparatingAxes(): Array<Vector2> {
+        let normals = new Array<Vector2>();
+        this.SetVertices();
+
+        let edge1 = this.vertices[1].Sub(this.vertices[0]);
+        let edge2 = this.vertices[0].Sub(this.vertices[3]);
+
+        normals.push(edge1.LeftNormal().Normalized());
+        normals.push(edge2.LeftNormal().Normalized());
+        normals.push(edge1.LeftNormal().Inverse().Normalized());
+        normals.push(edge2.LeftNormal().Inverse().Normalized());
+
+        return normals;
     }
 
+    private SetVertices(): void {
+        this.vertices = new Array<Vector2>();
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(-this.size.x / 2, this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(-this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+        this.vertices.push(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset).Add(new Vector2(this.size.x / 2, -this.size.y / 2).Rotate(this.gameObject.absoluteTransform.rotation)));
+    }
+
+    public ComputeBestEdge(mtv: Vector2): Edge {
+        let max = -100000;
+        let index = 0;
+        for (let i = 0; i < 4; i++) {
+            let proj = mtv.Normalized().Dot(this.vertices[i]);
+            if (proj > max) {
+                max = proj;
+                index = i;
+            }
+        }
+
+        let l = this.vertices[index].Sub(this.vertices[(index + 5) % 4]).Normalized();
+        let r = this.vertices[index].Sub(this.vertices[(index + 3) % 4]).Normalized();
+        if (r.Dot(mtv.Normalized()) <= l.Dot(mtv.Normalized())) {
+            return new Edge(this.vertices[index], this.vertices[(index + 3) % 4], this.vertices[index]);
+        } else {
+            return new Edge(this.vertices[index], this.vertices[index], this.vertices[(index + 5) % 4]);
+        }
+    }
 }

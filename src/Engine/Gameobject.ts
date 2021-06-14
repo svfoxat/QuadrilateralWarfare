@@ -1,12 +1,6 @@
-import * as PIXI from "pixi.js";
 import {Point, Transform} from "pixi.js";
 import {Component} from "./Components/Component";
 import {Scene} from "./Scene";
-import Application from "./Application";
-import {Vector2} from "./Math/Vector2";
-import {SpriteRenderer} from "./Components/SpriteRenderer";
-import {BoxCollider} from "./Components/BoxCollider";
-import {Rigidbody} from "./Components/Rigidbody";
 import {Collider} from "./Components/Collider";
 import { uuid } from 'uuidv4';
 import Texture = PIXI.Texture;
@@ -28,10 +22,8 @@ export class Gameobject {
 
     private _enabled: boolean = false;
 
-
     constructor(transform: Transform, parent: Gameobject = null) {
         this.id = uuid();
-
         this.transform = transform;
         this.parent = parent;
         parent?.children.push(this);
@@ -53,7 +45,9 @@ export class Gameobject {
         if (!this._enabled) return;
 
         for (let component of this.components) {
-            component.Update();
+            if (component.Update && component.enabled) {
+                component.Update();
+            }
         }
     }
 
@@ -61,7 +55,7 @@ export class Gameobject {
         if (!this._enabled) return;
 
         for (let component of this.components) {
-            if (component.FixedUpdate) {
+            if (component.FixedUpdate && component.enabled) {
                 component.FixedUpdate();
             }
         }
@@ -85,11 +79,7 @@ export class Gameobject {
 
         for (let component of this.components) {
             if (component.enabled) continue;
-
-            if (component.Enable) {
-                component.enabled = true;
-                component.Enable();
-            }
+            component.SetEnabled(true);
         }
         return;
     }
@@ -123,14 +113,14 @@ export class Gameobject {
         let component = new type();
         component.gameObject = this;
         this.components.push(component);
-        this.EnableComponents();
+        component.SetEnabled(true);
         return component;
     }
 
     public AddExistingComponent<T extends Component>(component: T): T {
         component.gameObject = this;
         this.components.push(component);
-        this.EnableComponents();
+        component.SetEnabled(true);
         return component;
     }
 
@@ -196,26 +186,5 @@ export class Gameobject {
         g.children.forEach(c => Gameobject.Destroy(c));
 
         g = null;
-    }
-
-    public static CreateSprite(application: Application, scene: Scene, texture: Texture, pos: Vector2, size: Vector2, color: number): Gameobject {
-        const sprite = new PIXI.Sprite(texture);
-        sprite.tint = color;
-        let go = new Gameobject(new Transform(), null);
-        let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
-        let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
-        let rb = go.AddComponent(Rigidbody) as Rigidbody;
-        rb.mass = 0;
-        rb.elasticity = 1;
-        go.transform.position = pos.AsPoint();
-        go.transform.scale = size.AsPoint();
-        boxCollider.size.x = sprite.width * go.transform.scale.x;
-        boxCollider.size.y = sprite.height * go.transform.scale.y;
-        boxCollider.attachedRigidbody = rb;
-        boxCollider.application = application;
-        spriteRenderer.sprite = sprite;
-        application.pixi.stage.addChild(sprite);
-        scene.Add(go);
-        return go;
     }
 }

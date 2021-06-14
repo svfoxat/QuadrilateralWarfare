@@ -3,9 +3,7 @@ import {ResourceManager} from "./ResourceManager";
 import {Time} from "./Time";
 import {Collider} from "./Components/Collider";
 import {Vector2} from "./Math/Vector2";
-import {ClippingPlane} from "./Math/Geometry";
 import {InputManager} from "./InputManager";
-import {BoxCollider} from "./Components/BoxCollider";
 import {Scene} from "./Scene";
 
 export default class Application {
@@ -112,36 +110,10 @@ export default class Application {
 
             Time.animationDelta = this.animationTicker.deltaTime;
             Time.animationElapsedMS = this.animationTicker.elapsedMS;
+            Time.realTime += Time.animationElapsedMS;
 
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
-            let colliders = new Array<BoxCollider>();
-            for (let go of SceneManager.getInstance().activeScene.sceneRoot.children) {
-                let coll = go.GetComponent(BoxCollider) as BoxCollider;
-                if (coll != null && coll.enabled && go.enabled) {
-                    colliders.push(coll);
-                }
-            }
-            for (let i = 0; i < colliders.length; i++) {
-                for (let j = 0; j < colliders.length; j++) {
-                    if (i >= j || (colliders[i].attachedRigidbody?.mass === 0 && colliders[j].attachedRigidbody?.mass === 0) || (colliders[i].attachedRigidbody?.isAsleep && colliders[j].attachedRigidbody?.isAsleep)) continue;
-                    let collision = Collider.IsColliding(colliders[i], colliders[j]);
-                    if (collision != null) {
-                        if (!(collision.Dot(Vector2.FromPoint(colliders[i].gameObject.transform.position).Sub(Vector2.FromPoint(colliders[j].gameObject.transform.position))) < 0.0)) {
-                            collision = collision.Inverse();
-                        }
-                        Collider.HandleCollision(colliders[i], colliders[j], collision);
-                        let cp = new ClippingPlane(null, null, null);
-                        let collisionPoint = Collider.GetContactPoint(colliders[i], colliders[j], collision, cp);
-                        let normal = !cp.flip ? cp.ref.vector().LeftNormal().Inverse() : cp.ref.vector().LeftNormal();
-                        let currCP = collisionPoint.filter(e => e != undefined)[collisionPoint.filter(e => e != undefined).length - 1];
-                        Collider.ComputeAndApplyForces(colliders[i], colliders[j], collision, currCP, normal.Normalized(), cp.flip);
-                        colliders[i].SleepTick();
-                        colliders[j].SleepTick();
-                        colliders[i].gameObject.OnCollision(colliders[j]);
-                        colliders[j].gameObject.OnCollision(colliders[i]);
-                    }
-                }
-            }
+            Collider.CollisionCheck();
 
         }, t)
     }

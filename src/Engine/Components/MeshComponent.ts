@@ -12,10 +12,6 @@ export class MeshComponent extends Component {
         this.localVertices = vertices;
     }
 
-    Start = () => {
-        this.gameObject.scene?.container.addChild(this.mesh);
-    }
-
     Enable = () => {
         this.gameObject.scene?.container.addChild(this.mesh);
     }
@@ -28,7 +24,6 @@ export class MeshComponent extends Component {
             let scale = this.gameObject.absoluteTransform.scale;
             let rota = new Vector2(this.localVertices[i], this.localVertices[i + 1])
                 .Rotate(this.gameObject.absoluteTransform.rotation);
-
             this.realVertices[i] = scale.x * rota.x + pos.x;
             this.realVertices[i + 1] = scale.y * rota.y + pos.y;
         }

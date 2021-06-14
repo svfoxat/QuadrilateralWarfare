@@ -1,57 +1,50 @@
 import {Scene} from "../../Engine/Scene";
 import Application from "../../Engine/Application";
 import {Gameobject} from "../../Engine/Gameobject";
-import {Point, Transform} from "pixi.js";
+import {Point, Texture, Transform} from "pixi.js";
 import {Vector2} from "../../Engine/Math/Vector2";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {SpriteRenderer} from "../../Engine/Components/SpriteRenderer";
-import {BoxCollider} from "../../Engine/Components/BoxCollider";
+import {BoxCollider, TriangleCollider} from "../../Engine/Components/Collider";
 import ObjectMoveScript from "./ObjectMoveScript";
-import {SpringJoint} from "../../Engine/Components/SpringJoint";
 import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
-import {GameController} from "./GameController";
+import {TriangleRenderer} from "../../Engine/Components/TriangleRenderer";
 import {EnemyScript} from "./EnemyScript";
+import {GameController} from "./GameController";
+import {SpringJoint} from "../../Engine/Components/SpringJoint";
+import {ParticleTriggerOnCollision} from "./ParticleTriggerOnCollision";
+import {Random} from "../../Engine/Math/Random";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
-        scene.sceneRoot.name = "ROOT"
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
         gamecontroller.AddComponent(GameController);
-        gamecontroller.name = "Gamecontroller"
 
-        let floor = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
-        let top = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x00FF00);
-        let right = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0x00FF00);
-        let left = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
-        floor.name = "floor";
-        top.name = "top";
-        right.name = "right";
-        left.name = "left";
+        let floor = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1100), new Vector2(200, 20), 0x00FF00);
+        let top = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 0), new Vector2(200, 20), 0x00FF00);
+        let right = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1900, 200), new Vector2(20, 200), 0x00FF00);
+        let left = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(0, 200), new Vector2(20, 200), 0x00FF00);
 
-        let redBox = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
+        let redBox = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 700), new Vector2(10, 10), 0xFF00FF);
         redBox.parent = gamecontroller;
         let rb = redBox.GetComponent(Rigidbody) as Rigidbody;
         let es = redBox.AddComponent(EnemyScript) as EnemyScript;
-        rb.useGravity = true;
-        rb.mass = 1;
+        rb.isStatic = false;
 
-        let redBox1 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1100, 800), new Vector2(80, 5), 0xFF0000);
+        let redBox1 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1100, 800), new Vector2(80, 5), 0xFF0000);
         let rb4 = redBox1.GetComponent(Rigidbody) as Rigidbody;
-        rb4.useGravity = true;
-        rb4.mass = 1;
+        rb4.isStatic = false;
 
-        let redBox2 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 1000), new Vector2(5, 30), 0xFF0000);
+        let redBox2 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1400, 1000), new Vector2(5, 30), 0xFF0000);
         let rb3 = redBox2.GetComponent(Rigidbody) as Rigidbody;
-        rb3.useGravity = true;
-        rb3.mass = 1;
+        rb3.isStatic = false;
 
-        let redBox3 = Gameobject.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(800, 1000), new Vector2(5, 30), 0xFF0000);
+        let redBox3 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(800, 1000), new Vector2(5, 30), 0xFF0000);
         let rb5 = redBox3.GetComponent(Rigidbody) as Rigidbody;
-        rb5.useGravity = true;
-        rb5.mass = 1;
+        rb5.isStatic = false;
 
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         let go2 = new Gameobject(new Transform(), null);
@@ -75,33 +68,77 @@ export class SceneScript {
         });
 
         const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
-        spring_go.transform.position = new Point(960, 540);
-        let spriteRenderer3 = spring_go.AddComponent(SpriteRenderer) as SpriteRenderer;
-        spriteRenderer3.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-        spring_go.transform.scale = new Point(3, 3);
-        spring_go.name = "Spring"
+        scene.Add(spring_go);
 
-        const sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
-        let box = spring_go.AddComponent(BoxCollider) as BoxCollider;
-        box.attachedRigidbody = sj.gameObject.GetComponent(Rigidbody) as Rigidbody;
-        box.size = new Vector2(spriteRenderer3.sprite.width * 3, spriteRenderer3.sprite.height * 3);
+        let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
+        let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
+        let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
+
+        spring_go.name = "Spring";
+        spring_go.transform.position = new Point(960, 540);
+        let mesh = new TriangleRenderer(PIXI.Texture.WHITE, vertA, vertB, vertC);
+        spring_go.AddExistingComponent(mesh);
+
+        mesh.gameObject = spring_go;
+
+        spring_go.transform.scale = new Point(5, 5);
+
+        let sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
+        let rb6 = spring_go.AddComponent(Rigidbody) as Rigidbody;
+        let tri = spring_go.AddComponent(TriangleCollider) as TriangleCollider;
+        tri.attachedRigidbody = rb6;
+        tri.vertexA = vertA;
+        tri.vertexB = vertB;
+        tri.vertexC = vertC;
 
         sj.AttachObject(go2);
         rb2.mass = 25;
-        rb2.useGravity = false;
+        rb6.verletVelocity = true;
         rb2.verletVelocity = true;
         go2.transform.position = new Point(960, 300);
 
         let go = new Gameobject(new Transform(), spring_go);
         go.transform.position = new Point(0, 0);
-        let ps = new ParticleSystem(PIXI.Texture.WHITE, 300, 1, 3, 0xff00ff, new Vector2(0, 0), new Vector2(0, 0));
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 100, 5, 1, 0xffffff,
+            new Vector2(0, 0), new Vector2(0, 0), false, 0, false, new Vector2(10, 10),
+            null, () => {
+                return Random.OnUnitCircle().Mul(20);
+            }, null,
+            (baseColor, timeRatio): number => {
+                let colorRatio = Math.floor(256 * timeRatio);
+                return (colorRatio * 256 * 256 + colorRatio * 256 + colorRatio);
+            },
+            (baseSize, timeRatio): Vector2 => {
+                return baseSize.SimpleMult(new Vector2(timeRatio, timeRatio));
+            }, null);
         go.AddExistingComponent(ps);
-        go.name = "Particles"
+        go.AddComponent(ParticleTriggerOnCollision);
 
         scene.Add(go);
         scene.Add(go2);
-        scene.Add(spring_go);
         application.pixi.stage.addChild(sprite2);
+        //Forcefield.DrawForceField(scene);
         return scene;
+    }
+
+    public static CreateSprite(application: Application, scene: Scene, texture: Texture, pos: Vector2, size: Vector2, color: number): Gameobject {
+        const sprite = new PIXI.Sprite(texture);
+        sprite.tint = color;
+        let go = new Gameobject(new Transform(), null);
+        let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
+        let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
+        let rb = go.AddComponent(Rigidbody) as Rigidbody;
+        rb.isStatic = true;
+        rb.elasticity = 1;
+        go.transform.position = pos.AsPoint();
+        go.transform.scale = size.AsPoint();
+        boxCollider.size.x = sprite.width * go.transform.scale.x;
+        boxCollider.size.y = sprite.height * go.transform.scale.y;
+        boxCollider.attachedRigidbody = rb;
+        boxCollider.application = application;
+        spriteRenderer.sprite = sprite;
+        application.pixi.stage.addChild(sprite);
+        scene.Add(go);
+        return go;
     }
 }
