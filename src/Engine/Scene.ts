@@ -21,4 +21,12 @@ export class Scene {
         this.gameObjects.push(g);
         g.scene = this;
     }
+
+    public getGameobjectById(id: string) {
+        return this.gameObjects.find(g => g.id === id);
+    }
+
+    public removeGameObjectById(id: string) {
+        this.gameObjects = this.gameObjects.filter(g => g.id !== id);
+    }
 }
