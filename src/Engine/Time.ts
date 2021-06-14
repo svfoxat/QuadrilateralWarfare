@@ -1,5 +1,4 @@
-export class Time
-{
+export class Time {
     public static t = 1;
 
     public static delta = 1;
@@ -8,7 +7,9 @@ export class Time
     public static animationDelta = 1;
     public static animationElapsedMS = 1;
 
-    public static deltaTime() : number {
+    public static realTime = 0;
+
+    public static deltaTime(): number {
         return this.delta;
     }
 
