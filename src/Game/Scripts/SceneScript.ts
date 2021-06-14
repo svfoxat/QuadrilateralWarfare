@@ -14,7 +14,6 @@ import {GameController} from "./GameController";
 import {SpringJoint} from "../../Engine/Components/SpringJoint";
 import {ParticleTriggerOnCollision} from "./ParticleTriggerOnCollision";
 import {Random} from "../../Engine/Math/Random";
-import {Forcefield} from "../../Engine/Forcefield";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
@@ -101,9 +100,9 @@ export class SceneScript {
         let go = new Gameobject(new Transform(), spring_go);
         go.transform.position = new Point(0, 0);
         let ps = new ParticleSystem(PIXI.Texture.WHITE, 100, 5, 1, 0xffffff,
-            new Vector2(0, 0), new Vector2(0, 0), false, 10, false, new Vector2(10, 10),
+            new Vector2(0, 0), new Vector2(0, 0), false, 0, false, new Vector2(10, 10),
             null, () => {
-                return Random.OnUnitCircle().Mul(10);
+                return Random.OnUnitCircle().Mul(20);
             }, null,
             (baseColor, timeRatio): number => {
                 let colorRatio = Math.floor(256 * timeRatio);
@@ -118,7 +117,7 @@ export class SceneScript {
         scene.Add(go);
         scene.Add(go2);
         application.pixi.stage.addChild(sprite2);
-        Forcefield.DrawForceField(scene);
+        //Forcefield.DrawForceField(scene);
         return scene;
     }
 

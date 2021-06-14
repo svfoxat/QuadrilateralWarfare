@@ -5,6 +5,8 @@ import {Forcefield} from "../Forcefield";
 import {ODESolver} from "../Math/ODESolver";
 import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
 import {EulerSolver} from "../Math/EulerSolver";
+import {Scene} from "../Scene";
+import {Gizmos} from "../Gizmos";
 
 export class Particle {
     sprite: PIXI.Sprite;
@@ -13,6 +15,23 @@ export class Particle {
     color: number = 0x000000;
     life: number = 0;
     mass: number = 1;
+
+    maxTrajectoryPoints: number = 10;
+    trajectoryPoints: Array<PIXI.Graphics> = new Array<PIXI.Graphics>(this.maxTrajectoryPoints);
+    trajectoryPointIndex: number = 0;
+
+    AddTrajectoryPoint(scene: Scene) {
+        scene.container.removeChild(this.trajectoryPoints[this.trajectoryPointIndex]);
+        this.trajectoryPoints[this.trajectoryPointIndex] = Gizmos.DrawPoint(this.pos, 2, 0xFF00FF, 1, 0x00FF00);
+        scene.container.addChild(this.trajectoryPoints[this.trajectoryPointIndex]);
+        this.trajectoryPointIndex = (this.trajectoryPointIndex + 1) % this.maxTrajectoryPoints;
+    }
+
+    DeleteTrajectory(scene: Scene) {
+        for (let point of this.trajectoryPoints) {
+            scene.container.removeChild(point);
+        }
+    }
 
     solver: ODESolver;
 }
@@ -45,6 +64,8 @@ export class ParticleSystem extends Component {
     autoStart: boolean;
     started: boolean;
     private lastRealTime: number = 0;
+
+    drawTrajectories: boolean = false;
 
     constructor(texture?: PIXI.Texture, amount?: number, newParticles?: number, ttl?: number, color?: number,
                 initVelocity?: Vector2, offset?: Vector2, loop?: boolean, loopDelayMS?: number, autoStart?: boolean,
@@ -80,9 +101,6 @@ export class ParticleSystem extends Component {
         for (let i = 0; i < this.amount; i++) {
             this.particles[i] = new Particle();
             this.particles[i].sprite = new PIXI.Sprite(this.texture);
-            // this.particles[i].sprite.tint = this.baseColor;
-            // this.particles[i].sprite.x = this.gameObject.absoluteTransform.position.x + this.offset.x;
-            // this.particles[i].sprite.y = this.gameObject.absoluteTransform.position.y + this.offset.y;
             this.gameObject.scene?.container.addChild(this.particles[i].sprite);
         }
     }
@@ -106,6 +124,7 @@ export class ParticleSystem extends Component {
 
     private RespawnParticle(particle: Particle) {
         this.gameObject.scene?.container.removeChild(particle.sprite);
+        //particle.DeleteTrajectory(this.gameObject.scene);
         particle.pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offset);
         particle.color = this.baseColor;
         particle.life = this.ttl;
@@ -151,7 +170,25 @@ export class ParticleSystem extends Component {
     }
 
     SetStarted() {
-        this.started = true;
+        for (let i = 0; i < this.newParticles; i++) {
+            let p = this.FirstUnusedParticle();
+            if (p != -1) {
+                this.RespawnParticle(this.particles[p]);
+            }
+        }
+        this.started = this.loop;
+    }
+
+    Update = () => {
+        for (let i = 0; i < this.amount; i++) {
+            if (this.drawTrajectories) {
+                if (this.particles[i].life > 0) {
+                    this.particles[i].AddTrajectoryPoint(this.gameObject.scene);
+                }
+            } else {
+                this.particles[i].DeleteTrajectory(this.gameObject.scene);
+            }
+        }
     }
 
     FixedUpdate = () => {
@@ -175,9 +212,8 @@ export class ParticleSystem extends Component {
         for (let i = 0; i < this.amount; i++) {
             // Update TTL of each particle
             this.particles[i].life -= msPassed / 1000;
-
             if (this.particles[i].life > 0) {
-                // Do physic calculations for each alive particle (Runge Kutta)
+                // Do physics calculations for each alive particle (Runge Kutta)
                 this.particles[i].solver.SolveForIterations(this.stepSize, this.particles[i].mass);
                 this.particles[i].pos = this.particles[i].solver.x1;
                 this.particles[i].velocity = this.particles[i].solver.x2;
@@ -200,6 +236,7 @@ export class ParticleSystem extends Component {
                     this.particles[i].mass = this.massOverLifetime(1, ratio);
                 }
             } else {
+                // this.particles[i].DeleteTrajectory(this.gameObject.scene);
                 this.gameObject.scene.container.removeChild(this.particles[i].sprite);
             }
         }
