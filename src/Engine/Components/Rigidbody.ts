@@ -126,7 +126,6 @@ export class Rigidbody extends Component {
                 let springF = spring.GetForce(this.gameObject, pos, this.velocity);
                 let f = springF[0];
                 let r = springF[1];
-                let dir = f.Normalized();
 
                 if (r.Mag() > 0) {
                     springLinForce = springLinForce.Add(f);
