@@ -54,7 +54,7 @@ export default(props: IProps) => {
                         label="x:"
                         id="outlined-margin-dense"
                         className={classes.textField}
-                        value={selectedNode?.absoluteTransform.position.x.toFixed(2)}
+                        value={selectedNode?.transform.position.x.toFixed(2)}
                         margin="dense"
                         variant="outlined"
                         InputLabelProps={{
@@ -66,7 +66,7 @@ export default(props: IProps) => {
                         label="y:"
                         id="outlined-margin-dense"
                         className={classes.textField}
-                        value={selectedNode?.absoluteTransform.position.y.toFixed(2)}
+                        value={selectedNode?.transform.position.y.toFixed(2)}
                         margin="dense"
                         variant="outlined"
                         InputLabelProps={{
@@ -81,7 +81,7 @@ export default(props: IProps) => {
                         label="x:"
                         id="outlined-margin-dense"
                         className={classes.textField}
-                        value={selectedNode?.absoluteTransform.scale.x.toFixed(2)}
+                        value={selectedNode?.transform.scale.x.toFixed(2)}
                         margin="dense"
                         variant="outlined"
                         InputLabelProps={{
@@ -93,7 +93,7 @@ export default(props: IProps) => {
                         label="y:"
                         id="outlined-margin-dense"
                         className={classes.textField}
-                        value={selectedNode?.absoluteTransform.scale.y.toFixed(2)}
+                        value={selectedNode?.transform.scale.y.toFixed(2)}
                         margin="dense"
                         variant="outlined"
                         InputLabelProps={{
@@ -108,7 +108,7 @@ export default(props: IProps) => {
                         label="x:"
                         id="outlined-margin-dense"
                         className={classes.textField}
-                        value={selectedNode?.absoluteTransform.rotation.toFixed(2)}
+                        value={selectedNode?.transform.rotation.toFixed(2)}
                         margin="dense"
                         variant="outlined"
                         InputLabelProps={{
@@ -116,6 +116,20 @@ export default(props: IProps) => {
                         }}
                     />
                 </div>
+            </div>
+
+            <div>
+                <h3>Components</h3>
+                <ul>
+                    {console.log(selectedNode?.components)}
+                    {selectedNode?.components.map((c) => (
+                        <li>
+                            <div>
+                                <h4>{c.name}</h4>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
