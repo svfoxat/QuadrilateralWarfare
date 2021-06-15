@@ -19,6 +19,9 @@ export class SpringJoint extends Component {
     private _lineColor: number = 0xFFFFFF;
     public showSpringStrain: boolean = false;
 
+    public offsetStart: Vector2 = Vector2.Zero();
+    public offsetEnd: Vector2 = Vector2.Zero();
+
     public maxForce: number = 1000;
 
     Enable = (): void => {
@@ -34,14 +37,16 @@ export class SpringJoint extends Component {
 
     Update = (): void => {
         this.gameObject.scene.container.removeChild(this._lineGizmos);
-        this._lineGizmos = Gizmos.DrawLine(Vector2.FromPoint(this.gameObject.absoluteTransform.position),
-            Vector2.FromPoint(this.attachedObject.absoluteTransform.position), 5, this._lineColor);
+        this._lineGizmos = Gizmos.DrawLine(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation)),
+            Vector2.FromPoint(this.attachedObject.absoluteTransform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation)), 5, this._lineColor);
         this.gameObject.scene.container.addChild(this._lineGizmos);
     }
 
-    GetForce(go: Gameobject, pos: Vector2, velo: Vector2): Vector2 {
+    GetForce(go: Gameobject, pos: Vector2, velo: Vector2): [Vector2, Vector2] {
         let dir, dist;
-        const attached_pos = (go === this.gameObject) ? Vector2.FromPoint(this.attachedObject.absoluteTransform.position) : Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+        const attached_pos = (go === this.gameObject) ?
+            Vector2.FromPoint(this.attachedObject.absoluteTransform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation)) :
+            Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation));
         dist = pos.Sub(attached_pos).Mag();
         dir = pos.Sub(attached_pos).Normalized();
 
@@ -53,7 +58,7 @@ export class SpringJoint extends Component {
             this._lineColor = 0xFFFFFF;
         }
 
-        return force;
+        return [force, (go !== this.gameObject) ? this.offsetEnd.Rotate(this.attachedObject.transform.rotation) : this.offsetStart.Rotate(this.gameObject.transform.rotation)];
     }
 
     AttachObject(go: Gameobject) {

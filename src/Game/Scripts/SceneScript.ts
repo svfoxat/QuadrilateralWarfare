@@ -56,7 +56,7 @@ export class SceneScript {
         rb2.angularVelocity = 0;
         rb2.velocity = Vector2.Zero()
         sprite2.tint = 0x123456;
-        go2.transform.scale = new Vector2(5, 5).AsPoint();
+        go2.transform.scale = new Vector2(20, 5).AsPoint();
         boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
         boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
         boxCollider2.attachedRigidbody = rb2;
@@ -67,22 +67,18 @@ export class SceneScript {
             rb2.useGravity = true;
         });
 
-        const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
-        scene.Add(spring_go);
-
         let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
         let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
         let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
 
+        const spring_go = new Gameobject(new Transform(), scene.sceneRoot);
+        scene.Add(spring_go);
         spring_go.name = "Spring";
         spring_go.transform.position = new Point(960, 540);
         let mesh = new TriangleRenderer(PIXI.Texture.WHITE, vertA, vertB, vertC);
         spring_go.AddExistingComponent(mesh);
-
         mesh.gameObject = spring_go;
-
         spring_go.transform.scale = new Point(5, 5);
-
         let sj = spring_go.AddComponent(SpringJoint) as SpringJoint;
         let rb6 = spring_go.AddComponent(Rigidbody) as Rigidbody;
         let tri = spring_go.AddComponent(TriangleCollider) as TriangleCollider;
@@ -90,10 +86,31 @@ export class SceneScript {
         tri.vertexA = vertA;
         tri.vertexB = vertB;
         tri.vertexC = vertC;
-
         sj.AttachObject(go2);
-        rb2.mass = 25;
+        sj.offsetEnd.x = 80;
         rb6.verletVelocity = true;
+
+        const spring_go1 = new Gameobject(new Transform(), scene.sceneRoot);
+        scene.Add(spring_go1);
+        spring_go1.name = "Spring";
+        spring_go1.transform.position = new Point(960, 540);
+        let mesh1 = new TriangleRenderer(PIXI.Texture.WHITE, vertA, vertB, vertC);
+        spring_go1.AddExistingComponent(mesh1);
+        mesh1.gameObject = spring_go1;
+        spring_go1.transform.scale = new Point(5, 5);
+        let sj1 = spring_go1.AddComponent(SpringJoint) as SpringJoint;
+        let rb7 = spring_go1.AddComponent(Rigidbody) as Rigidbody;
+        let tri1 = spring_go1.AddComponent(TriangleCollider) as TriangleCollider;
+        tri1.attachedRigidbody = rb7;
+        tri1.vertexA = vertA;
+        tri1.vertexB = vertB;
+        tri1.vertexC = vertC;
+        sj1.AttachObject(go2);
+        sj1.offsetEnd.x = -80;
+        rb7.verletVelocity = true;
+
+
+        rb2.mass = 5;
         rb2.verletVelocity = true;
         go2.transform.position = new Point(960, 300);
 
