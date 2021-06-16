@@ -121,7 +121,6 @@ export default(props: IProps) => {
             <div>
                 <h3>Components</h3>
                 <ul>
-                    {console.log(selectedNode?.components)}
                     {selectedNode?.components.map((c) => (
                         <li>
                             <div>
