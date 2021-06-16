@@ -168,7 +168,7 @@ export class ParticleSystem extends Component {
     }
 
     dvdt(x1: Vector2, x2: Vector2, t: number, m: number): Vector2 {
-        return Forcefield.GetForceAtPosition(x1).Div(m);
+        return Forcefield.GetForceAtPosition(x1, m).Div(m);
     }
 
     SetStarted() {

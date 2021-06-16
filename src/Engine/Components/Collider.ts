@@ -351,7 +351,8 @@ export abstract class Collider extends Component {
     private static BroadCollisionCheck(collider: Collider, collider2: Collider): boolean {
         let aabb1 = collider.GetAABB();
         let aabb2 = collider2.GetAABB();
-        return Geometry.AABBOverlap(aabb1, aabb2);
+        //return Geometry.AABBOverlap(aabb1, aabb2);
+        return true;
     }
 }
 

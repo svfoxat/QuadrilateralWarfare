@@ -14,7 +14,7 @@ export class Gameobject {
 
     public name: string = "Gameobject";
     public transform: Transform;
-    public absoluteTransform: Transform = new Transform();
+    public absoluteTransform: Transform;
     public parent: Gameobject;
     public children: Array<Gameobject> = [];
     public components: Array<Component> = [];
@@ -131,11 +131,6 @@ export class Gameobject {
     }
 
     public AddComponent<T extends Component>(type: (new() => T)): Component {
-        let exists = this.GetComponent(type);
-        if (exists) {
-            return exists;
-        }
-
         let component = new type();
         component.gameObject = this;
         this.components.push(component);
@@ -181,7 +176,7 @@ export class Gameobject {
     }
 
     private UpdateTransform() {
-        if (!this.parent) {
+        if (!this.parent || !this.absoluteTransform) {
             this.absoluteTransform = this.transform;
             return;
         }

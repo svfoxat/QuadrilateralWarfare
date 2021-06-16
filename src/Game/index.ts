@@ -5,6 +5,7 @@ import {Scripts} from "./Scripts/Scripts";
 import {SceneScript} from "./Scripts/SceneScript";
 import {Gameobject} from "../Engine/Gameobject";
 import PerformanceDisplay from "./Scripts/PerformanceDisplay";
+import {Vector2} from "../Engine/Math/Vector2";
 import Transform = PIXI.Transform;
 
 export class Game {
@@ -19,9 +20,11 @@ export class Game {
         const texture = PIXI.loader.resources["assets/fox.jpg"].texture;
         texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
+        let viewport = new Vector2(1920, 1080);
+
         const application = new Application({
-            width: 1920,
-            height: 1080,
+            width: viewport.x,
+            height: viewport.y,
             name: "Quadrilateral Warfare",
             userScripts: Scripts,
         });
@@ -30,7 +33,8 @@ export class Game {
         const scene2: string = require("./Scenes/scene2.json");
         // SceneManager.getInstance().LoadScene(scene2);
 
-        let scene = SceneScript.GetMainScene(application);
+        //let scene = SceneScript.GetMainScene(application);
+        let scene = SceneScript.GetFirstLevel(application, viewport);
 
         const overlay = new Gameobject(new Transform(), scene.sceneRoot);
         overlay.AddComponent(PerformanceDisplay);
