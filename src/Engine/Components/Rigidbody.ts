@@ -100,8 +100,9 @@ export class Rigidbody extends Component {
             }
 
             if (!this.verletVelocity) {
-                this.velocity = this.velocity.Add(this.acceleration.Add(this.GetSumForcesAt(Vector2.FromPoint(this.gameObject.absoluteTransform.position))[0].Div(this.mass)).Mul(Time.fixedDeltaTime()));
-                this.angularVelocity += (this.angularAcceleration + this.torque / this.inertia) * Time.fixedDeltaTime();
+                let forces = this.GetSumForcesAt(Vector2.FromPoint(this.gameObject.absoluteTransform.position));
+                this.velocity = this.velocity.Add(this.acceleration.Add(forces[0]).Mul(Time.fixedDeltaTime()));
+                this.angularVelocity += (this.angularAcceleration + forces[1]) * Time.fixedDeltaTime();
 
                 this.gameObject.transform.position.x += this.velocity.x * Time.fixedDeltaTime();
                 this.gameObject.transform.position.y += this.velocity.y * Time.fixedDeltaTime();

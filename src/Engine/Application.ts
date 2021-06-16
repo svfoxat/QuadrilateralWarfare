@@ -38,6 +38,7 @@ export default class Application {
         this.pixi.renderer.view.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+        this.pixi.renderer.backgroundColor = 0x090909;
         this.appContainer = document.getElementById("app_container");
         this.appContainer.appendChild(this.pixi.view);
 

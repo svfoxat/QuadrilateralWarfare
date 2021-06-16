@@ -15,9 +15,11 @@ export class SpringJoint extends Component {
     public BreakForce: number = Infinity;
     public EnableCollision: boolean = false;
 
+    private _broken = false;
+
     private _lineGizmos: PIXI.Graphics = new PIXI.Graphics();
     private _lineColor: number = 0xFFFFFF;
-    public showSpringStrain: boolean = false;
+    public showSpringStrain: boolean = true;
 
     public offsetStart: Vector2 = Vector2.Zero();
     public offsetEnd: Vector2 = Vector2.Zero();
@@ -37,28 +39,48 @@ export class SpringJoint extends Component {
 
     Update = (): void => {
         this.gameObject.scene.container.removeChild(this._lineGizmos);
-        this._lineGizmos = Gizmos.DrawLine(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation)),
-            Vector2.FromPoint(this.attachedObject.absoluteTransform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation)), 5, this._lineColor);
-        this.gameObject.scene.container.addChild(this._lineGizmos);
+        if (!this._broken) {
+            this._lineGizmos = Gizmos.DrawLine(Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation)),
+                Vector2.FromPoint(this.attachedObject.absoluteTransform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation)), 5, this._lineColor);
+            this.gameObject.scene.container.addChild(this._lineGizmos);
+        }
     }
 
     GetForce(go: Gameobject, pos: Vector2, velo: Vector2): [Vector2, Vector2] {
-        let dir, dist;
-        const attached_pos = (go === this.gameObject) ?
-            Vector2.FromPoint(this.attachedObject.absoluteTransform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation)) :
-            Vector2.FromPoint(this.gameObject.absoluteTransform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation));
-        dist = pos.Sub(attached_pos).Mag();
-        dir = pos.Sub(attached_pos).Normalized();
+        if (!this._broken && this.enabled) {
+            let dir, dist;
+            let attachedPos, thisPos;
+            if (go === this.gameObject) {
+                attachedPos = Vector2.FromPoint(this.attachedObject.transform.position).Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation));
+                thisPos = pos.Add(this.offsetStart.Rotate(this.gameObject.transform.rotation));
+            } else {
+                attachedPos = Vector2.FromPoint(this.gameObject.transform.position).Add(this.offsetStart.Rotate(this.gameObject.transform.rotation));
+                thisPos = pos.Add(this.offsetEnd.Rotate(this.attachedObject.transform.rotation));
+            }
 
-        let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
-        if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
-        if (this.showSpringStrain) {
-            this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));
+            dist = thisPos.Sub(attachedPos).Mag();
+            dir = thisPos.Sub(attachedPos).Normalized();
+
+            let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
+            if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
+            if (this.showSpringStrain && this.BreakForce === Infinity) {
+                this._lineColor = Math.round(force.Mag() / this.BreakForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.BreakForce * 256));
+            } else if (this.showSpringStrain) {
+                this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));
+            } else {
+                this._lineColor = 0xFFFFFF;
+            }
+
+            if (force.Mag() > this.BreakForce) {
+                this._broken = true;
+                console.log("RIP");
+                return [Vector2.Zero(), Vector2.Zero()];
+            }
+
+            return [force, (go !== this.gameObject) ? this.offsetEnd.Rotate(this.attachedObject.transform.rotation) : this.offsetStart.Rotate(this.gameObject.transform.rotation)];
         } else {
-            this._lineColor = 0xFFFFFF;
+            return [Vector2.Zero(), Vector2.Zero()];
         }
-
-        return [force, (go !== this.gameObject) ? this.offsetEnd.Rotate(this.attachedObject.transform.rotation) : this.offsetStart.Rotate(this.gameObject.transform.rotation)];
     }
 
     AttachObject(go: Gameobject) {
