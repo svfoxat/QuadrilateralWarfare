@@ -2,23 +2,34 @@ import {Point, Transform} from "pixi.js";
 import {Component} from "./Components/Component";
 import {Scene} from "./Scene";
 import {Collider} from "./Components/Collider";
+import { uuid } from 'uuidv4';
+import Texture = PIXI.Texture;
+import {Gizmos} from "./Gizmos";
+import {Vector2} from "./Math/Vector2";
 
 export class Gameobject {
     get enabled(): boolean {
         return this._enabled;
     }
 
-    public name: string;
+    public name: string = "Gameobject";
     public transform: Transform;
     public absoluteTransform: Transform;
     public parent: Gameobject;
     public children: Array<Gameobject> = [];
     public components: Array<Component> = [];
     public scene: Scene;
+    public id: string;
+
+    public selected: boolean = false;
+    private _highlightGizmo: PIXI.Graphics = new PIXI.Graphics();
+    private _yGizmo: PIXI.Graphics = new PIXI.Graphics();
+    private _xGizmo: PIXI.Graphics = new PIXI.Graphics();
 
     private _enabled: boolean = false;
 
     constructor(transform: Transform, parent: Gameobject = null) {
+        this.id = uuid();
         this.transform = transform;
         this.parent = parent;
         parent?.children.push(this);
@@ -29,6 +40,26 @@ export class Gameobject {
     }
 
     public Update() {
+        if (this.scene) {
+            this.scene.container.removeChild(this._highlightGizmo);
+            this.scene.container.removeChild(this._xGizmo);
+            this.scene.container.removeChild(this._yGizmo);
+
+            if (this.selected) {
+                const {x, y} = this.absoluteTransform.position;
+                const rotation = this.absoluteTransform.rotation;
+                const pos: Vector2 = new Vector2(x, y);
+                this._highlightGizmo = Gizmos.DrawPoint(pos, 2, 0x00FF00, 10, 0x00FF00);
+
+                this._xGizmo = Gizmos.DrawArrow(pos, new Vector2(50, 0).Rotate(rotation).Add(pos), 2, 0xFF0000)
+                this._yGizmo = Gizmos.DrawArrow(pos, new Vector2(0, 50).Rotate(rotation).Add(pos), 2, 0x0000FF)
+
+                this.scene.container.addChild(this._xGizmo);
+                this.scene.container.addChild(this._yGizmo);
+                this.scene.container.addChild(this._highlightGizmo);
+            }
+        }
+
         this.UpdateAllComponents();
 
         for (let go of this.children) {
@@ -100,11 +131,6 @@ export class Gameobject {
     }
 
     public AddComponent<T extends Component>(type: (new() => T)): Component {
-        // let exists = this.GetComponent(type);
-        // if (exists) {
-        //     return exists;
-        // }
-
         let component = new type();
         component.gameObject = this;
         this.components.push(component);
@@ -177,7 +203,7 @@ export class Gameobject {
         g.components.forEach(i => i.OnDestroy && i.OnDestroy());
         g.components = [];
 
-        g.scene.gameObjects = g.scene.gameObjects.filter(j => j !== g);
+        g.scene.removeGameObjectById(g.id);
         g.children.forEach(c => Gameobject.Destroy(c));
 
         g = null;
