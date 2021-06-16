@@ -4,6 +4,7 @@ import {Collider} from "../../Engine/Components/Collider";
 import {Gameobject} from "../../Engine/Gameobject";
 
 export class EnemyScript extends Component {
+    name: string = "EnemyScript";
     private game: GameController;
     private ticks: number = 0;
     private maxTicks: number = 10;

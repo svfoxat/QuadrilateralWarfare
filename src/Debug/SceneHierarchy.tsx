@@ -41,7 +41,7 @@ export default(props: IProps) => {
                     {tree.map((node, idx) => (
                         <TreeItem onClick={() => handleSelection(node)} nodeId={`${idx}`} label={`${node.name}, ${node.children.length} children`} >
                            {node.children.map((sub_node, idx2) => (
-                                <TreeItem onClick={() => handleSelection(node)} nodeId={`${idx}-${idx2}`} label={sub_node.name}/>
+                                <TreeItem onClick={() => handleSelection(sub_node)} nodeId={`${idx}-${idx2}`} label={sub_node.name}/>
                             ))}
                         </TreeItem>
                     ))}
