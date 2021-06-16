@@ -4,6 +4,8 @@ import {Scene} from "./Scene";
 import {Collider} from "./Components/Collider";
 import { uuid } from 'uuidv4';
 import Texture = PIXI.Texture;
+import {Gizmos} from "./Gizmos";
+import {Vector2} from "./Math/Vector2";
 
 export class Gameobject {
     get enabled(): boolean {
@@ -18,7 +20,11 @@ export class Gameobject {
     public components: Array<Component> = [];
     public scene: Scene;
     public id: string;
+
     public selected: boolean = false;
+    private _highlightGizmo: PIXI.Graphics = new PIXI.Graphics();
+    private _yGizmo: PIXI.Graphics = new PIXI.Graphics();
+    private _xGizmo: PIXI.Graphics = new PIXI.Graphics();
 
     private _enabled: boolean = false;
 
@@ -38,6 +44,25 @@ export class Gameobject {
 
         for (let go of this.children) {
             go.Update();
+        }
+
+        if (this.scene) {
+            this.scene.container.removeChild(this._highlightGizmo);
+            this.scene.container.removeChild(this._xGizmo);
+            this.scene.container.removeChild(this._yGizmo);
+
+            if (this.selected) {
+                const {x, y} = this.absoluteTransform.position;
+                const pos: Vector2 = new Vector2(x, y);
+                this._highlightGizmo = Gizmos.DrawPoint(pos, 2, 0xFFFFFF, 10, 0xFFFFFF);
+
+                this._xGizmo = Gizmos.DrawArrow(pos, new Vector2(x + 50, y), 2, 0xFF0000)
+                this._yGizmo = Gizmos.DrawArrow(pos, new Vector2(x, y - 50), 2, 0x0000FF)
+
+                this.scene.container.addChild(this._xGizmo);
+                this.scene.container.addChild(this._yGizmo);
+                this.scene.container.addChild(this._highlightGizmo);
+            }
         }
     }
 

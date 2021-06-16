@@ -28,6 +28,9 @@ export default () => {
     }, [])
 
     const handleNodeSelection = (node: any) => {
+        if (selectedNodeId) {
+            app.activeScene.getGameobjectById(selectedNodeId).selected = false;
+        }
         setSelectedNodeId(node.id);
         node.selected = true;
     }
