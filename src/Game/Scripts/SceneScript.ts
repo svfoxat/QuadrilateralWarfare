@@ -161,8 +161,29 @@ export class SceneScript {
         rb3.isStatic = false;
         rb3.mass = 10;
 
+        let redBox4 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1750, 745), new Vector2(3, 15), 0xF010F0);
+        let rb4 = redBox4.GetComponent(Rigidbody) as Rigidbody;
+        rb4.isStatic = false;
+        rb4.mass = 10;
+
+        let redBox5 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1550, 745), new Vector2(3, 15), 0xFFF010);
+        let rb5 = redBox5.GetComponent(Rigidbody) as Rigidbody;
+        rb5.isStatic = false;
+        rb5.mass = 10;
+
+        let redBox6 = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1650, 655), new Vector2(23, 3), 0xFF1FF0);
+        let rb6 = redBox6.GetComponent(Rigidbody) as Rigidbody;
+        rb6.isStatic = false;
+        rb6.mass = 10;
+
         let sj1 = redBox1.AddComponent(SpringJoint) as SpringJoint;
         let sj2 = redBox1.AddComponent(SpringJoint) as SpringJoint;
+        let sj3 = redBox1.AddComponent(SpringJoint) as SpringJoint;
+        let sj4 = redBox1.AddComponent(SpringJoint) as SpringJoint;
+        let sj5 = redBox6.AddComponent(SpringJoint) as SpringJoint;
+        let sj6 = redBox6.AddComponent(SpringJoint) as SpringJoint;
+        let sj7 = floor.AddComponent(SpringJoint) as SpringJoint;
+        let sj8 = floor.AddComponent(SpringJoint) as SpringJoint;
         sj1.offsetStart.x = -150;
         sj1.offsetEnd.y = -90;
         sj1.Distance = 20;
@@ -174,6 +195,44 @@ export class SceneScript {
         sj2.Distance = 20;
         sj2.BreakForce = 100;
         sj2.AttachObject(redBox3);
+
+        sj3.offsetStart.x = 100;
+        sj3.offsetEnd.y = 60;
+        sj3.Distance = 25;
+        sj3.BreakForce = 100;
+        sj3.AttachObject(redBox4);
+
+        sj4.offsetStart.x = -100;
+        sj4.offsetEnd.y = 60;
+        sj4.Distance = 25;
+        sj4.BreakForce = 100;
+        sj4.AttachObject(redBox5);
+
+        sj5.offsetStart.x = 100;
+        sj5.offsetEnd.y = -60;
+        sj5.Distance = 25;
+        sj5.BreakForce = 100;
+        sj5.AttachObject(redBox4);
+
+        sj6.offsetStart.x = -100;
+        sj6.offsetEnd.y = -60;
+        sj6.Distance = 25;
+        sj6.BreakForce = 100;
+        sj6.AttachObject(redBox5);
+
+        sj7.offsetStart.x = 500;
+        sj7.offsetStart.y = -85;
+        sj7.offsetEnd.y = 90;
+        sj7.Distance = 20;
+        sj7.BreakForce = 100;
+        sj7.AttachObject(redBox2);
+
+        sj8.offsetStart.x = 800;
+        sj8.offsetStart.y = -85;
+        sj8.offsetEnd.y = 90;
+        sj8.Distance = 20;
+        sj8.BreakForce = 100;
+        sj8.AttachObject(redBox3);
 
         scene.Add(this.CreatePlayer(application));
 
@@ -188,6 +247,7 @@ export class SceneScript {
         let boxCollider = go.AddComponent(BoxCollider) as BoxCollider;
         let rb = go.AddComponent(Rigidbody) as Rigidbody;
         rb.isStatic = true;
+        rb.isAsleep = true;
         rb.elasticity = 1;
         go.transform.position = pos.AsPoint();
         go.transform.scale = size.AsPoint();
@@ -210,7 +270,8 @@ export class SceneScript {
         let rb2 = go2.AddComponent(Rigidbody) as Rigidbody;
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.angularVelocity = 0;
-        rb2.velocity = Vector2.Zero()
+        rb2.velocity = Vector2.Zero();
+        rb2.elasticity = 0;
         sprite2.tint = 0x123456;
         go2.transform.scale = new Vector2(5, 5).AsPoint();
         boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
@@ -223,5 +284,11 @@ export class SceneScript {
         });
         application.pixi.stage.addChild(sprite2);
         return go2;
+    }
+
+    public static CreateEnemy(application: Application, pos: Vector2): Gameobject {
+        let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
+        let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
+        let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
     }
 }

@@ -9,7 +9,7 @@ export class SpringJoint extends Component {
 
     public attachedObject: Gameobject;
     public Spring: number = 1;
-    public Damper: number = .1;
+    public Damper: number = 1;
     public Frequency: number = 1;
     public Distance: number = 100;
     public BreakForce: number = Infinity;
