@@ -36,12 +36,12 @@ export class Rigidbody extends Component {
     angularVector: PIXI.Graphics = new PIXI.Graphics();
     velocityDrawThreshold: number = 0.5;
     angularVelocityDrawThreshold: number = 0.05;
-    drawMomentum: boolean = false;
 
     forceThreshold = 0.5;
     forceVector: PIXI.Graphics = new PIXI.Graphics();
 
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
+    springForceGraph: PIXI.Graphics = new PIXI.Graphics();
 
     verletVelocity: boolean;
 
@@ -136,6 +136,20 @@ export class Rigidbody extends Component {
                 }
             }
         }
+
+        if (Debug.drawMassSpringGraph) {
+            this.gameObject.scene.container.removeChild(this.springForceGraph)
+            const {x, y} = this.gameObject.absoluteTransform.position;
+            this.springForceGraph = Gizmos.DrawArrow(
+                new Vector2(x, y),
+                new Vector2(x + springLinForce.x, y + springLinForce.y),
+                2, 0xFF0000
+            )
+            this.gameObject.scene.container.addChild(this.springForceGraph);
+        } else {
+            this.gameObject.scene.container.removeChild(this.springForceGraph)
+        }
+
         return [springLinForce, springAngForce];
     }
 
