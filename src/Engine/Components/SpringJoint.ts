@@ -20,7 +20,7 @@ export class SpringJoint extends Component {
 
     private _lineGizmos: PIXI.Graphics = new PIXI.Graphics();
     private _lineColor: number = 0xFFFFFF;
-    public showSpringStrain: boolean = true;
+    public showSpringStrain: boolean = false;
 
     public offsetStart: Vector2 = Vector2.Zero();
     public offsetEnd: Vector2 = Vector2.Zero();

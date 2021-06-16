@@ -290,5 +290,7 @@ export class SceneScript {
         let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
         let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
         let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
+
+        return undefined;
     }
 }
