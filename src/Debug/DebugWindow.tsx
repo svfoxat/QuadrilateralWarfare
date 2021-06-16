@@ -5,8 +5,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Inspector from "./Inspector";
 import Application from "../Engine/Application";
 
-
-
 const useStyles = makeStyles({
     debug: {
         display: "flex",

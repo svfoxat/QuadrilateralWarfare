@@ -5,6 +5,8 @@ import {Collider} from "./Components/Collider";
 import {Vector2} from "./Math/Vector2";
 import {InputManager} from "./InputManager";
 import {Scene} from "./Scene";
+import {Debug} from "./Debug";
+import {Forcefield} from "./Forcefield";
 
 export default class Application {
     name: string;
@@ -12,6 +14,8 @@ export default class Application {
     userScripts: any;
     appContainer: HTMLElement;
     activeScene: Scene = null;
+
+    public debug: Debug = Debug;
 
     public desiredFPS: number = 30;
     private renderTicker: PIXI.ticker.Ticker;
