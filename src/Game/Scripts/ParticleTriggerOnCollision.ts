@@ -3,6 +3,7 @@ import {ParticleSystem} from "../../Engine/Components/ParticleSystem";
 import {Collider} from "../../Engine/Components/Collider";
 
 export class ParticleTriggerOnCollision extends Component {
+    name: string = "ParticleTriggerOnCollision"
     ps: ParticleSystem;
 
     Enable = () => {

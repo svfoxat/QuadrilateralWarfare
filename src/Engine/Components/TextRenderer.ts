@@ -2,6 +2,7 @@ import {Component} from "./Component";
 import {Gameobject} from "../Gameobject";
 
 export class TextRenderer extends Component {
+    name: string = "TextRenderer"
     gameObject: Gameobject
     _text: PIXI.Text;
 

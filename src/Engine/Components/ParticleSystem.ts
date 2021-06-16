@@ -37,6 +37,8 @@ export class Particle {
 }
 
 export class ParticleSystem extends Component {
+    name: string = "ParticleSystem"
+
     texture: PIXI.Texture;
     baseColor: number;
     amount: number;

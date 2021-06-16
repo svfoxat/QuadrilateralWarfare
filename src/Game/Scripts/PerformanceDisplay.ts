@@ -3,6 +3,7 @@ import {TextRenderer} from "../../Engine/Components/TextRenderer";
 import {Time} from "../../Engine/Time";
 
 export default class PerformanceDisplay extends Component {
+    name: string = "PerformanceDisplay"
     text1: TextRenderer;
 
     Enable = () => {

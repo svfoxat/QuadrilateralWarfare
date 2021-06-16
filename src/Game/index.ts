@@ -7,7 +7,7 @@ import {Gameobject} from "../Engine/Gameobject";
 import PerformanceDisplay from "./Scripts/PerformanceDisplay";
 import Transform = PIXI.Transform;
 
-class Main {
+export class Game {
     constructor() {
         PIXI.loader
             .add("assets/fox.jpg")
@@ -42,5 +42,3 @@ class Main {
         application.activeScene = scene;
     }
 }
-
-new Main();

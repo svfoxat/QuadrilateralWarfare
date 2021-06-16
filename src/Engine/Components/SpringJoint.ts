@@ -5,6 +5,8 @@ import {Rigidbody} from "./Rigidbody";
 import {Gizmos} from "../Gizmos";
 
 export class SpringJoint extends Component {
+    name: string = "SpringJoint"
+
     gameObject: Gameobject;
 
     public attachedObject: Gameobject;

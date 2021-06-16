@@ -2,10 +2,9 @@ import {Component} from "./Component";
 import {Gameobject} from "../Gameobject";
 
 
-export class SpriteRenderer extends Component
-{
+export class SpriteRenderer extends Component {
+    name: string = "SpriteRenderer"
     gameObject: Gameobject;
-    name: string;
     sprite: PIXI.Sprite = new PIXI.Sprite();
 
     Start = () => {
