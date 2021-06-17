@@ -236,9 +236,6 @@ export class SceneScript {
         sj8.AttachObject(redBox3);
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
-        gamecontroller.transform.position = new Point()
-        gamecontroller.transform.scale = new Point();
-        gamecontroller.transform.rotation = 0;
         let gc = gamecontroller.AddComponent(GameController) as GameController;
         gamecontroller.name = "Gamecontroller";
         scene.Add(gamecontroller);
@@ -261,10 +258,40 @@ export class SceneScript {
         ps.spring = sj9;
         ps.catapult = catapult;
 
-        let rotator = new Gameobject(new Transform(), player);
-        let someOtherGo = new Gameobject(new Transform(), rotator);
-        scene.Add(rotator);
-        scene.Add(someOtherGo);
+        let rotator;
+        scene.Add(rotator = this.CreateRotatorChild(player, 0.5));
+
+        let square1, square2, square3, square4;
+        scene.Add(square1 = this.CreateSmallOrbitingSquare(rotator, application, new Vector2(10, 0)));
+        scene.Add(square2 = this.CreateSmallOrbitingSquare(rotator, application, new Vector2(0, 10)));
+        scene.Add(square3 = this.CreateSmallOrbitingSquare(rotator, application, new Vector2(0, -10)));
+        scene.Add(square4 = this.CreateSmallOrbitingSquare(rotator, application, new Vector2(-10, 0)));
+        let rotatorChild1, rotatorChild2, rotatorChild3, rotatorChild4;
+
+        scene.Add(rotatorChild1 = this.CreateRotatorChild(square1, -0.25));
+        scene.Add(rotatorChild2 = this.CreateRotatorChild(square2, 0.25));
+        scene.Add(rotatorChild3 = this.CreateRotatorChild(square3, -0.25));
+        scene.Add(rotatorChild4 = this.CreateRotatorChild(square4, 0.25));
+
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild1, application, new Vector2(10, 0)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild1, application, new Vector2(0, 10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild1, application, new Vector2(0, -10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild1, application, new Vector2(-10, 0)));
+
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild2, application, new Vector2(10, 0)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild2, application, new Vector2(0, 10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild2, application, new Vector2(0, -10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild2, application, new Vector2(-10, 0)));
+
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild3, application, new Vector2(10, 0)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild3, application, new Vector2(0, 10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild3, application, new Vector2(0, -10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild3, application, new Vector2(-10, 0)));
+
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild4, application, new Vector2(10, 0)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild4, application, new Vector2(0, 10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild4, application, new Vector2(0, -10)));
+        scene.Add(this.CreateSmallOrbitingSquare(rotatorChild4, application, new Vector2(-10, 0)));
 
         return scene;
     }
@@ -391,5 +418,30 @@ export class SceneScript {
         spring_go1.AddComponent(ParticleTriggerOnCollision);
 
         return spring_go1;
+    }
+
+    public static CreateSmallOrbitingSquare(parent: Gameobject, application: Application, offset: Vector2): Gameobject {
+        let someOtherGo = new Gameobject(new Transform(), parent);
+        someOtherGo.name = "Orbiting Square 1";
+        someOtherGo.transform.position.x = offset.x;
+        someOtherGo.transform.position.y = offset.y;
+        someOtherGo.transform.scale = new Point(0.25, 0.25);
+        let sr = someOtherGo.AddComponent(SpriteRenderer) as SpriteRenderer;
+        sr.sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+        sr.sprite.tint = 0x245400;
+        application.pixi.stage.addChild(sr.sprite);
+        let rbSprite = someOtherGo.AddComponent(Rigidbody) as Rigidbody;
+        rbSprite.angularVelocity = -0.5;
+        rbSprite.useForces = false;
+        return someOtherGo;
+    }
+
+    public static CreateRotatorChild(parent: Gameobject, angVel: number): Gameobject {
+        let rotator = new Gameobject(new Transform(), parent);
+        rotator.name = "Rotator";
+        let rota = rotator.AddComponent(Rigidbody) as Rigidbody;
+        rota.angularVelocity = angVel;
+        rota.useForces = false;
+        return rotator;
     }
 }

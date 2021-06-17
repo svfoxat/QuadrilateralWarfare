@@ -23,6 +23,7 @@ export class Rigidbody extends Component {
     angularVelocity: number = 0;
     inertia: number = 1;
     torque: number = 0;
+    useForces: boolean = true;
     globalForce: Vector2 = Vector2.Zero();
     localForce: Vector2 = Vector2.Zero();
     acceleration: Vector2 = Vector2.Zero();
@@ -126,7 +127,11 @@ export class Rigidbody extends Component {
     };
 
     GetSumForcesAt(pos: Vector2): [Vector2, number] {
-        return [this.globalForce.Add(this.GetGlobalForce(pos).Add(this.GetLocalForce(pos)[0])).Div(this.mass), this.GetLocalForce(pos)[1] / this.inertia];
+        if (this.useForces) {
+            return [this.globalForce.Add(this.GetGlobalForce(pos).Add(this.GetLocalForce(pos)[0])).Div(this.mass), this.GetLocalForce(pos)[1] / this.inertia];
+        } else {
+            return [Vector2.Zero(), 0];
+        }
     }
 
     GetGlobalForce(pos: Vector2): Vector2 {

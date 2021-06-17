@@ -2,8 +2,7 @@ import {Point, Transform} from "pixi.js";
 import {Component} from "./Components/Component";
 import {Scene} from "./Scene";
 import {Collider} from "./Components/Collider";
-import { uuid } from 'uuidv4';
-import Texture = PIXI.Texture;
+import {uuid} from 'uuidv4';
 import {Gizmos} from "./Gizmos";
 import {Vector2} from "./Math/Vector2";
 
@@ -177,17 +176,22 @@ export class Gameobject {
 
     private UpdateTransform() {
         if (!this.parent || !this.absoluteTransform) {
-            this.absoluteTransform = this.transform;
+            this.absoluteTransform = new Transform();
+            this.absoluteTransform.position = new Point(this.transform.position.x, this.transform.position.y);
+            this.absoluteTransform.scale = new Point(this.transform.scale.x, this.transform.scale.y);
+            this.absoluteTransform.rotation = this.transform.rotation;
             return;
         }
 
-        this.absoluteTransform.position =
-            new Point(this.transform.position.x + this.parent.absoluteTransform.position.x,
-                this.transform.position.y + this.parent.absoluteTransform.position.y);
+        this.absoluteTransform.position = Vector2.FromPoint(this.parent.absoluteTransform.position)
+            .Add(Vector2.FromPoint(this.transform.position)
+                .SimpleMult(Vector2.FromPoint(this.parent.absoluteTransform.scale))
+                .Rotate(this.parent.absoluteTransform.rotation)).AsPoint();
+
         this.absoluteTransform.scale =
             new Point(this.transform.scale.x * this.parent.absoluteTransform.scale.x,
                 this.transform.scale.y * this.parent.absoluteTransform.scale.y);
-        this.absoluteTransform.rotation = this.transform.rotation + this.parent.absoluteTransform.rotation;
+        this.absoluteTransform.rotation = this.transform.rotation;
     }
 
     public FixedUpdate() {

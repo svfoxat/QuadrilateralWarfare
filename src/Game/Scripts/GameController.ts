@@ -3,7 +3,7 @@ import {Component} from "../../Engine/Components/Component";
 
 export class GameController extends Component {
     public points: number;
-    public enemiesAlive: number = 1;
+    public enemiesAlive: number = 3;
 
     Update = (): void => {
     }
