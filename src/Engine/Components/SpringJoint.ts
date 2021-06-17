@@ -65,7 +65,7 @@ export class SpringJoint extends Component {
 
             let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
             if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
-            if (Debug.drawForceColor && this.BreakForce === Infinity) {
+            if (Debug.drawForceColor && this.BreakForce !== Infinity) {
                 this._lineColor = Math.round(force.Mag() / this.BreakForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.BreakForce * 256));
             } else if (Debug.drawForceColor) {
                 this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));

@@ -141,7 +141,7 @@ export default () => {
                    />
                    <FormControlLabel
                        control={<Switch onChange={handleChangeToggle} name="drawForceColor"/>}
-                       label="Draw Edge Colors"
+                       label="Draw Edge Colors (blue: no strain -> red: about to break)"
                    />
                    <FormControlLabel
                        control={<Switch onChange={handleChangeToggle} name="drawMassSpringGraph"/>}
