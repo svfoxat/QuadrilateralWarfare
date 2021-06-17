@@ -1,7 +1,7 @@
 import {Component} from "../../Engine/Components/Component";
 import {GameController} from "./GameController";
-import {Collider} from "../../Engine/Components/Collider";
-import {Gameobject} from "../../Engine/Gameobject";
+import {Collider, TriangleCollider} from "../../Engine/Components/Collider";
+import {TriangleRenderer} from "../../Engine/Components/TriangleRenderer";
 
 export class EnemyScript extends Component {
     name: string = "EnemyScript";
@@ -19,7 +19,9 @@ export class EnemyScript extends Component {
         if (this.game) {
             if (other.gameObject.name === "Player") {
                 this.game.KillEnemy();
-                Gameobject.Destroy(this.gameObject);
+                (this.gameObject.GetComponent(TriangleRenderer) as TriangleRenderer).mesh.destroy();
+                (this.gameObject.GetComponent(TriangleCollider) as TriangleCollider).SetEnabled(false);
+                //Gameobject.Destroy(this.gameObject);
             } else if (other.gameObject.name === "Ground") {
                 if (++this.ticks === this.maxTicks) {
                     // this.gameObject.Destroy();

@@ -318,6 +318,22 @@ export class SceneScript {
         spriteRenderer2.sprite = sprite2;
         sprite2.interactive = true;
 
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 200, 1, 1.5, 0x123456,
+            new Vector2(0, 0), new Vector2(-5, -5), true, 20, true, new Vector2(10, 10),
+            null, () => {
+                return Random.OnUnitCircle().Mul(5);
+            }, null,
+            (baseColor, timeRatio): number => {
+                let r = Math.floor(timeRatio * (baseColor / 256 / 256));
+                let g = Math.floor(timeRatio * ((baseColor / 256) % 256));
+                let b = Math.floor(timeRatio * (baseColor % 256));
+                return (r * 256 * 256 + g * 256 + b);
+            },
+            (baseSize, timeRatio): Vector2 => {
+                return baseSize.SimpleMult(new Vector2(timeRatio, timeRatio));
+            }, null);
+        go2.AddExistingComponent(ps);
+
         application.pixi.stage.addChild(sprite2);
         return go2;
     }
@@ -345,6 +361,23 @@ export class SceneScript {
         tri1.vertexB = vertB;
         tri1.vertexC = vertC;
         rb7.isAsleep = true;
+
+        let ps = new ParticleSystem(PIXI.Texture.WHITE, 50, 50, 1, 0xffffff,
+            new Vector2(0, 0), new Vector2(0, 0), false, 0, false, new Vector2(20, 20),
+            null, () => {
+                return Random.OnUnitCircle().Mul(20);
+            }, null,
+            (baseColor, timeRatio): number => {
+                let r = Math.floor(timeRatio * (baseColor / 256 / 256));
+                let g = Math.floor(timeRatio * ((baseColor / 256) % 256));
+                let b = Math.floor(timeRatio * (baseColor % 256));
+                return (r * 256 * 256 + g * 256 + b);
+            },
+            (baseSize, timeRatio): Vector2 => {
+                return baseSize.SimpleMult(new Vector2(timeRatio, timeRatio));
+            }, null);
+        spring_go1.AddExistingComponent(ps);
+        spring_go1.AddComponent(ParticleTriggerOnCollision);
 
         return spring_go1;
     }
