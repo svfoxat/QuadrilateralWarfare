@@ -236,7 +236,13 @@ export class SceneScript {
         sj8.AttachObject(redBox3);
 
         let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
+        gamecontroller.transform.position = new Point()
+        gamecontroller.transform.scale = new Point();
+        gamecontroller.transform.rotation = 0;
         let gc = gamecontroller.AddComponent(GameController) as GameController;
+        gamecontroller.name = "Gamecontroller";
+        scene.Add(gamecontroller);
+
         let player;
         let catapult = this.CreateSpriteWithoutCollider(application, scene, PIXI.Texture.WHITE, new Vector2(400, 926), new Vector2(3, 25), 0xCAA472);
 
@@ -254,6 +260,11 @@ export class SceneScript {
         ps.rigidbody = player.GetComponent(Rigidbody) as Rigidbody;
         ps.spring = sj9;
         ps.catapult = catapult;
+
+        let rotator = new Gameobject(new Transform(), player);
+        let someOtherGo = new Gameobject(new Transform(), rotator);
+        scene.Add(rotator);
+        scene.Add(someOtherGo);
 
         return scene;
     }
