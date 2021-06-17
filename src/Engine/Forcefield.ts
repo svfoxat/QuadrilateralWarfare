@@ -1,34 +1,37 @@
 import {Vector2} from "./Math/Vector2";
 import {Scene} from "./Scene";
 import {Gizmos} from "./Gizmos";
-import {Random} from "./Math/Random";
+import {Time} from "./Time";
+import {Debug} from "./Debug";
 
 export class Forcefield {
     static rows: number = 10;
     static columns: number = 20;
-    static visualizationVectors: Array<PIXI.Graphics> = new Array<PIXI.Graphics>();
+    static visualizationVectors: Array<PIXI.Graphics> = new Array<PIXI.Graphics>(Forcefield.rows * Forcefield.columns);
+    static added: Array<boolean> = new Array<boolean>(Forcefield.rows * Forcefield.columns);
 
     static DrawForceField(scene: Scene) {
         let pos = new Vector2(0, 0);
         let i = 0;
         for (let idx = 0; idx < Forcefield.rows * Forcefield.columns; idx++) {
-            this.visualizationVectors.push(Gizmos.DrawArrow(pos, pos.Add(this.GetForceAtPosition(pos, 1).Mul(2)), 3, 0xFFFFFF));
-            pos.x = (1920 / this.columns * i) % 1920;
-            pos.y = (Math.floor((1920 / this.columns * i) / 1920) * 1080 / this.rows);
-            i++;
-            scene.container.addChild(this.visualizationVectors[idx]);
-        }
-    }
+            scene.container.removeChild(this.visualizationVectors[idx]);
 
-    static UndrawForceField(scene: Scene) {
-        for (let vector of this.visualizationVectors) {
-            scene.container.removeChild(vector);
+            if (Debug.forceFields) {
+                this.visualizationVectors[idx] = (Gizmos.DrawArrow(pos, pos.Add(this.GetForceAtPosition(pos, 1).Mul(2)), 3, 0xFFFFFF));
+                pos.x = 50 + (1920 / this.columns * i) % 1920;
+                pos.y = 20 + (Math.floor((1920 / this.columns * i) / 1920) * 1080 / this.rows);
+                i++;
+                scene.container.addChild(this.visualizationVectors[idx]);
+            }
         }
-        this.visualizationVectors = [];
     }
 
     static GetForceAtPosition(pos: Vector2, mass: number): Vector2 {
-        return this.GetGenericGravity(mass).Add(this.GetDynamicWind(pos));
+        let force = Vector2.Zero();
+        if (Debug.vectorField) force = this.GetDynamicWind(pos);
+        if (Debug.timeVariant) force = force.SimpleMult(new Vector2(Math.cos(Time.realTime / 5000), Math.sin(Time.realTime / 5000)));
+        force = force.Add(this.GetGenericGravity(mass));
+        return force;
     }
 
     static GetGenericGravity(mass: number): Vector2 {
@@ -41,6 +44,10 @@ export class Forcefield {
         let x = pos.x - 1000;
         let maxX = 1920 / 2;
         let windConstant = 10;
-        return new Vector2(((maxY - 2 * y) * windConstant / maxY) / 2, (maxX - 2 * x) * windConstant / maxX);
+        if (Debug.invertVectorField) {
+            return new Vector2(-((maxY - 2 * y) * windConstant / maxY / 2), -((maxX - 2 * x) * windConstant / maxX / 2));
+        } else {
+            return new Vector2(((maxY - 2 * y) * windConstant / maxY / 2), ((maxX - 2 * x) * windConstant / maxX / 2));
+        }
     }
 }

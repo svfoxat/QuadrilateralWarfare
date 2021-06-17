@@ -99,6 +99,8 @@ export default class Application {
             Time.elapsedMS = this.renderTicker.elapsedMS;
             SceneManager.getInstance().activeScene?.sceneRoot.Update();
             this.pixi.renderer.render(this.pixi.stage);
+            Forcefield.DrawForceField(SceneManager.getInstance().activeScene);
+
         }, 1000 / desiredFPS)
     }
 
@@ -119,7 +121,6 @@ export default class Application {
 
             SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
             Collider.CollisionCheck();
-
         }, t)
     }
 }

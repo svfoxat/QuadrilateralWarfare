@@ -23,7 +23,6 @@ export class Rigidbody extends Component {
     angularVelocity: number = 0;
     inertia: number = 1;
     torque: number = 0;
-    useGravity: boolean = false;
     globalForce: Vector2 = Vector2.Zero();
     localForce: Vector2 = Vector2.Zero();
     acceleration: Vector2 = Vector2.Zero();

@@ -1,6 +1,3 @@
-import {SceneManager} from "./SceneManager";
-import {Forcefield} from "./Forcefield";
-
 export class Debug {
     // Rigidbody
     static drawCollisionPoints: boolean = false;
@@ -8,17 +5,10 @@ export class Debug {
 
     // Particle System
     static stepSize: number = 1;
-    private static forceFieldsEnabled: boolean = false;
-    static toggleForceFields = () => {
-        if (!Debug.forceFieldsEnabled) {
-            Forcefield.DrawForceField(SceneManager.getInstance().activeScene)
-            Debug.forceFieldsEnabled = true;
-        }
-        else {
-            Forcefield.UndrawForceField(SceneManager.getInstance().activeScene)
-            Debug.forceFieldsEnabled = false;
-        }
-    }
+    static forceFields: boolean = false;
+    static vectorField: boolean = false;
+    static invertVectorField: boolean = false;
+    static timeVariant: boolean = false;
     static drawTrajectories: boolean = false;
     static useRungeKuttaSolver: boolean = false;
 
