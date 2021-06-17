@@ -40,6 +40,7 @@ export class Rigidbody extends Component {
     forceVector: PIXI.Graphics = new PIXI.Graphics();
 
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
+    springForceThreshold = 0.5;
     springForceGraph: PIXI.Graphics = new PIXI.Graphics();
 
     verletVelocity: boolean;
@@ -69,25 +70,39 @@ export class Rigidbody extends Component {
         this.gameObject.scene.container.removeChild(this.linearVector);
         this.gameObject.scene.container.removeChild(this.angularVector);
         this.gameObject.scene.container.removeChild(this.forceVector);
+        this.gameObject.scene.container.removeChild(this.springForceGraph)
 
-        let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
-        if (Debug.drawMomentum) {
-            if (this.velocity.Mag() > this.velocityDrawThreshold) {
-                this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
-                this.gameObject.scene.container.addChild(this.linearVector);
+        if (this.enabled && !this.isAsleep) {
+            let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+            if (Debug.drawMomentum) {
+                if (this.velocity.Mag() > this.velocityDrawThreshold) {
+                    this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
+                    this.gameObject.scene.container.addChild(this.linearVector);
+                }
+                if (this.angularVelocity > this.angularVelocityDrawThreshold) {
+                    this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
+                        pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
+                    this.gameObject.scene.container.addChild(this.angularVector);
+                }
             }
-            if (this.angularVelocity > this.angularVelocityDrawThreshold) {
-                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
-                    pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
-                this.gameObject.scene.container.addChild(this.angularVector);
-            }
-        }
 
-        if (Debug.drawForce) {
-            let force = this.GetSumForcesAt(pos)[0];
-            if (force.Mag() > this.forceThreshold) {
-                this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
-                this.gameObject.scene.container.addChild(this.forceVector);
+            if (Debug.drawForce) {
+                let force = this.GetSumForcesAt(pos)[0];
+                if (force.Mag() > this.forceThreshold) {
+                    this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
+                    this.gameObject.scene.container.addChild(this.forceVector);
+                }
+            }
+
+            if (Debug.drawMassSpringGraph) {
+                let springLinForce = this.GetLocalForce(pos)[0];
+                const {x, y} = this.gameObject.absoluteTransform.position;
+                this.springForceGraph = Gizmos.DrawArrow(
+                    new Vector2(x, y),
+                    new Vector2(x + springLinForce.x, y + springLinForce.y),
+                    2, 0xFF0000
+                )
+                this.gameObject.scene.container.addChild(this.springForceGraph);
             }
         }
     }
@@ -134,19 +149,6 @@ export class Rigidbody extends Component {
                     springLinForce = springLinForce.Add(f);
                 }
             }
-        }
-
-        if (Debug.drawMassSpringGraph) {
-            this.gameObject.scene.container.removeChild(this.springForceGraph)
-            const {x, y} = this.gameObject.absoluteTransform.position;
-            this.springForceGraph = Gizmos.DrawArrow(
-                new Vector2(x, y),
-                new Vector2(x + springLinForce.x, y + springLinForce.y),
-                2, 0xFF0000
-            )
-            this.gameObject.scene.container.addChild(this.springForceGraph);
-        } else {
-            this.gameObject.scene.container.removeChild(this.springForceGraph)
         }
 
         return [springLinForce, springAngForce];
