@@ -14,6 +14,7 @@ import {GameController} from "./GameController";
 import {SpringJoint} from "../../Engine/Components/SpringJoint";
 import {ParticleTriggerOnCollision} from "./ParticleTriggerOnCollision";
 import {Random} from "../../Engine/Math/Random";
+import {PlayerScript} from "./PlayerScript";
 
 export class SceneScript {
     public static GetMainScene(application: Application): Scene {
@@ -234,7 +235,25 @@ export class SceneScript {
         sj8.BreakForce = 100;
         sj8.AttachObject(redBox3);
 
-        scene.Add(this.CreatePlayer(application));
+        let gamecontroller = new Gameobject(new Transform(), scene.sceneRoot);
+        let gc = gamecontroller.AddComponent(GameController) as GameController;
+        let player;
+        let catapult = this.CreateSpriteWithoutCollider(application, scene, PIXI.Texture.WHITE, new Vector2(400, 926), new Vector2(3, 25), 0xCAA472);
+
+        scene.Add(player = this.CreatePlayer(application));
+        scene.Add(this.CreateEnemy(application, scene, new Vector2(1650, 800), gc, new Vector2(7, 7)));
+        scene.Add(this.CreateEnemy(application, scene, new Vector2(1600, 1024), gc, new Vector2(9, 9)));
+        scene.Add(this.CreateEnemy(application, scene, new Vector2(1700, 1024), gc, new Vector2(9, 9)));
+
+        let sj9 = catapult.AddComponent(SpringJoint) as SpringJoint;
+        sj9.offsetStart.y = -100;
+        sj9.Distance = 0;
+        sj9.Damper = 0;
+        sj9.AttachObject(player);
+        let ps = player.AddComponent(PlayerScript) as PlayerScript;
+        ps.rigidbody = player.GetComponent(Rigidbody) as Rigidbody;
+        ps.spring = sj9;
+        ps.catapult = catapult;
 
         return scene;
     }
@@ -261,6 +280,23 @@ export class SceneScript {
         return go;
     }
 
+    public static CreateSpriteWithoutCollider(application: Application, scene: Scene, texture: Texture, pos: Vector2, size: Vector2, color: number): Gameobject {
+        const sprite = new PIXI.Sprite(texture);
+        sprite.tint = color;
+        let go = new Gameobject(new Transform(), null);
+        let spriteRenderer = go.AddComponent(SpriteRenderer) as SpriteRenderer;
+        let rb = go.AddComponent(Rigidbody) as Rigidbody;
+        rb.isStatic = true;
+        rb.isAsleep = true;
+        rb.elasticity = 1;
+        go.transform.position = pos.AsPoint();
+        go.transform.scale = size.AsPoint();
+        spriteRenderer.sprite = sprite;
+        application.pixi.stage.addChild(sprite);
+        scene.Add(go);
+        return go;
+    }
+
     public static CreatePlayer(application: Application): Gameobject {
         const sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE);
         let go2 = new Gameobject(new Transform(), null);
@@ -271,8 +307,9 @@ export class SceneScript {
         let input = go2.AddComponent(ObjectMoveScript) as ObjectMoveScript;
         rb2.angularVelocity = 0;
         rb2.velocity = Vector2.Zero();
-        rb2.elasticity = 0;
+        rb2.mass = 2;
         sprite2.tint = 0x123456;
+        go2.transform.position = new Point(400, 800);
         go2.transform.scale = new Vector2(5, 5).AsPoint();
         boxCollider2.size.x = sprite2.width * go2.transform.scale.x;
         boxCollider2.size.y = sprite2.height * go2.transform.scale.y;
@@ -280,17 +317,35 @@ export class SceneScript {
         boxCollider2.application = application;
         spriteRenderer2.sprite = sprite2;
         sprite2.interactive = true;
-        sprite2.on("mousedown", e => {
-        });
+
         application.pixi.stage.addChild(sprite2);
         return go2;
     }
 
-    public static CreateEnemy(application: Application, pos: Vector2): Gameobject {
+    public static CreateEnemy(application: Application, scene: Scene, pos: Vector2, gameController: GameController, scale: Vector2): Gameobject {
         let vertA = new Vector2(0, 10 * Math.sqrt(3) / 3);
         let vertB = new Vector2(-5, 10 * -Math.sqrt(3) / 6);
         let vertC = new Vector2(5, 10 * -Math.sqrt(3) / 6);
 
-        return undefined;
+        const spring_go1 = new Gameobject(new Transform(), null);
+        spring_go1.name = "Spring";
+        spring_go1.transform.position = pos.AsPoint();
+        let mesh1 = new TriangleRenderer(PIXI.Texture.WHITE, vertA, vertB, vertC);
+        spring_go1.AddExistingComponent(mesh1);
+        mesh1.gameObject = spring_go1;
+        spring_go1.transform.scale = scale.AsPoint();
+        spring_go1.transform.rotation = Math.PI;
+        let rb7 = spring_go1.AddComponent(Rigidbody) as Rigidbody;
+        let tri1 = spring_go1.AddComponent(TriangleCollider) as TriangleCollider;
+        let es = spring_go1.AddComponent(EnemyScript) as EnemyScript;
+        es.game = gameController;
+        scene.container.addChild(mesh1.mesh);
+        tri1.attachedRigidbody = rb7;
+        tri1.vertexA = vertA;
+        tri1.vertexB = vertB;
+        tri1.vertexC = vertC;
+        rb7.isAsleep = true;
+
+        return spring_go1;
     }
 }

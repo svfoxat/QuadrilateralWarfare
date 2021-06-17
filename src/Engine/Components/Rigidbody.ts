@@ -35,11 +35,15 @@ export class Rigidbody extends Component {
     angularVector: PIXI.Graphics = new PIXI.Graphics();
     velocityDrawThreshold: number = 0.5;
     angularVelocityDrawThreshold: number = 0.05;
-    drawMomentum: boolean = false;
+    static drawMomentum: boolean = false;
 
     forceThreshold = 0.5;
     forceVector: PIXI.Graphics = new PIXI.Graphics();
-    drawForce: boolean = false;
+    static drawForce: boolean = false;
+
+    springForceThreshold = 0.5;
+    springForceVector: PIXI.Graphics = new PIXI.Graphics();
+    static springDrawForce: boolean = false;
 
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
 
@@ -70,25 +74,36 @@ export class Rigidbody extends Component {
         this.gameObject.scene.container.removeChild(this.linearVector);
         this.gameObject.scene.container.removeChild(this.angularVector);
         this.gameObject.scene.container.removeChild(this.forceVector);
+        this.gameObject.scene.container.removeChild(this.springForceVector);
 
-        let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
-        if (this.drawMomentum) {
-            if (this.velocity.Mag() > this.velocityDrawThreshold) {
-                this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
-                this.gameObject.scene.container.addChild(this.linearVector);
+        if (this.enabled && !this.isAsleep) {
+            let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
+            if (Rigidbody.drawMomentum) {
+                if (this.velocity.Mag() > this.velocityDrawThreshold) {
+                    this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
+                    this.gameObject.scene.container.addChild(this.linearVector);
+                }
+                if (this.angularVelocity > this.angularVelocityDrawThreshold) {
+                    this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
+                        pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
+                    this.gameObject.scene.container.addChild(this.angularVector);
+                }
             }
-            if (this.angularVelocity > this.angularVelocityDrawThreshold) {
-                this.angularVector = Gizmos.DrawArrow(pos.Add(this.velocity),
-                    pos.Add(this.velocity).Add(this.velocity.LeftNormal().Normalized().Mul(this.angularVelocity / (2 * Math.PI) * 200)), 3, 0x0000FF);
-                this.gameObject.scene.container.addChild(this.angularVector);
-            }
-        }
 
-        if (this.drawForce) {
-            let force = this.GetSumForcesAt(pos)[0];
-            if (force.Mag() > this.forceThreshold) {
-                this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
-                this.gameObject.scene.container.addChild(this.forceVector);
+            if (Rigidbody.drawForce) {
+                let force = this.GetSumForcesAt(pos)[0];
+                if (force.Mag() > this.forceThreshold) {
+                    this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
+                    this.gameObject.scene.container.addChild(this.forceVector);
+                }
+            }
+
+            if (Rigidbody.springDrawForce) {
+                let force = this.GetLocalForce(pos)[0];
+                if (force.Mag() > this.springForceThreshold) {
+                    this.springForceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
+                    this.gameObject.scene.container.addChild(this.springForceVector);
+                }
             }
         }
     }

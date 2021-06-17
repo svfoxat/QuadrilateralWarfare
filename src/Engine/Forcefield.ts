@@ -5,13 +5,13 @@ import {Gizmos} from "./Gizmos";
 export class Forcefield {
     static rows: number = 10;
     static columns: number = 20;
-    static visualizationVectors: Array<PIXI.Graphics> = new Array<PIXI.Graphics>(Forcefield.rows * Forcefield.columns);
+    static visualizationVectors: Array<PIXI.Graphics>;
 
     static DrawForceField(scene: Scene) {
         let pos = new Vector2(0, 0);
         let i = 0;
+        this.visualizationVectors = new Array<PIXI.Graphics>(Forcefield.rows * Forcefield.columns);
         for (let vector of this.visualizationVectors) {
-            scene.container.removeChild(vector);
             vector = Gizmos.DrawArrow(pos, pos.Add(this.GetForceAtPosition(pos, 1).Mul(2)), 3, 0xFFFFFF);
             pos.x = (1920 / this.columns * i) % 1920;
             pos.y = (Math.floor((1920 / this.columns * i) / 1920) * 1080 / this.rows);

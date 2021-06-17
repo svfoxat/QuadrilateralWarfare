@@ -67,7 +67,7 @@ export class ParticleSystem extends Component {
     started: boolean;
     private lastRealTime: number = 0;
 
-    drawTrajectories: boolean = false;
+    static drawTrajectories: boolean = false;
 
     constructor(texture?: PIXI.Texture, amount?: number, newParticles?: number, ttl?: number, color?: number,
                 initVelocity?: Vector2, offset?: Vector2, loop?: boolean, loopDelayMS?: number, autoStart?: boolean,
@@ -183,7 +183,7 @@ export class ParticleSystem extends Component {
 
     Update = () => {
         for (let i = 0; i < this.amount; i++) {
-            if (this.drawTrajectories) {
+            if (ParticleSystem.drawTrajectories) {
                 if (this.particles[i].life > 0) {
                     this.particles[i].AddTrajectoryPoint(this.gameObject.scene);
                 }

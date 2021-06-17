@@ -13,7 +13,6 @@ export class MeshComponent extends Component {
     }
 
     Enable = () => {
-        this.gameObject.scene?.container.addChild(this.mesh);
     }
 
     Update = () => {

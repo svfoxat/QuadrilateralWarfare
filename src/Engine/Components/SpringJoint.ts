@@ -16,11 +16,11 @@ export class SpringJoint extends Component {
     public BreakForce: number = Infinity;
     public EnableCollision: boolean = false;
 
-    private _broken = false;
+    public _broken = false;
 
     private _lineGizmos: PIXI.Graphics = new PIXI.Graphics();
     private _lineColor: number = 0xFFFFFF;
-    public showSpringStrain: boolean = false;
+    public static showSpringStrain: boolean = false;
 
     public offsetStart: Vector2 = Vector2.Zero();
     public offsetEnd: Vector2 = Vector2.Zero();
@@ -64,9 +64,9 @@ export class SpringJoint extends Component {
 
             let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
             if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
-            if (this.showSpringStrain && this.BreakForce === Infinity) {
+            if (SpringJoint.showSpringStrain && this.BreakForce === Infinity) {
                 this._lineColor = Math.round(force.Mag() / this.BreakForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.BreakForce * 256));
-            } else if (this.showSpringStrain) {
+            } else if (SpringJoint.showSpringStrain) {
                 this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));
             } else {
                 this._lineColor = 0xFFFFFF;
@@ -74,7 +74,6 @@ export class SpringJoint extends Component {
 
             if (force.Mag() > this.BreakForce) {
                 this._broken = true;
-                console.log("RIP");
                 return [Vector2.Zero(), Vector2.Zero()];
             }
 
