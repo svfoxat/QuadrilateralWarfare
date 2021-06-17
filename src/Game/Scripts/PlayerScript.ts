@@ -6,6 +6,8 @@ import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {Vector2} from "../../Engine/Math/Vector2";
 
 export class PlayerScript extends Component {
+    public name: string = "PlayerScript"
+
     public catapult: Gameobject;
     public spring: SpringJoint;
     public rigidbody: Rigidbody;

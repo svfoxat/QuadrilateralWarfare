@@ -21,7 +21,7 @@ export default(props: IProps) => {
 
     useEffect(() => {
         setInterval(() => {
-            setTree(props.app.activeScene.sceneRoot.children.filter(g => !!g.id))
+            setTree(props.app.activeScene.sceneRoot)
         }, 100)
     }, [])
 
@@ -29,31 +29,21 @@ export default(props: IProps) => {
         props.onSelectNode(node);
     }
 
+    const renderTree = (nodes) => (
+        <TreeItem onClick={() => handleSelection(nodes)} key={nodes.id} nodeId={nodes.id} label={nodes.name}>
+            {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
+        </TreeItem>
+    );
+
     return (
         <div className={classes.root}>
             <h2>Hierarchy - "{props.app.activeScene.name}"</h2>
             <TreeView
-                defaultExpanded={['root']}
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
+                defaultExpanded={["ROOT"]}
             >
-                <TreeItem nodeId={"root"} label={`Root (${tree.length})`}>
-                    {tree.map((node, idx) => (
-                        <TreeItem nodeId={node.id} onClick={() => handleSelection(node)} label={`${node.name}, ${node.children.length} children`} >
-                           {node.children.map((sub_node) => (
-                                <TreeItem nodeId={sub_node.id} onClick={() => handleSelection(sub_node)} label={sub_node.name}>
-                                    {sub_node.children.map((hawi) => (
-                                        <TreeItem nodeId={hawi.id} onClick={() => handleSelection(hawi)} label={hawi.name}>
-                                            {hawi.children.map((hawi_2) => (
-                                                <TreeItem nodeId={hawi_2.id} onClick={() => handleSelection(hawi_2)} label={hawi_2.name} />
-                                            ))}
-                                        </TreeItem>
-                                    ))}
-                                </TreeItem>
-                            ))}
-                        </TreeItem>
-                    ))}
-                </TreeItem>
+                 {renderTree(tree)}
             </TreeView>
         </div>
     );

@@ -141,6 +141,7 @@ export class SceneScript {
     public static GetFirstLevel(application: Application, viewport: Vector2): Scene {
         let scene = new Scene();
         scene.sceneRoot = new Gameobject(new Transform(), null);
+        scene.sceneRoot.id = "ROOT"
 
         let floor = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, 1150), new Vector2(200, 20), 0x333322);
         let top = this.CreateSprite(application, scene, PIXI.Texture.WHITE, new Vector2(1000, -70), new Vector2(200, 20), 0x333322);

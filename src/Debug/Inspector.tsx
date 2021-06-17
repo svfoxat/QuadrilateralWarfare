@@ -33,7 +33,9 @@ export default(props: IProps) => {
         const int = setInterval(() => {
             const g = props.app.activeScene.getGameobjectById(props.selectedNodeId);
             setSelectedNode(g)
-            setTransform(g.absoluteTransform?.position)
+            try {
+                setTransform(g.absoluteTransform?.position)
+            } catch (e) {}
         }, 100)
 
         return () => {
