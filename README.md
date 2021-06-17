@@ -14,4 +14,4 @@ In project root:
 
 ## Building
 In project root:
-1. `npm run build`
+1. `yarn build`
