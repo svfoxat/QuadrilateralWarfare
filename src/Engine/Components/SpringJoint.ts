@@ -17,7 +17,7 @@ export class SpringJoint extends Component {
     public BreakForce: number = Infinity;
     public EnableCollision: boolean = false;
 
-    private _broken = false;
+    public _broken = false;
 
     private _lineGizmos: PIXI.Graphics = new PIXI.Graphics();
     private _lineColor: number = 0xFFFFFF;
@@ -75,7 +75,6 @@ export class SpringJoint extends Component {
 
             if (force.Mag() > this.BreakForce) {
                 this._broken = true;
-                console.log("RIP");
                 return [Vector2.Zero(), Vector2.Zero()];
             }
 

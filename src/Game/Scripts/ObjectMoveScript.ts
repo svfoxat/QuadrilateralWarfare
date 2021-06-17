@@ -3,7 +3,6 @@ import {Gameobject} from "../../Engine/Gameobject";
 import {InputManager} from "../../Engine/InputManager";
 import {Rigidbody} from "../../Engine/Components/Rigidbody";
 import {Vector2} from "../../Engine/Math/Vector2";
-import {Time} from "../../Engine/Time";
 import {TextRenderer} from "../../Engine/Components/TextRenderer";
 
 export default class ObjectMoveScript extends Component {
@@ -39,7 +38,6 @@ export default class ObjectMoveScript extends Component {
 
     OnMouseUp = (): void => {
        this.drag = false;
-       // Gameobject.Destroy(this.gameObject);
     };
 
     Update = () => {
@@ -92,10 +90,10 @@ export default class ObjectMoveScript extends Component {
         if (this.drag) {
             const {x, y} = this.inputManager.Mouse.currPos;
             let prevPos = Vector2.FromPoint(this.gameObject.transform.position);
-            this.gameObject.transform.position.set(x, y);
+            this.gameObject.transform.position.set(x > 400 ? 400 : x, y);
             let rb = this.gameObject.GetComponent(Rigidbody) as Rigidbody;
             rb.angularVelocity = 0;
-            rb.velocity = new Vector2(x, y).Sub(prevPos).Div(Time.deltaTime() * 5);
+            rb.velocity = Vector2.Zero();
             rb.isAsleep = false;
         }
     };
