@@ -23,6 +23,7 @@ export default class Application {
 
     private animationTicker: PIXI.ticker.Ticker;
     private animationInterval: NodeJS.Timeout;
+    private paused: boolean = false;
     public desiredT: number = 1;
 
     constructor({ width, height, name, userScripts }: IApplicationProperties) {
@@ -112,15 +113,23 @@ export default class Application {
         }
 
         Time.t = t;
+        let escape = false;
         return global.setInterval(() => {
             this.animationTicker.update(performance.now());
 
             Time.animationDelta = this.animationTicker.deltaTime;
             Time.animationElapsedMS = this.animationTicker.elapsedMS;
-            Time.realTime += Time.animationElapsedMS;
+            if (InputManager.getInstance().Keyboard["escape"] && !escape) {
+                this.paused = !this.paused
+            }
 
-            SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
-            Collider.CollisionCheck();
+            if (!this.paused) {
+                Time.realTime += Time.animationElapsedMS;
+
+                SceneManager.getInstance().activeScene.sceneRoot.FixedUpdate();
+                Collider.CollisionCheck();
+            }
+            escape = InputManager.getInstance().Keyboard["escape"];
         }, t)
     }
 }
