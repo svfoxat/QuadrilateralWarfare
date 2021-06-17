@@ -40,9 +40,9 @@ export default(props: IProps) => {
                 <TreeItem nodeId={"root"} label={`Root (${tree.length})`}>
                     {tree.map((node, idx) => (
                         <TreeItem nodeId={node.id} onClick={() => handleSelection(node)} label={`${node.name}, ${node.children.length} children`} >
-                           {node.children.map((sub_node, idx2) => (
-                                <TreeItem nodeId={sub_node.id} onClick={() => handleSelection(sub_node)}label={sub_node.name}>
-                                    {sub_node.children.map((hawi, hawiIdx) => (
+                           {node.children.map((sub_node) => (
+                                <TreeItem nodeId={sub_node.id} onClick={() => handleSelection(sub_node)} label={sub_node.name}>
+                                    {sub_node.children.map((hawi) => (
                                         <TreeItem nodeId={hawi.id} onClick={() => handleSelection(hawi)} label={hawi.name}>
                                             {hawi.children.map((hawi_2) => (
                                                 <TreeItem nodeId={hawi_2.id} onClick={() => handleSelection(hawi_2)} label={hawi_2.name} />
