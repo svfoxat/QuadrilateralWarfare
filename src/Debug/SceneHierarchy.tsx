@@ -43,7 +43,11 @@ export default(props: IProps) => {
                            {node.children.map((sub_node, idx2) => (
                                 <TreeItem nodeId={sub_node.id} onClick={() => handleSelection(sub_node)}label={sub_node.name}>
                                     {sub_node.children.map((hawi, hawiIdx) => (
-                                        <TreeItem nodeId={hawi.id} onClick={() => handleSelection(hawi)} label={hawi.name} />
+                                        <TreeItem nodeId={hawi.id} onClick={() => handleSelection(hawi)} label={hawi.name}>
+                                            {hawi.children.map((hawi_2) => (
+                                                <TreeItem nodeId={hawi_2.id} onClick={() => handleSelection(hawi_2)} label={hawi_2.name} />
+                                            ))}
+                                        </TreeItem>
                                     ))}
                                 </TreeItem>
                             ))}
