@@ -3,6 +3,7 @@ import {Gameobject} from "../Gameobject";
 import {Vector2} from "../Math/Vector2";
 import {Rigidbody} from "./Rigidbody";
 import {Gizmos} from "../Gizmos";
+import {Debug} from "../Debug";
 
 export class SpringJoint extends Component {
     name: string = "SpringJoint"
@@ -20,7 +21,7 @@ export class SpringJoint extends Component {
 
     private _lineGizmos: PIXI.Graphics = new PIXI.Graphics();
     private _lineColor: number = 0xFFFFFF;
-    public static showSpringStrain: boolean = false;
+    public showSpringStrain: boolean = false;
 
     public offsetStart: Vector2 = Vector2.Zero();
     public offsetEnd: Vector2 = Vector2.Zero();
@@ -64,9 +65,9 @@ export class SpringJoint extends Component {
 
             let force = dir.Mul(-this.Spring * (dist - this.Distance)).Sub(velo.Mul(this.Damper));
             if (force.Mag() > this.maxForce) this.maxForce = force.Mag();
-            if (SpringJoint.showSpringStrain && this.BreakForce === Infinity) {
+            if (Debug.drawForceColor && this.BreakForce === Infinity) {
                 this._lineColor = Math.round(force.Mag() / this.BreakForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.BreakForce * 256));
-            } else if (SpringJoint.showSpringStrain) {
+            } else if (Debug.drawForceColor) {
                 this._lineColor = Math.round(force.Mag() / this.maxForce * 256) * 256 * 256 + (0x0000FF - Math.round(force.Mag() / this.maxForce * 256));
             } else {
                 this._lineColor = 0xFFFFFF;

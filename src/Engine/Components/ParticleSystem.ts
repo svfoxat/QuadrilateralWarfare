@@ -7,6 +7,7 @@ import {RungeKuttaSolver} from "../Math/RungeKuttaSolver";
 import {EulerSolver} from "../Math/EulerSolver";
 import {Scene} from "../Scene";
 import {Gizmos} from "../Gizmos";
+import {Debug} from "../Debug";
 
 export class Particle {
     sprite: PIXI.Sprite;
@@ -48,8 +49,6 @@ export class ParticleSystem extends Component {
     offset: Vector2;
     particles: Array<Particle>;
     lastUsedParticle: number = 0;
-    stepSize: number = 1;
-    rungeKutta: boolean = true;
     particleSize: Vector2;
 
     offsetPosFunc: () => Vector2;
@@ -66,8 +65,6 @@ export class ParticleSystem extends Component {
     autoStart: boolean;
     started: boolean;
     private lastRealTime: number = 0;
-
-    static drawTrajectories: boolean = false;
 
     constructor(texture?: PIXI.Texture, amount?: number, newParticles?: number, ttl?: number, color?: number,
                 initVelocity?: Vector2, offset?: Vector2, loop?: boolean, loopDelayMS?: number, autoStart?: boolean,
@@ -145,12 +142,12 @@ export class ParticleSystem extends Component {
             particle.mass = this.offsetMassFunc();
         }
 
-        if (this.rungeKutta) {
+        if (Debug.useRungeKuttaSolver) {
             particle.solver = new RungeKuttaSolver(particle.pos, particle.velocity,
-                0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt);
+                0, Time.fixedDeltaTime() / Debug.stepSize, this.dxdt, this.dvdt);
         } else {
             particle.solver = new EulerSolver(particle.pos, particle.velocity,
-                0, Time.fixedDeltaTime() / this.stepSize, this.dxdt, this.dvdt)
+                0, Time.fixedDeltaTime() / Debug.stepSize, this.dxdt, this.dvdt)
         }
 
         if (this.particleSize) {
@@ -183,7 +180,7 @@ export class ParticleSystem extends Component {
 
     Update = () => {
         for (let i = 0; i < this.amount; i++) {
-            if (ParticleSystem.drawTrajectories) {
+            if (Debug.drawTrajectories) {
                 if (this.particles[i].life > 0) {
                     this.particles[i].AddTrajectoryPoint(this.gameObject.scene);
                 }
@@ -216,7 +213,7 @@ export class ParticleSystem extends Component {
             this.particles[i].life -= msPassed / 1000;
             if (this.particles[i].life > 0) {
                 // Do physics calculations for each alive particle (Runge Kutta)
-                this.particles[i].solver.SolveForIterations(this.stepSize, this.particles[i].mass);
+                this.particles[i].solver.SolveForIterations(Debug.stepSize, this.particles[i].mass);
                 this.particles[i].pos = this.particles[i].solver.x1;
                 this.particles[i].velocity = this.particles[i].solver.x2;
 
