@@ -14,18 +14,22 @@ export class PlayerScript extends Component {
     public pressed: boolean = false;
     public triggered: boolean;
     public reset: boolean = false;
+    public pressedOnce: boolean = false;
 
     FixedUpdate = () => {
-        if (this.catapult && !this.pressed && this.catapult.absoluteTransform && this.gameObject.absoluteTransform.position.x > this.catapult.absoluteTransform.position.x + this.deadZone) {
+        if (this.catapult && !this.pressed && this.pressedOnce && this.catapult.absoluteTransform && this.gameObject.absoluteTransform.position.x > this.catapult.absoluteTransform.position.x + this.deadZone) {
             if (this.spring) {
                 this.spring.BreakForce = this.springForce;
                 this.triggered = true;
             }
+        } else if (!this.pressedOnce && this.gameObject.absoluteTransform.position.x > this.catapult.absoluteTransform.position.x) {
+            this.gameObject.transform.position.x = 400;
         }
     }
 
     OnMouseDown = () => {
         this.pressed = true;
+        this.pressedOnce = true;
         if (this.triggered) {
             this.reset = true;
         }
@@ -51,5 +55,6 @@ export class PlayerScript extends Component {
         }
         this.triggered = false;
         this.reset = false;
+        this.pressedOnce = false;
     }
 }
