@@ -6,6 +6,7 @@ import {AABB, ClippingPlane, Edge, Geometry} from "../Math/Geometry";
 import {SceneManager} from "../SceneManager";
 import {Gizmos} from "../Gizmos";
 import {Scene} from "../Scene";
+import {Debug} from "../Debug";
 
 export abstract class Collider extends Component {
     isTrigger: boolean = false;
@@ -202,7 +203,7 @@ export abstract class Collider extends Component {
 
     public static DrawCollisionPoint(scene: Scene, pos: Vector2) {
         scene.container.removeChild(this.collisionPoints[this.collisionIndex]);
-        if (this.drawCollisionPoints) {
+        if (Debug.drawCollisionPoints) {
             this.collisionPoints[this.collisionIndex] = Gizmos.DrawPoint(pos, 5, 0x009999, 1, 0x00FFFF);
             scene.container.addChild(this.collisionPoints[this.collisionIndex]);
         }

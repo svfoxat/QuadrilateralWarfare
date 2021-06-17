@@ -6,6 +6,7 @@ import {SpringJoint} from "./SpringJoint";
 import {Forcefield} from "../Forcefield";
 import {BoxCollider, TriangleCollider} from "./Collider";
 import {Gizmos} from "../Gizmos";
+import {Debug} from "../Debug";
 
 export enum ForceMode {
     Force,
@@ -35,13 +36,12 @@ export class Rigidbody extends Component {
     angularVector: PIXI.Graphics = new PIXI.Graphics();
     velocityDrawThreshold: number = 0.5;
     angularVelocityDrawThreshold: number = 0.05;
-    drawMomentum: boolean = false;
 
     forceThreshold = 0.5;
     forceVector: PIXI.Graphics = new PIXI.Graphics();
-    drawForce: boolean = false;
 
     attachedSprings: Array<SpringJoint> = new Array<SpringJoint>();
+    springForceGraph: PIXI.Graphics = new PIXI.Graphics();
 
     verletVelocity: boolean;
 
@@ -72,7 +72,7 @@ export class Rigidbody extends Component {
         this.gameObject.scene.container.removeChild(this.forceVector);
 
         let pos = Vector2.FromPoint(this.gameObject.absoluteTransform.position);
-        if (this.drawMomentum) {
+        if (Debug.drawMomentum) {
             if (this.velocity.Mag() > this.velocityDrawThreshold) {
                 this.linearVector = Gizmos.DrawArrow(pos, pos.Add(this.velocity), 3, 0x00FF00);
                 this.gameObject.scene.container.addChild(this.linearVector);
@@ -84,7 +84,7 @@ export class Rigidbody extends Component {
             }
         }
 
-        if (this.drawForce) {
+        if (Debug.drawForce) {
             let force = this.GetSumForcesAt(pos)[0];
             if (force.Mag() > this.forceThreshold) {
                 this.forceVector = Gizmos.DrawArrow(pos, pos.Add(force), 3, 0xFF0000);
@@ -136,6 +136,20 @@ export class Rigidbody extends Component {
                 }
             }
         }
+
+        if (Debug.drawMassSpringGraph) {
+            this.gameObject.scene.container.removeChild(this.springForceGraph)
+            const {x, y} = this.gameObject.absoluteTransform.position;
+            this.springForceGraph = Gizmos.DrawArrow(
+                new Vector2(x, y),
+                new Vector2(x + springLinForce.x, y + springLinForce.y),
+                2, 0xFF0000
+            )
+            this.gameObject.scene.container.addChild(this.springForceGraph);
+        } else {
+            this.gameObject.scene.container.removeChild(this.springForceGraph)
+        }
+
         return [springLinForce, springAngForce];
     }
 
