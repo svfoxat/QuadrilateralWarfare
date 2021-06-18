@@ -1,0 +1,27 @@
+{
+    "name": "Testscene 1",
+    "gameObjects": [
+        {
+            "transform": {
+                "position": {
+                    "x": 500,
+                    "y": 500
+                },
+                "rotation": 0,
+                "scale": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            "components": [
+                {
+                    "name": "SpriteRenderer",
+                    "texture": "assets/fox2.jpg"
+                },
+                {
+                    "name": "ObjectMoveScript"
+                }
+            ]
+        }
+    ]
+}
